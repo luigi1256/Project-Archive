@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nostr Resource Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <header class="max-w-5xl mx-auto pt-16 pb-8 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-purple-400 mb-4">
+            Nostr Resource Hub
+        </h1>
+        <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+            La mia selezione curata di bookmark, articoli long-form (Kind 30023) e web bookmarks (Kind 39701). Usa queste risorse come base per i tuoi progetti.
+        </p>
+    </header>
+
+    <section class="max-w-5xl mx-auto px-4 mb-12">
+        <div class="bg-gray-800 p-4 rounded-xl flex flex-col md:flex-row gap-4 justify-between items-center shadow-lg">
+            <input type="text" id="searchBar" placeholder="Cerca tra le risorse..." class="w-full md:w-72 px-4 py-2 bg-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            
+            <div class="flex gap-2" id="filterButtons">
+                <button onclick="filterContent('all')" class="px-4 py-2 bg-purple-600 rounded-lg font-medium hover:bg-purple-700 transition">Tutti</button>
+                <button onclick="filterContent('39701')" class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition">Web Bookmarks</button>
+                <button onclick="filterContent('30023')" class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition">Articoli</button>
+                <button onclick="filterContent('10003')" class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition">Bookmarks</button>
+                <button onclick="filterContent('30817')" class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition">NIPs</button>
+                <button class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition"><a href="Archive_years.html" target="_blank">Open Archive</a></button>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-5xl mx-auto px-4 pb-24">
+        <div id="loading" class="text-center text-gray-400 text-lg">Connessione ai relay Nostr in corso...</div>
+        <div id="resourceGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+            </div>
+    </main>
+
+    <script type="module">
+    
+        import { SimplePool,nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+
+        // CONFIGURAZIONE: Inserisci qui la tua chiave pubblica (HEX format)
+        const MY_PUBKEYS = ['592295cf2b09a7f9555f43adb734cbee8a84ee892ed3f9336e6a09b6413a0db9',
+            'e99f0da6207cce353e4ec761859b765f80462360926ba994f1859dd895613dd7',
+            '1f956aec8c35faa1e4a62151fbd2822127d0a856b7daa40f027c9090768866bd'
+        ]; 
+        
+        // Elenco dei relay pubblici da cui attingere i dati
+        const RELAYS = [
+            'wss://relay.damus.io',
+            'wss://nos.lol',
+            'wss://nostr.stakey.net',
+            'wss://relay.ditto.pub'
+        ];
+
+        const pool = new SimplePool();
+        let allEvents = [];
+
+        async function fetchNostrData() {
+
+            try {
+                
+                const events = await pool.querySync(RELAYS, {
+                    authors: MY_PUBKEYS,
+                    kinds: [39701, 30023,10003,30004,30817]
+                });
+                
+                allEvents = events.sort((a, b) => b.created_at - a.created_at);
+                allEvents = events;
+                renderCards(allEvents);
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('resourceGrid').classList.remove('hidden');
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading').innerText = "Errore nel caricamento dei dati.";
+            }
+        }
+
+        function renderCards(events) {
+            const grid = document.getElementById('resourceGrid');
+            grid.innerHTML = '';
+
+            if(events.length === 0) {
+                grid.innerHTML = '<p class="text-gray-400 col-span-2 text-center">Nessuna risorsa trovata.</p>';
+                return;
+            }
+
+            events.forEach(event => {
+                let title = 'Risorsa Nostr';
+                let description = event.content.substring(0, 140) + '...';
+                let badgeColor = event.kind === 39701 ? 'bg-blue-900 text-blue-300' : 'bg-green-900 text-green-300';
+                let badgeText = event.kind === 39701 ? 'Web Bookmark' : 'Articolo';
+                let link = '#';
+                let other_link = `#`;
+
+                if (event.kind === 10003) {
+                    badgeText = 'Lista Bookmark';
+                    badgeColor = 'bg-yellow-900 text-yellow-300';
+                    const bookmarkCount = event.tags.filter(t => t[0] === 'e' || t[0] === 'a').length;
+                    description = `Raccolta di ${bookmarkCount} risorse salvate su Nostr.`;
+
+                    try {
+                    const nevent = nip19.neventEncode({
+                        id: event.id,
+                        relays: ['wss://relay.damus.io', 'wss://nos.lol'],
+                    });
+                    const npub = nip19.npubEncode(event.pubkey);
+                    link = `https://jumble.social/note/${event.id}`; 
+                    other_link= `https://nostviewstr.vercel.app/${npub}/10003`;
+                } catch (error) {
+                        console.error("Errore durante la codifica del nevent:", error);
+                        link='#';
+                        other_link='#'
+
+                }}
+
+
+                const titleTag = event.tags.find(t => t[0] === 'title' || t[0] === 'description');
+                if (titleTag) title = titleTag[1];
+                if (event.kind === 30023) {
+                    badgeText = 'Articolo';
+                    badgeColor = 'bg-green-900 text-green-300';
+                    const summaryTag = event.tags.find(t => t[0] === 'summary');
+                    if (summaryTag) description = summaryTag[1];
+                    const dTag = event.tags.find(t => t[0] === 'd');
+                    const identifier = dTag ? dTag[1] : '';
+
+                    try {
+                        const naddr = nip19.naddrEncode({
+                            kind: event.kind,
+                            pubkey: event.pubkey,
+                            identifier: identifier,
+                            relays: ['wss://relay.damus.io', 'wss://nos.lol'] // I tuoi relay di riferimento
+                        });
+                        link = `https://njump.me/${naddr}`;
+                        other_link = `https://nostr.ae/${naddr}`;
+                        
+
+                    } catch (e) {
+                        console.error("Errore nella generazione dell'naddr", e);
+                        link = `#`;
+                        other_link = `#`;
+                    }
+                }
+
+                if (event.kind === 30817) {
+                badgeText = 'Nips Curation';
+                badgeColor = 'bg-green-900 text-green-300';
+                const dTag = event.tags.find(t => t[0] === 'd');
+                const identifier = dTag ? dTag[1] : '';
+                try {
+                    const naddr = nip19.naddrEncode({
+                        kind: event.kind,
+                        pubkey: event.pubkey,
+                        identifier: identifier,
+                        relays: ['wss://relay.damus.io', 'wss://nos.lol'] // I tuoi relay di riferimento
+                    });
+                    link = `https://nostrhub.io/${naddr}`;
+                    other_link = `https://nips.pollerama.fun/#/nip/${naddr}`;
+
+                } catch (e) {
+                    console.error("Errore nella generazione dell'naddr", e);
+                    link = `#`;
+                    other_link= `#`
+                }
+            }
+
+                if (event.kind === 39701){
+                const dTag = event.tags.find(t => t[0] === 'd');
+                if (dTag) {
+                    
+                    link = `https://${dTag[1]}`;
+                    other_link=`https://yumyu.me/?url=${dTag[1]}`;
+                    title = title ? title : dTag[1];
+                }}
+                
+
+                const card = `
+                    <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-md hover:border-purple-500 transition flex flex-col justify-between" data-kind="${event.kind}">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${badgeColor}">
+                                    ${badgeText}
+                                </span>
+                                <span class="text-xs text-gray-500">${new Date(event.created_at * 1000).toLocaleDateString()}</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-2">${title}</h3>
+                            <p class="text-gray-400 text-sm mb-4">${description}</p>
+                        </div>
+                        <a href="${link}" target="_blank" class="inline-block text-sm font-semibold text-purple-400 hover:text-purple-300 transition mt-2">
+                            Apri risorsa →
+                        </a>
+                        <a href="${other_link}" target="_blank" class="inline-block text-sm font-semibold text-purple-400 hover:text-purple-300 transition mt-2">
+                            Apri 2° risorsa →
+                        </a>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        window.filterContent = function(kind) {
+            const cards = document.querySelectorAll('#resourceGrid > div');
+            cards.forEach(card => {
+                if (kind === 'all' || card.getAttribute('data-kind') === kind) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        document.getElementById('searchBar').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('#resourceGrid > div');
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+
+        // Avvia il caricamento
+        fetchNostrData();
+    </script>
+</body>
+</html>
