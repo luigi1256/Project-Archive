@@ -109,7 +109,7 @@
                         relays: ['wss://relay.damus.io', 'wss://nos.lol'],
                     });
                     const npub = nip19.npubEncode(event.pubkey);
-                    link = `https://jumble.social/note/${event.id}`; 
+                    link = `feed.html?nevent=${nevent}`; //${event.id} 
                     other_link= `https://nostviewstr.vercel.app/${npub}/10003`;
                 } catch (error) {
                         console.error("Errore durante la codifica del nevent:", error);

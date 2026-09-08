@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nostr Thread & Nota</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <header class="max-w-3xl mx-auto pt-12 pb-6 px-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-purple-400">Nostr Thread</h1>
+        <a href="index.html" class="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium hover:bg-gray-600 transition">← Torna Indietro</a>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 pb-24">
+        <div id="loading" class="text-center text-gray-400 text-lg py-12">Caricamento nota e thread...</div>
+
+        <!-- Nota Principale -->
+        <div id="mainNoteContainer" class="hidden mb-8">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Nota Principale</h3>
+            <div id="mainNoteCard" class="bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl"></div>
+        </div>
+
+        <!-- Sezione Risposte / Thread -->
+        <div id="repliesContainer" class="hidden">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Risposte al Thread (<span id="replyCount">0</span>)</h3>
+            <div id="repliesList" class="space-y-4"></div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+
+        const INITIAL_RELAYS = [
+            'wss://relay.damus.io',
+            'wss://nos.lol',
+            'wss://relay.ditto.pub',
+            'wss://relay.nostr.band'
+        ];
+
+        const pool = new SimplePool();
+
+        async function initThread() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const idParam = urlParams.get('id');
+                const neventParam = urlParams.get('nevent');
+                const noteParam = urlParams.get('note');
+
+                let targetId = null;
+                let queryRelays = INITIAL_RELAYS;
+
+                if (neventParam) {
+                    const decoded = nip19.decode(neventParam);
+                    if (decoded.type === 'nevent') {
+                        targetId = decoded.data.id;
+                        if (decoded.data.relays && decoded.data.relays.length > 0) {
+                            queryRelays = [...decoded.data.relays, ...INITIAL_RELAYS];
+                        }
+                    }
+                } else if (noteParam) {
+                    const decoded = nip19.decode(noteParam);
+                    if (decoded.type === 'note') {
+                        targetId = decoded.data;
+                    }
+                } else if (idParam) {
+                    // Controllo se l'id passato in ?id= è direttamente un bech32 (es. note1...) o un hex
+                    if (idParam.startsWith('note1')) {
+                        const decoded = nip19.decode(idParam);
+                        if (decoded.type === 'note') targetId = decoded.data;
+                    } else if (idParam.startsWith('nevent1')) {
+                        const decoded = nip19.decode(idParam);
+                        if (decoded.type === 'nevent') {
+                            targetId = decoded.data.id;
+                            if (decoded.data.relays) queryRelays = [...decoded.data.relays, ...INITIAL_RELAYS];
+                        }
+                    } else {
+                        targetId = idParam;
+                    }
+                }
+
+                if (!targetId) {
+                    document.getElementById('loading').innerText = "Nessun ID, nevent o note specificato nell'URL.";
+                    return;
+                }
+
+                // 1. Scarica la nota principale
+                const mainEvents = await pool.querySync(queryRelays, { ids: [targetId] });
+                if (mainEvents.length === 0) {
+                    document.getElementById('loading').innerText = "Nota principale non trovata sui relay.";
+                    return;
+                }
+
+                const mainEvent = mainEvents[0];
+
+                // 2. Scarica le risposte che fanno riferimento a questo ID (tag 'e')
+                const replyEvents = await pool.querySync(queryRelays, {
+                    kinds: [1],
+                    '#e': [targetId]
+                });
+
+                // Ordina le risposte per data (cronologico)
+                const sortedReplies = replyEvents.sort((a, b) => a.created_at - b.created_at);
+
+                // Renderizza la nota principale
+                renderNoteCard('mainNoteCard', mainEvent, true);
+
+                // Renderizza le risposte
+                const repliesListDiv = document.getElementById('repliesList');
+                repliesListDiv.innerHTML = '';
+                
+                if (sortedReplies.length === 0) {
+                    repliesListDiv.innerHTML = `<p class="text-gray-500 text-sm italic">Nessuna risposta trovata per questa nota.</p>`;
+                } else {
+                    sortedReplies.forEach(reply => {
+                        const wrapper = document.createElement('div');
+                        renderNoteCardIntoElement(wrapper, reply, false);
+                        repliesListDiv.appendChild(wrapper);
+                    });
+                }
+
+                document.getElementById('replyCount').innerText = sortedReplies.length;
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('mainNoteContainer').classList.remove('hidden');
+                document.getElementById('repliesContainer').classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerText = "Errore durante il caricamento del thread.";
+            }
+        }
+
+        function renderNoteCard(containerId, event, isMain) {
+            const container = document.getElementById(containerId);
+            renderNoteCardIntoElement(container, event, isMain);
+        }
+
+        function renderNoteCardIntoElement(container, event, isMain) {
+            let npub = '';
+            let profileLink = '#';
+            let profilePageLink = '#';
+            try {
+                npub = nip19.npubEncode(event.pubkey);
+                profileLink = `https://coracle.social/people/${npub}`;
+                profilePageLink = `profile.html?npub=${npub}`;
+            } catch(e) {}
+
+            const formattedContent = escapeHtml(event.content);
+            const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
+            const dateStr = new Date(event.created_at * 1000).toLocaleString();
+
+            container.className = isMain 
+                ? "bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl"
+                : "bg-gray-800/80 border border-gray-700 p-4 rounded-xl shadow-md";
+
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <a href="${profilePageLink}" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition flex items-center gap-1">
+                            👤 ${shortPub}
+                        </a>
+                        <a href="${profileLink}" target="_blank" class="text-[10px] text-gray-500 hover:underline">(Coracle)</a>
+                    </div>
+                    <span class="text-xs text-gray-500">${dateStr}</span>
+                </div>
+                <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            let parsed = text.replace(/https?:\/\/[^\s]+/g, (url) => {
+                let clean = url.replace(/[.,!?)]$/, '');
+                return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${url}</a>`;
+            });
+            return parsed;
+        }
+
+        initThread();
+    </script>
+</body>
+</html>

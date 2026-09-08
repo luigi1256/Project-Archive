@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nostr Profilo - Kind 0</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <header class="max-w-3xl mx-auto pt-12 pb-6 px-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-purple-400">Nostr Profilo (Kind 0)</h1>
+        <a href="index.html" class="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium hover:bg-gray-600 transition">← Torna Indietro</a>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 pb-24">
+        <div id="loading" class="text-center text-gray-400 text-lg py-12">Caricamento profilo in corso...</div>
+
+        <div id="profileContainer" class="hidden bg-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl">
+            <!-- Banner -->
+            <div id="profileBanner" class="h-40 bg-gray-700 bg-cover bg-center"></div>
+            
+            <div class="px-6 pb-6 relative">
+                <!-- Avatar -->
+                <div class="flex justify-between items-end -mt-16 mb-4">
+                    <img id="profilePicture" src="https://via.placeholder.com/150" alt="Avatar" class="w-32 h-32 rounded-full border-4 border-gray-800 bg-gray-900 object-cover shadow-lg">
+                    <a id="externalProfile" href="#" target="_blank" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg transition shadow">Apri su Coracle</a>
+                </div>
+
+                <!-- Nome e Display Name -->
+                <h2 id="profileName" class="text-3xl font-extrabold text-white">Nome Utente</h2>
+                <p id="profileDisplayName" class="text-purple-400 text-sm mb-4">@display_name</p>
+
+                <!-- About / Bio -->
+                <p id="profileAbout" class="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap bg-gray-900/50 p-4 rounded-xl mb-6 border border-gray-700/50">Bio utente...</p>
+
+                <!-- Dettagli Chiavi -->
+                <div class="space-y-3 text-xs font-mono bg-gray-900 p-4 rounded-xl border border-gray-800">
+                    <div>
+                        <span class="text-gray-500 block mb-1">NPUB:</span>
+                        <span id="profileNpub" class="text-purple-300 break-all select-all">npub1...</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500 block mb-1">HEX Pubkey:</span>
+                        <span id="profileHex" class="text-gray-400 break-all select-all">...</span>
+                    </div>
+                    <div id="profileWebsiteContainer" class="hidden">
+                        <span class="text-gray-500 block mb-1">Sito Web:</span>
+                        <a id="profileWebsite" href="#" target="_blank" class="text-blue-400 hover:underline">...</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+
+        const INITIAL_RELAYS = [
+            'wss://relay.damus.io',
+            'wss://nos.lol',
+            'wss://relay.ditto.pub',
+            'wss://relay.nostr.band'
+        ];
+
+        const pool = new SimplePool();
+
+        async function initProfile() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const rawParam = urlParams.get('npub') || urlParams.get('nprofile') || urlParams.get('pubkey');
+
+                let targetPubkey = null;
+                let queryRelays = [...INITIAL_RELAYS];
+
+                if (!rawParam) {
+                    document.getElementById('loading').innerText = "Nessun parametro valido specificato nell'URL.";
+                    return;
+                }
+
+                // Se inizia con npub1, nprofile1 o simili, usiamo nip19.decode
+                if (rawParam.startsWith('npub1') || rawParam.startsWith('nprofile1')) {
+                    const decoded = nip19.decode(rawParam);
+                    if (decoded.type === 'npub') {
+                        targetPubkey = decoded.data;
+                    } else if (decoded.type === 'nprofile') {
+                        targetPubkey = decoded.data.pubkey;
+                        if (decoded.data.relays && decoded.data.relays.length > 0) {
+                            queryRelays = [...decoded.data.relays, ...INITIAL_RELAYS];
+                        }
+                    }
+                } else {
+                    // Altrimenti lo trattiamo direttamente come chiave HEX grezza
+                    targetPubkey = rawParam;
+                }
+
+                if (!targetPubkey) {
+                    document.getElementById('loading').innerText = "Impossibile estrarre una chiave pubblica valida.";
+                    return;
+                }
+
+                // Query per Kind 0 (Metadati) sui relay trovati (inclusi quelli dell'nprofile se presenti)
+                const events = await pool.querySync(queryRelays, {
+                    authors: [targetPubkey],
+                    kinds: [0],
+                    limit: 1
+                });
+
+                let profileData = {};
+                if (events.length > 0) {
+                    try {
+                        profileData = JSON.parse(events[0].content);
+                    } catch (e) {
+                        console.error("Errore nel parsing del JSON del Kind 0", e);
+                    }
+                }
+
+                const npub = nip19.npubEncode(targetPubkey);
+
+                // Popolamento UI
+                document.getElementById('profileName').innerText = profileData.name || profileData.username || 'Sconosciuto';
+                document.getElementById('profileDisplayName').innerText = profileData.display_name ? `@${profileData.display_name}` : `@${npub.substring(0, 10)}...`;
+                document.getElementById('profileAbout' ).innerText = profileData.about || 'Nessuna bio disponibile.';
+                document.getElementById('profileNpub').innerText = npub;
+                document.getElementById('profileHex').innerText = targetPubkey;
+
+                if (profileData.picture) {
+                    document.getElementById('profilePicture').src = profileData.picture;
+                }
+                if (profileData.banner) {
+                    const banner = document.getElementById('profileBanner');
+                    banner.style.backgroundImage = `url('${profileData.banner}')`;
+                }
+                if (profileData.website) {
+                    const webContainer = document.getElementById('profileWebsiteContainer');
+                    const webLink = document.getElementById('profileWebsite');
+                    webLink.href = profileData.website;
+                    webLink.innerText = profileData.website;
+                    webContainer.classList.remove('hidden');
+                }
+
+                document.getElementById('externalProfile').href = `https://coracle.social/people/${npub}`;
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('profileContainer').classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerText = "Errore durante il caricamento del profilo.";
+            }
+        }
+
+        initProfile();
+    </script>
+</body>
+</html>

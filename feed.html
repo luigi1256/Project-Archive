@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nostr Smart Feed - Rich Content</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <header class="max-w-5xl mx-auto pt-16 pb-8 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-purple-400 mb-4" id="feedTitle">
+            Smart Author Feed
+        </h1>
+        <p class="text-gray-400 text-lg max-w-2xl mx-auto" id="statusText">
+            Lettura dei parametri e analisi della lista in corso...
+        </p>
+    </header>
+
+    <section class="max-w-5xl mx-auto px-4 mb-6">
+        <div class="bg-gray-800 p-4 rounded-xl flex flex-col md:flex-row justify-between items-center shadow-lg gap-4">
+            <div id="relayStats" class="text-sm text-gray-300">
+                <!-- Top Relay calcolati -->
+            </div>
+            <a href="index.html" class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition text-sm">← Torna alle Risorse</a>
+        </div>
+    </section>
+
+    <!-- Selettore Schede (Tabs) -->
+    <section class="max-w-5xl mx-auto px-4 mb-6 hidden" id="tabsSection">
+        <div class="flex border-b border-gray-700">
+            <button id="tabRichBtn" onclick="switchTab('rich')" class="px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer">
+                🔗 Contents Link (<span id="richCount">0</span>)
+            </button>
+            <button id="tabTextBtn" onclick="switchTab('text')" class="px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer">
+                📝 Note Standard (<span id="textCount">0</span>)
+            </button>
+        </div>
+    </section>
+
+    <main class="max-w-5xl mx-auto px-4 pb-24">
+        <div id="loading" class="text-center text-gray-400 text-lg py-12">Caricamento in corso...</div>
+        
+        <!-- Griglia Contenuti Ricchi -->
+        <div id="feedGridRich" class="space-y-6"></div>
+        
+        <!-- Griglia Note Standard (Nascosta di default) -->
+        <div id="feedGridText" class="space-y-6 hidden"></div>
+    </main>
+
+    <script type="module">
+        import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+
+        const INITIAL_RELAYS = [
+            'wss://relay.damus.io',
+            'wss://nos.lol',
+            'wss://nostr.stakey.net',
+            'wss://relay.ditto.pub'
+        ];
+
+        const pool = new SimplePool();
+        let globalRichEvents = [];
+        let globalTextEvents = [];
+
+        window.switchTab = function(tabName) {
+            const richBtn = document.getElementById('tabRichBtn');
+            const textBtn = document.getElementById('tabTextBtn');
+            const gridRich = document.getElementById('feedGridRich');
+            const gridText = document.getElementById('feedGridText');
+
+            if (tabName === 'rich') {
+                richBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer";
+                textBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer";
+                gridRich.classList.remove('hidden');
+                gridText.classList.add('hidden');
+            } else {
+                textBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer";
+                richBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer";
+                gridText.classList.remove('hidden');
+                gridRich.classList.add('hidden');
+            }
+        }
+
+        async function initSmartFeed() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const naddrParam = urlParams.get('naddr');
+                const neventParam = urlParams.get('nevent');
+                const idParam = urlParams.get('id');
+
+                let targetEvent = null;
+
+                if (naddrParam) {
+                    const decoded = nip19.decode(naddrParam);
+                    if (decoded.type === 'naddr') {
+                        const { kind, pubkey, identifier, relays } = decoded.data;
+                        const queryRelays = relays && relays.length > 0 ? relays : INITIAL_RELAYS;
+                        const events = await pool.querySync(queryRelays, {
+                            authors: [pubkey],
+                            kinds: [kind],
+                            '#d': [identifier],
+                            limit: 1
+                        });
+                        if (events.length > 0) targetEvent = events[0];
+                    }
+                } else if (neventParam) {
+                    const decoded = nip19.decode(neventParam);
+                    const eventId = decoded.type === 'nevent' ? decoded.data.id : decoded.data;
+                    const events = await pool.querySync(INITIAL_RELAYS, { ids: [eventId] });
+                    if (events.length > 0) targetEvent = events[0];
+                } else if (idParam) {
+                    const events = await pool.querySync(INITIAL_RELAYS, { ids: [idParam] });
+                    if (events.length > 0) targetEvent = events[0];
+                }
+
+                if (!targetEvent) {
+                    document.getElementById('loading').innerText = "Nessun evento o lista valida specificata nell'URL (mancano parametri naddr o id).";
+                    return;
+                }
+
+                document.getElementById('feedTitle').innerText = `Smart Feed da ${targetEvent.kind === 10003 ? 'Bookmarks' : 'Lista Curata'}`;
+                document.getElementById('statusText').innerText = "Estrazione degli autori dalla lista...";
+
+                const authorSet = new Set();
+                const eventIdsToFetch = [];
+
+                targetEvent.tags.forEach(t => {
+                    if (t[0] === 'e' || t[0] === 'a') {
+                        if (t[3]) authorSet.add(t[3]);
+                        else if (t[0] === 'e') eventIdsToFetch.push(t[1]);
+                    }
+                    if (t[0] === 'p') {
+                        authorSet.add(t[1]);
+                    }
+                });
+
+                if (eventIdsToFetch.length > 0) {
+                    const referencedNotes = await pool.querySync(INITIAL_RELAYS, { ids: eventIdsToFetch });
+                    referencedNotes.forEach(note => {
+                        if (note.pubkey) authorSet.add(note.pubkey);
+                    });
+                }
+
+                const authors = Array.from(authorSet);
+                if (authors.length === 0) {
+                    document.getElementById('loading').innerText = "Nessun autore trovato all'interno di questa risorsa.";
+                    return;
+                }
+
+                document.getElementById('statusText').innerText = `Analisi dei relay (NIP-65) per ${authors.length} autori...`;
+
+                const relayListEvents = await pool.querySync(INITIAL_RELAYS, {
+                    authors: authors,
+                    kinds: [10002]
+                });
+
+                const authorRelaysMap = new Map();
+                relayListEvents.forEach(ev => {
+                    const relays = new Set();
+                    ev.tags.forEach(t => {
+                        if (t[0] === 'r' && (!t[2] || t[2] === 'write' || t[2] === '')) {
+                            let url = t[1].trim().toLowerCase();
+                            if (url.endsWith('/')) url = url.slice(0, -1);
+                            relays.add(url);
+                        }
+                    });
+                    if (relays.size > 0) authorRelaysMap.set(ev.pubkey, relays);
+                });
+
+                let remainingAuthors = new Set(authors);
+                const selectedRelays = [];
+
+                while (selectedRelays.length < 10 && remainingAuthors.size > 0) {
+                    const relayCoverage = new Map();
+
+                    authorRelaysMap.forEach((relays, author) => {
+                        if (remainingAuthors.has(author)) {
+                            relays.forEach(relay => {
+                                if (!selectedRelays.includes(relay)) {
+                                    if (!relayCoverage.has(relay)) relayCoverage.set(relay, new Set());
+                                    relayCoverage.get(relay).add(author);
+                                }
+                            });
+                        }
+                    });
+
+                    if (relayCoverage.size === 0) break;
+
+                    let bestRelay = null;
+                    let maxCovered = -1;
+                    relayCoverage.forEach((coveredAuthors, relay) => {
+                        if (coveredAuthors.size > maxCovered) {
+                            maxCovered = coveredAuthors.size;
+                            bestRelay = relay;
+                        }
+                    });
+
+                    if (!bestRelay || maxCovered === 0) break;
+
+                    selectedRelays.push(bestRelay);
+                    relayCoverage.get(bestRelay).forEach(author => remainingAuthors.delete(author));
+                }
+
+                if (selectedRelays.length === 0) {
+                    selectedRelays.push(...INITIAL_RELAYS);
+                }
+
+                const statsDiv = document.getElementById('relayStats');
+                statsDiv.innerHTML = `<span class="font-semibold text-purple-400">Top ${selectedRelays.length} Relay Dinamici:</span> <span class="text-gray-400">${selectedRelays.join(', ')}</span>`;
+
+
+                document.getElementById('statusText').innerText = "Scaricamento del feed in corso...";
+
+                const feedEvents = await pool.querySync(selectedRelays, {
+                    authors: authors,
+                    kinds: [1],
+                    limit: 50
+                });
+
+                const sortedFeed = feedEvents.sort((a, b) => b.created_at - a.created_at);
+
+                globalRichEvents = [];
+                globalTextEvents = [];
+
+                sortedFeed.forEach(event => {
+                    if (hasRichContent(event.content)) {
+                        globalRichEvents.push(event);
+                    } else {
+                        globalTextEvents.push(event);
+                    }
+                });
+
+                document.getElementById('richCount').innerText = globalRichEvents.length;
+                document.getElementById('textCount').innerText = globalTextEvents.length;
+
+                renderFeedSection('feedGridRich', globalRichEvents, 'Nessun contenuto ricco recente trovato.');
+                renderFeedSection('feedGridText', globalTextEvents, 'Nessuna nota standard trovata.');
+                
+                document.getElementById('statusText').innerText = `Feed caricato con successo (${sortedFeed.length} eventi totali elaborati).`;
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('tabsSection').classList.remove('hidden');
+                document.getElementById('feedGridRich').classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerText = "Errore durante la generazione dello smart feed.";
+            }
+        }
+
+        function hasRichContent(content) {
+            const hasNostrUri = /nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi.test(content);
+            if (hasNostrUri) return true;
+
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const matches = content.match(urlRegex);
+            return matches !== null && matches.length > 0;
+        }
+
+        function renderFeedSection(containerId, events, emptyMessage) {
+            const grid = document.getElementById(containerId);
+            grid.innerHTML = '';
+
+            if (events.length === 0) {
+                grid.innerHTML = `<p class="text-gray-400 text-center py-8">${emptyMessage}</p>`;
+                return;
+            }
+
+            events.forEach(event => {
+                let npub = '';
+                let profileLink = '#';
+                try {
+                    npub = nip19.npubEncode(event.pubkey);
+                    profileLink = `profile.html?npub=${npub}`;
+                } catch(e) {}
+
+                const formattedContent = parseNostrContent(event.content);
+                const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
+
+                const card = `
+                    <div class="bg-gray-800 border border-gray-700 p-5 rounded-xl shadow-md">
+                        <div class="flex justify-between items-center mb-3">
+                            <a href="${profileLink}" target="_blank" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition flex items-center gap-1">
+                                👤 ${shortPub}
+                            </a>
+                            <span class="text-xs text-gray-500">${new Date(event.created_at * 1000).toLocaleString()}</span>
+                        </div>
+                        <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        function parseNostrContent(content) {
+            // 1. Prima gestiamo le entità NIP-27 (nostr:...) convertendole direttamente in HTML pulito
+            let parsed = content.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+                let url = '#';
+                let label = entity.substring(0, 10) + '...';
+                if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+                    label = '👤 ' + label;
+                    url = `profile.html?npub=${entity}`;
+                } else {
+                    label = '💬 ' + label;
+                    url= `note.html?nevent=${entity}`;
+                }
+                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
+            });
+
+            // 2. Poi gestiamo i link web standard, escludendo eventuali URL che contengono già njump
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            parsed = parsed.replace(urlRegex, (url) => {
+                let cleanUrl = url.replace(/[.,!?)]$/, '');
+                let trailing = url.slice(cleanUrl.length);
+
+                // Se il link punta già a njump, non lo riprocessiamo per evitare sovrapposizioni
+                if (cleanUrl.includes('njump.to') || cleanUrl.includes('njump.me')) {
+                    return url;
+                }
+
+                let lower = cleanUrl.toLowerCase();
+                let typeBadge = "🔗 Link";
+                let badgeClass = "bg-blue-950 text-blue-300 border-blue-800";
+
+                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
+                    typeBadge = "🖼️ Foto";
+                    badgeClass = "bg-emerald-950 text-emerald-300 border-emerald-800";
+                } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
+                    typeBadge = "🎬 Video";
+                    badgeClass = "bg-amber-950 text-amber-300 border-amber-800";
+                }
+
+                let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
+                if (displayUrl.length > 35) {
+                    displayUrl = displayUrl.substring(0, 32) + '...';
+                }
+
+                return `<a href="${cleanUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-2 py-0.5 my-1 rounded text-xs border ${badgeClass} hover:underline font-medium"><span class="opacity-80">${typeBadge}</span> <span>${displayUrl}</span></a>` + trailing;
+            });
+
+            return parsed;
+        }
+
+        initSmartFeed();
+    </script>
+</body>
+</html>
