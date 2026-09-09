@@ -58,6 +58,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
+        gap: 10px;
         width: 100%;
         height: 100%;
     }
@@ -92,20 +94,28 @@
         color: var(--text-muted);
     }
 
-    /* 4. RESPONSIVE: Ottimizzazione per Smartphone */
+    .mesi-grid {
+    grid-template-columns: repeat(4, 1fr);
+    }
+
+    
     @media (max-width: 600px) {
         /* Trasforma la griglia da 4 colonne a 2 colonne sui telefoni */
         div[style*="grid-template-columns"] {
             grid-template-columns: repeat(2, 1fr) !important;
         }
+        .mesi-grid button.testo {
+        height: 110px !important; /* Aumenta l'altezza su mobile */
+    }
+
         .anno-selector button.testo {
             width: 90% !important; /* Più largo su mobile */
         }
     }
+    
 </style>
-   
-
 </head>
+<body>   
 
 <div class="anno-selector" style="text-align: center; margin-bottom: 30px;">
   <button class="testo" style="width: 60%; height: 100px;">
@@ -122,7 +132,7 @@
 </div>
 
 <div style="max-width: 800px; margin: 0 auto; padding: 0 15px; margin-bottom: 40px;">
-  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+  <div class="mesi-grid" style="display: grid; gap: 15px;">
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('Jan')">Jan</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('February')">February</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('March')">March</button>

@@ -22,10 +22,24 @@
             <div id="mainNoteCard" class="bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl"></div>
         </div>
 
+        <!-- Selettore Tab / Sezioni -->
+        <div id="tabsContainer" class="hidden flex border-b border-gray-700 mb-6">
+            <button id="tabReplies" onclick="switchTab('replies')" class="px-6 py-3 text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition">
+                Thread & Risposte (<span id="replyCountTab">0</span>)
+            </button>
+            <button id="tabQuotes" onclick="switchTab('quotes')" class="px-6 py-3 text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition">
+                Citazioni e Menzioni (<span id="quoteCountTab">0</span>)
+            </button>
+        </div>
+
         <!-- Sezione Risposte / Thread -->
-        <div id="repliesContainer" class="hidden">
-            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Risposte al Thread (<span id="replyCount">0</span>)</h3>
+        <div id="repliesContainer" class="hidden space-y-4">
             <div id="repliesList" class="space-y-4"></div>
+        </div>
+
+        <!-- Sezione Citazioni / Menzioni -->
+        <div id="quotesContainer" class="hidden space-y-4">
+            <div id="quotesList" class="space-y-4"></div>
         </div>
     </main>
 
@@ -40,6 +54,25 @@
         ];
 
         const pool = new SimplePool();
+
+        window.switchTab = function(tabName) {
+            const repliesDiv = document.getElementById('repliesContainer');
+            const quotesDiv = document.getElementById('quotesContainer');
+            const tabReplies = document.getElementById('tabReplies');
+            const tabQuotes = document.getElementById('tabQuotes');
+
+            if (tabName === 'replies') {
+                repliesDiv.classList.remove('hidden');
+                quotesDiv.classList.add('hidden');
+                tabReplies.className = "px-6 py-3 text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition";
+                tabQuotes.className = "px-6 py-3 text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition";
+            } else {
+                quotesDiv.classList.remove('hidden');
+                repliesDiv.classList.add('hidden');
+                tabQuotes.className = "px-6 py-3 text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition";
+                tabReplies.className = "px-6 py-3 text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition";
+            }
+        }
 
         async function initThread() {
             try {
@@ -65,7 +98,6 @@
                         targetId = decoded.data;
                     }
                 } else if (idParam) {
-                    // Controllo se l'id passato in ?id= è direttamente un bech32 (es. note1...) o un hex
                     if (idParam.startsWith('note1')) {
                         const decoded = nip19.decode(idParam);
                         if (decoded.type === 'note') targetId = decoded.data;
@@ -94,35 +126,111 @@
 
                 const mainEvent = mainEvents[0];
 
-                // 2. Scarica le risposte che fanno riferimento a questo ID (tag 'e')
-                const replyEvents = await pool.querySync(queryRelays, {
+                // 2. Scarica le note correlate tramite tag 'e' o tag 'q'
+                const relatedEvents = await pool.querySync(queryRelays, {
                     kinds: [1],
                     '#e': [targetId]
                 });
 
-                // Ordina le risposte per data (cronologico)
-                const sortedReplies = replyEvents.sort((a, b) => a.created_at - b.created_at);
+                // Separiamo le note in Thread (risposte dirette/albero) e Citazioni/Menzioni (q tag o e tag con marker mention)
+                let directRepliesEvents = [];
+                let quoteEvents = [];
+
+                relatedEvents.forEach(ev => {
+                    const isQuote = ev.tags.some(t => (t[0] === 'q' && t[1] === targetId) || (t[0] === 'e' && t[1] === targetId && t[3] === 'mention'));
+                    if (isQuote) {
+                        quoteEvents.push(ev);
+                    } else {
+                        directRepliesEvents.push(ev);
+                    }
+                });
+
+                // Per le risposte dirette, facciamo il fetch ricorsivo per costruire l'albero completo
+                let allThreadEventsMap = new Map();
+                allThreadEventsMap.set(targetId, mainEvent);
+                directRepliesEvents.forEach(ev => allThreadEventsMap.set(ev.id, ev));
+
+                let currentParentIds = directRepliesEvents.map(ev => ev.id);
+                for (let depth = 0; depth < 3; depth++) {
+                    if (currentParentIds.length === 0) break;
+                    const fetched = await pool.querySync(queryRelays, {
+                        kinds: [1],
+                        '#e': currentParentIds
+                    });
+
+                    let newParentIds = [];
+                    fetched.forEach(ev => {
+                        if (!allThreadEventsMap.has(ev.id)) {
+                            allThreadEventsMap.set(ev.id, ev);
+                            newParentIds.push(ev.id);
+                        }
+                    });
+                    currentParentIds = newParentIds;
+                }
+
+                // Costruisce la mappa dei figli per il thread
+                const childrenMap = new Map();
+                allThreadEventsMap.forEach((ev, id) => {
+                    if (id === targetId) return;
+                    // Escludiamo eventuali quote finite qui dentro per errore
+                    const isQ = ev.tags.some(t => (t[0] === 'q' && t[1] === targetId) || (t[0] === 'e' && t[1] === targetId && t[3] === 'mention'));
+                    if (isQ) return;
+
+                    const parentId = getParentId(ev, targetId);
+                    if (!childrenMap.has(parentId)) childrenMap.set(parentId, []);
+                    childrenMap.get(parentId).push(ev);
+                });
+
+                childrenMap.forEach(arr => arr.sort((a, b) => a.created_at - b.created_at));
+
+                function flattenTree(parentId, currentLevel, result = []) {
+                    const children = childrenMap.get(parentId) || [];
+                    children.forEach(child => {
+                        const cappedLevel = Math.min(currentLevel, 6);
+                        result.push({ event: child, level: cappedLevel });
+                        flattenTree(child.id, currentLevel + 1, result);
+                    });
+                    return result;
+                }
+
+                const threadedReplies = flattenTree(targetId, 1);
+                quoteEvents.sort((a, b) => b.created_at - a.created_at);
 
                 // Renderizza la nota principale
-                renderNoteCard('mainNoteCard', mainEvent, true);
+                renderNoteCard('mainNoteCard', mainEvent, true, 0);
 
-                // Renderizza le risposte
+                // Renderizza le risposte strutturate
                 const repliesListDiv = document.getElementById('repliesList');
                 repliesListDiv.innerHTML = '';
-                
-                if (sortedReplies.length === 0) {
+                if (threadedReplies.length === 0) {
                     repliesListDiv.innerHTML = `<p class="text-gray-500 text-sm italic">Nessuna risposta trovata per questa nota.</p>`;
                 } else {
-                    sortedReplies.forEach(reply => {
+                    threadedReplies.forEach(item => {
                         const wrapper = document.createElement('div');
-                        renderNoteCardIntoElement(wrapper, reply, false);
+                        renderNoteCardIntoElement(wrapper, item.event, false, item.level);
                         repliesListDiv.appendChild(wrapper);
                     });
                 }
 
-                document.getElementById('replyCount').innerText = sortedReplies.length;
+                // Renderizza le citazioni / menzioni
+                const quotesListDiv = document.getElementById('quotesList');
+                quotesListDiv.innerHTML = '';
+                if (quoteEvents.length === 0) {
+                    quotesListDiv.innerHTML = `<p class="text-gray-500 text-sm italic">Nessuna citazione o menzione trovata per questa nota.</p>`;
+                } else {
+                    quoteEvents.forEach(quote => {
+                        const wrapper = document.createElement('div');
+                        renderNoteCardIntoElement(wrapper, quote, false, 1, true);
+                        quotesListDiv.appendChild(wrapper);
+                    });
+                }
+
+                document.getElementById('replyCountTab').innerText = threadedReplies.length;
+                document.getElementById('quoteCountTab').innerText = quoteEvents.length;
+
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('mainNoteContainer').classList.remove('hidden');
+                document.getElementById('tabsContainer').classList.remove('hidden');
                 document.getElementById('repliesContainer').classList.remove('hidden');
 
             } catch (err) {
@@ -131,12 +239,27 @@
             }
         }
 
-        function renderNoteCard(containerId, event, isMain) {
-            const container = document.getElementById(containerId);
-            renderNoteCardIntoElement(container, event, isMain);
+        function getParentId(event, rootId) {
+            const eTags = event.tags.filter(t => t[0] === 'e');
+            if (eTags.length === 0) return rootId;
+
+            const replyTag = eTags.find(t => t[3] === 'reply');
+            if (replyTag) return replyTag[1];
+
+            if (eTags.length > 1) {
+                const lastE = eTags[eTags.length - 1][1];
+                if (lastE !== rootId) return lastE;
+            }
+
+            return eTags[0][1] || rootId;
         }
 
-        function renderNoteCardIntoElement(container, event, isMain) {
+        function renderNoteCard(containerId, event, isMain, level) {
+            const container = document.getElementById(containerId);
+            renderNoteCardIntoElement(container, event, isMain, level, false);
+        }
+
+        function renderNoteCardIntoElement(container, event, isMain, level, isQuoteSection = false) {
             let npub = '';
             let profileLink = '#';
             let profilePageLink = '#';
@@ -146,13 +269,36 @@
                 profilePageLink = `profile.html?npub=${npub}`;
             } catch(e) {}
 
-            const formattedContent = escapeHtml(event.content);
+            const formattedContent = parseContent(event.content);
             const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
             const dateStr = new Date(event.created_at * 1000).toLocaleString();
 
-            container.className = isMain 
-                ? "bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl"
-                : "bg-gray-800/80 border border-gray-700 p-4 rounded-xl shadow-md";
+            let indentClass = '';
+            if (!isMain && !isQuoteSection) {
+                const indentClasses = [
+                    '',
+                    'ml-0', 
+                    'ml-4 md:ml-8 border-l-2 border-purple-500/30 pl-3',
+                    'ml-8 md:ml-16 border-l-2 border-purple-500/30 pl-3',
+                    'ml-12 md:ml-24 border-l-2 border-purple-500/30 pl-3',
+                    'ml-16 md:ml-32 border-l-2 border-purple-500/30 pl-3',
+                    'ml-20 md:ml-40 border-l-2 border-purple-500/30 pl-3'
+                ];
+                indentClass = indentClasses[level] || indentClasses[6];
+            }
+
+            container.className = `${isMain 
+                ? "bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl" 
+                : "bg-gray-800/80 border border-gray-700 p-4 rounded-xl shadow-md"} ${indentClass} transition-all`;
+
+            let badgeHtml = '';
+            if (!isMain) {
+                if (isQuoteSection) {
+                    badgeHtml = `<span class="bg-blue-900/60 text-blue-300 text-[10px] px-2 py-0.5 rounded-full border border-blue-500/30">Citazione / Quoting</span>`;
+                } else {
+                    badgeHtml = `<span class="bg-purple-900/60 text-purple-300 text-[10px] px-2 py-0.5 rounded-full border border-purple-500/30">Livello ${level}</span>`;
+                }
+            }
 
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-3">
@@ -162,17 +308,43 @@
                         </a>
                         <a href="${profileLink}" target="_blank" class="text-[10px] text-gray-500 hover:underline">(Coracle)</a>
                     </div>
-                    <span class="text-xs text-gray-500">${dateStr}</span>
+                    <div class="flex items-center gap-2">
+                        ${badgeHtml}
+                        <span class="text-xs text-gray-500">${dateStr}</span>
+                    </div>
                 </div>
                 <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
             `;
         }
 
-        function escapeHtml(text) {
-            let parsed = text.replace(/https?:\/\/[^\s]+/g, (url) => {
+        function parseContent(text) {
+            let parsed = text.replace(/nostr:(npub1[a-z0-9]+|note1[a-z0-9]+|nevent1[a-z0-9]+)/g, (match, entity) => {
+                try {
+                    if (entity.startsWith('npub1')) {
+                        return `<a href="profile.html?npub=${entity}" class="text-purple-400 font-semibold hover:underline">@${entity.substring(0, 10)}...</a>`;
+                    } else if (entity.startsWith('note1') || entity.startsWith('nevent1')) {
+                        return `<a href="?id=${entity}" class="text-purple-400 font-semibold hover:underline">[Nota collegata]</a>`;
+                    }
+                } catch (e) {}
+                return match;
+            });
+
+            parsed = parsed.replace(/https?:\/\/[^\s]+/g, (url) => {
                 let clean = url.replace(/[.,!?)]$/, '');
+                
+                if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
+                    return `<br><img src="${clean}" class="mt-2 max-h-80 rounded-lg object-cover border border-gray-700" loading="lazy"><br>`;
+                }
+                if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
+                    return `<br><video controls class="mt-2 max-h-80 w-full rounded-lg"><source src="${clean}"></video><br>`;
+                }
+                if (/\.(mp3|ogg|wav)(\?.*)?$/i.test(clean)) {
+                    return `<br><audio controls class="mt-2 w-full"><source src="${clean}"></audio><br>`;
+                }
+
                 return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${url}</a>`;
             });
+
             return parsed;
         }
 
