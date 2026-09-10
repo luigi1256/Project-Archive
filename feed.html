@@ -300,9 +300,14 @@
                 if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
                     label = '👤 ' + label;
                     url = `profile.html?npub=${entity}`;
-                } else {
-                    label = '💬 ' + label;
-                    url= `note.html?nevent=${entity}`;
+                } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+                label = '💬 ' + label;
+                url = `note.html?nevent=${entity}`;   
+                                
+                
+                } else if (entity.startsWith('naddr')) {
+                    label = '📚 ' + label;
+                    url = `modfile.html?naddr=${entity}`;
                 }
                 return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
             });

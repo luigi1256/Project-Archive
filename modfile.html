@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nostr Smart Feed - Naddr Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <header class="max-w-5xl mx-auto pt-16 pb-8 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-purple-400 mb-4" id="feedTitle">
+            Smart Author Feed (Naddr)
+        </h1>
+        <p class="text-gray-400 text-lg max-w-2xl mx-auto" id="statusText">
+            Lettura dei parametri naddr e analisi della risorsa in corso...
+        </p>
+    </header>
+
+    <section class="max-w-5xl mx-auto px-4 mb-6">
+        <div class="bg-gray-800 p-4 rounded-xl flex flex-col md:flex-row justify-between items-center shadow-lg gap-4">
+            <div id="relayStats" class="text-sm text-gray-300">
+            </div>
+            <a href="index.html" class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition text-sm">← Torna alle Risorse</a>
+        </div>
+    </section>
+
+    <main class="max-w-5xl mx-auto px-4 pb-24">
+        <div id="loading" class="text-center text-gray-400 text-lg py-12">Caricamento in corso...</div>
+
+        <div id="feedGridRich" class="space-y-6"></div>
+    </main>
+
+    <script type="module">
+        import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+        import { marked } from 'https://cdn.jsdelivr.net/npm/marked/+esm'
+        import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify/+esm'
+
+        const DEFAULT_RELAYS = [
+            'wss://relay.damus.io',
+            'wss://nos.lol',
+            'wss://nostr.stakey.net',
+            'wss://relay.ditto.pub'
+        ];
+
+        const TAB_ACTIVE = "px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer";
+        const TAB_IDLE = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer";
+
+        const pool = new SimplePool();
+
+        window.switchTab = function(tabName) {
+            const richBtn = document.getElementById('tabRichBtn');
+            const textBtn = document.getElementById('tabTextBtn');
+            const gridRich = document.getElementById('feedGridRich');
+            const gridText = document.getElementById('feedGridText');
+
+            if (tabName === 'rich') {
+                richBtn.className = TAB_ACTIVE;
+                textBtn.className = TAB_IDLE;
+                gridRich.classList.remove('hidden');
+                gridText.classList.add('hidden');
+            } else {
+                textBtn.className = TAB_ACTIVE;
+                richBtn.className = TAB_IDLE;
+                gridText.classList.remove('hidden');
+                gridRich.classList.add('hidden');
+            }
+        }
+
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            loading.innerText = message;
+            loading.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        function updateRelayStats(relayCount, relayList) {
+            const el = document.getElementById('relayStats');
+            const short = relayList.map(r => r.replace('wss://', '')).join(' · ');
+            el.innerHTML = `📡 <strong>${relayCount}</strong> relay interrogati: <span class="text-gray-400 text-xs">${escapeHtml(short)}</span>`;
+        }
+
+        async function initSmartFeed() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const naddrParam = urlParams.get('naddr');
+                const neventParam = urlParams.get('nevent');
+                const idParam = urlParams.get('id');
+
+                // Relay configurabili via ?relays=wss://...,wss://...
+                const customRelays = (urlParams.get('relays') || '')
+                    .split(',')
+                    .map(r => r.trim())
+                    .filter(r => r.startsWith('wss://') || r.startsWith('ws://'));
+                const baseRelays = customRelays.length > 0 ? customRelays : DEFAULT_RELAYS;
+
+                let targetEvent = null;
+                let queryRelays = baseRelays;
+
+                if (naddrParam) {
+                    const decoded = nip19.decode(naddrParam);
+                    if (decoded.type === 'naddr') {
+                        const { kind, pubkey, identifier, relays } = decoded.data;
+                        queryRelays = relays && relays.length > 0
+                            ? [...new Set([...relays, ...baseRelays])]
+                            : baseRelays;
+
+                        updateRelayStats(queryRelays.length, queryRelays);
+
+                        // Prendiamo più eventi e teniamo il più recente (i replaceable
+                        // non garantiscono l'ordine di arrivo dai relay)
+                        const events = await pool.querySync(queryRelays, {
+                            authors: [pubkey],
+                            kinds: [kind],
+                            '#d': [identifier],
+                            limit: 10
+                        });
+                        events.sort((a, b) => b.created_at - a.created_at);
+                        if (events.length > 0) targetEvent = events[0];
+
+                        // Profilo autore (kind 0), non blocca il rendering in caso di fallimento
+                        loadAuthorProfile(pubkey, queryRelays);
+                    }
+                } else if (neventParam) {
+                    const decoded = nip19.decode(neventParam);
+                    const eventId = decoded.type === 'nevent' ? decoded.data.id : decoded.data;
+                    const events = await pool.querySync(baseRelays, { ids: [eventId] });
+                    if (events.length > 0) targetEvent = events[0];
+                } else if (idParam) {
+                    const events = await pool.querySync(baseRelays, { ids: [idParam] });
+                    if (events.length > 0) targetEvent = events[0];
+                }
+
+                if (!targetEvent) {
+                    showError("Nessun evento o risorsa valida specificata nell'URL (verifica il parametro naddr).");
+                    return;
+                }
+
+                if (targetEvent.kind === 30023) {
+                    document.getElementById('feedTitle').innerText = extractTagValue(targetEvent, 'title') || "Articolo Nostr";
+                    document.getElementById('statusText').innerText = extractTagValue(targetEvent, 'summary') || "Contenuto Long-Form";
+
+                    const gridRich = document.getElementById('feedGridRich');
+                    gridRich.innerHTML = renderArticleContent(targetEvent);
+
+                    hideLoading();
+                    gridRich.classList.remove('hidden');
+                    return;
+                }
+
+                // Caso generico: JSON grezzo
+                document.getElementById('feedTitle').innerText = `Oggetto Grezzo (Kind ${targetEvent.kind})`;
+                document.getElementById('statusText').innerText = "Visualizzazione della struttura JSON dell'evento.";
+
+                const gridRich = document.getElementById('feedGridRich');
+                gridRich.innerHTML = `
+                    <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-md space-y-4">
+                        <h2 class="text-xl font-bold text-purple-400">Struttura JSON dell'Evento</h2>
+                        <p class="text-xs text-gray-400">Questo kind non è gestito come articolo formattato. Ecco i dati grezzi prelevati dalla rete:</p>
+                        <pre class="bg-gray-950 p-4 rounded-lg overflow-x-auto text-xs text-green-400 font-mono"><code>${escapeHtml(JSON.stringify(targetEvent, null, 2))}</code></pre>
+                    </div>
+                `;
+
+                hideLoading();
+                gridRich.classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                showError("Errore durante il recupero della risorsa da naddr.");
+            }
+        }
+
+        async function loadAuthorProfile(pubkey, relays) {
+            try {
+                const npub = nip19.npubEncode(pubkey);
+                const profileEvents = await pool.querySync(relays, {
+                    authors: [pubkey],
+                    kinds: [0],
+                    limit: 5
+                });
+                if (profileEvents.length === 0) return;
+                profileEvents.sort((a, b) => b.created_at - a.created_at);
+                const meta = JSON.parse(profileEvents[0].content || '{}');
+                const name = meta.display_name || meta.name || npub.substring(0, 12) + '...';
+
+                // Inserisce la byline sotto lo status, senza bloccare nulla
+                const statusEl = document.getElementById('statusText');
+                const byline = document.createElement('div');
+                byline.className = 'mt-2 text-sm text-gray-500';
+                byline.innerHTML = `👤 Autore: <a href="profile.html?npub=${npub}" target="_blank" class="text-purple-400 hover:underline">${escapeHtml(name)}</a>`;
+                statusText.insertAdjacentElement('afterend', byline);
+            } catch (e) {
+                console.warn('Profilo autore non disponibile:', e);
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, "&amp;")
+                              .replace(/</g, "&lt;")
+                              .replace(/>/g, "&gt;")
+                              .replace(/"/g, "&quot;")
+                              .replace(/'/g, "&#039;");
+        }
+
+        function parseNostrContent(rawContent) {
+            // PRIMA escape del testo, POI trasformazioni sui placeholder — così
+            // niente di ciò che arriva dall'evento può generare HTML arbitrario
+            let safe = escapeHtml(rawContent);
+
+            safe = safe.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+                let url = '#';
+                let label = escapeHtml(entity.substring(0, 10) + '...');
+                if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+                    label = '👤 ' + label;
+                    url = `profile.html?npub=${entity}`;
+                } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+                    label = '💬 ' + label;
+                    url = `note.html?nevent=${entity}`;
+                } else if (entity.startsWith('naddr')) {
+                    label = '📚 ' + label;
+                    url = `modfile.html?naddr=${entity}`;
+                }
+                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
+            });
+
+            // Regex URL: scarta punteggiatura finale ma conserva ) interne
+            const urlRegex = /(https?:\/\/[^\s<>"]+[^\s<>"),.;:!?])/g;
+            safe = safe.replace(urlRegex, (rawUrl) => {
+                let cleanUrl = rawUrl;
+                // Solo http/https, nessun carattere di quoting pericoloso nell'href
+                if (!/^https?:\/\//i.test(cleanUrl) || /["'<>()]/.test(cleanUrl.replace(/[()]/g, m => ''))) {
+                    return rawUrl;
+                }
+
+                let lower = cleanUrl.toLowerCase();
+                let typeBadge = "🔗 Link";
+                let badgeClass = "bg-blue-950 text-blue-300 border-blue-800";
+
+                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
+                    typeBadge = "🖼️ Foto";
+                    badgeClass = "bg-emerald-950 text-emerald-300 border-emerald-800";
+                } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
+                    typeBadge = "🎬 Video";
+                    badgeClass = "bg-amber-950 text-amber-300 border-amber-800";
+                }
+
+                let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
+                if (displayUrl.length > 35) {
+                    displayUrl = displayUrl.substring(0, 32) + '...';
+                }
+
+                return `<a href="${escapeHtml(cleanUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2 py-0.5 my-1 rounded text-xs border ${badgeClass} hover:underline font-medium"><span class="opacity-80">${typeBadge}</span> <span>${escapeHtml(displayUrl)}</span></a>`;
+            });
+
+            return safe;
+        }
+
+        function sanitizeMarkdown(md) {
+            const rawHtml = marked.parse(md, { breaks: true });
+            // DOMPurify rimuove script, handler di eventi e protocolli pericolosi
+            return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+        }
+
+        initSmartFeed();
+
+        function extractTagValue(event, tagName) {
+            const tag = event.tags.find(t => t[0] === tagName);
+            return tag ? tag[1] : null;
+        }
+
+        function renderArticleContent(event) {
+            const title = escapeHtml(extractTagValue(event, 'title') || 'Senza Titolo');
+            const image = extractTagValue(event, 'image');
+            const summary = extractTagValue(event, 'summary');
+            const publishedAt = new Date(event.created_at * 1000).toLocaleDateString();
+
+            // Valida l'immagine: solo http(s), fallback al body senza immagine
+            let imgTag = '';
+            if (image) {
+                try {
+                    const u = new URL(image);
+                    if (u.protocol === 'https:' || u.protocol === 'http:') {
+                        imgTag = `<div class="rounded-xl overflow-hidden max-h-96 bg-gray-900 flex justify-center"><img src="${escapeHtml(u.href)}" alt="${escapeHtml(extractTagValue(event, 'title') || '')}" class="object-cover w-full"></div>`;
+                    }
+                } catch { /* URL invalido: ignora l'immagine */ }
+            }
+
+            // Kind 30023 è markdown: parsing + sanitizzazione (gestisce anche ![](url))
+            const formattedBody = sanitizeMarkdown(event.content || '');
+
+            return `
+                <article class="bg-gray-800 border border-gray-700 p-6 md:p-10 rounded-2xl shadow-xl space-y-6">
+                    <header class="space-y-4 border-b border-gray-700 pb-6">
+                        <div class="flex justify-between items-center text-xs text-gray-400">
+                            <span>Pubblicato il ${escapeHtml(publishedAt)}</span>
+                            <span class="bg-purple-950 text-purple-300 border border-purple-800 px-2 py-0.5 rounded font-mono">Kind 30023</span>
+                        </div>
+                        <h1 class="text-3xl md:text-4xl font-extrabold text-white leading-tight">${title}</h1>
+                        ${summary ? `<p class="text-gray-300 text-base italic">${escapeHtml(summary)}</p>` : ''}
+                    </header>
+                    ${imgTag}
+                    <div class="text-gray-200 prose prose-invert max-w-none text-base leading-relaxed space-y-4">${formattedBody}</div>
+                </article>
+            `;
+        }
+    </script>
+</body>
+</html>
