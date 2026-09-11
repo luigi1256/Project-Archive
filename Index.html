@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <title>Nostrools</title>
   <style>
-  
+
     :root {
-        --bg-main: #0f172a;       /* Sfondo scuro profondo (slate-900) */
-        --bg-card: #1e293b;       /* Sfondo bottoni (slate-800) */
-        --bg-hover: #334155;      /* Colore hover (slate-700) */
-        --text-main: #f8fafc;     /* Testo principale quasi bianco */
-        --text-muted: #94a3b8;    /* Testo secondario */
-        --accent: #a855f7;        /* Viola Nostr (purple-500) */
+        --bg-main: #0f172a;
+        --bg-card: #1e293b;
+        --bg-hover: #334155;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --accent: #a855f7;
         --font: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
@@ -23,7 +23,6 @@
         margin: 0;
     }
 
-    /* 2. STILIZZAZIONE DELLA CLASSE 'TESTO' CHE HAI USATO */
     .testo {
         font-family: var(--font);
         color: var(--text-main);
@@ -36,35 +35,129 @@
         transition: all 0.2s ease;
     }
 
-    /* Effetti al passaggio del mouse sui bottoni */
     button.testo:hover {
         background-color: var(--bg-hover);
         border-color: var(--accent);
-        transform: translateY(-2px); /* Piccolo effetto sollevamento */
+        transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
     }
 
-    /* 3. DETTAGLI SPECIFICI DEI COMPONENTI */
-    
-    /* Il bottone in alto che torna all'Hub */
-    .anno-selector button.testo {
-        background: linear-gradient(135deg, #6b21a8, var(--accent));
-        border: none;
+    /* ====== SEZIONE INIZIALE ====== */
+
+    .header-buttons {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
         margin-bottom: 20px;
     }
-    .anno-selector button.testo a {
+
+    .header-buttons > button.testo {
+        width: 220px;
+        height: 100px;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(135deg, #6b21a8, var(--accent)) !important;
+        border: none;
+    }
+
+    .header-buttons a {
         color: white;
         text-decoration: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-direction: column;
-        gap: 10px;
         width: 100%;
         height: 100%;
     }
 
-    /* Il titolo "List of folders" */
+    /* ====== 3° ELEMENTO: scritta + 3 social orizzontali ====== */
+
+    .social-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .social-group .social-label {
+        background: none;
+        border: none;
+        cursor: default;
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .social-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .social-buttons button.testo {
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .social-group a {
+        color: var(--text-main);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Lettera stilizzata */
+    .social-letter {
+        font-size: 1.6rem;
+        font-weight: 800;
+        font-style: italic;
+        letter-spacing: 0;
+    }
+
+    /* ====== INDICE ANNO ====== */
+
+    .anno-selector {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .anno-selector label.testo {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.4rem;
+        margin-right: 14px;
+    }
+
+    .anno-selector select.testo {
+        background-color: var(--bg-card);
+        border: 2px solid var(--bg-hover);
+        border-radius: 10px;
+        padding: 12px 18px !important;
+        font-size: 1.4rem;
+        font-weight: 700;
+        width: 200px;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .anno-selector select.testo:focus {
+        border-color: var(--accent);
+    }
+
+    /* ====== TITOLO E GRIGLIA MESI ====== */
+
     h1.testo {
         background: none;
         border: none;
@@ -75,74 +168,88 @@
         color: var(--text-main);
     }
 
-    /* Il menu a tendina dell'anno */
-    select.testo {
-        background-color: var(--bg-card);
-        border: 2px solid var(--bg-hover);
-        padding: 8px 12px !important;
-        border-radius: 8px;
-        outline: none;
-    }
-    select.testo:focus {
-        border-color: var(--accent);
-    }
-
-    /* Label "Select Year" */
-    label.testo {
-        background: none;
-        border: none;
-        color: var(--text-muted);
-    }
-
-    .mesi-grid {
-    grid-template-columns: repeat(4, 1fr);
-    }
-
-    
     @media (max-width: 600px) {
-        /* Trasforma la griglia da 4 colonne a 2 colonne sui telefoni */
+        .header-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        .header-buttons > button.testo {
+            width: 90% !important;
+        }
         div[style*="grid-template-columns"] {
             grid-template-columns: repeat(2, 1fr) !important;
         }
         .mesi-grid button.testo {
-        height: 110px !important; /* Aumenta l'altezza su mobile */
-    }
-
-        .anno-selector button.testo {
-            width: 90% !important; /* Più largo su mobile */
+            height: 110px !important;
         }
     }
-    
+
 </style>
 </head>
-<body>   
+<body>
 
-<div class="anno-selector" style="text-align: center; margin-bottom: 30px;">
-  <button class="testo" style="width: 60%; height: 100px;">
-    <a href="test_landing_page.html" target="_blank">Nostr Resource Hub</a></button> 
-  <b><h1 class="space testo">List of folders</h1></b>
+<!-- ====== PARTE INIZIALE: 3 BOTTONI ====== -->
+<div class="header-buttons">
+
   
+  <button class="testo btn-gradient">
+    <a href="test_landing_page.html" target="_blank">Nostr Resource Hub</a>
+  </button>
 
-  <label for="select-anno" class="testo" style="font-size: 1.2rem; margin-right: 10px;">Select Year:</label>
-  <select id="select-anno" class="testo" style="padding: 10px; font-size: 1.1rem; width: 150px;" onchange="aggiornaAnno()">
-    <option value="2025" selected>2025</option>
-    <option value="2026">2026</option>
+ 
+  <button class="testo">
+    <a href="https://formstr.app/f/naddr1qvzqqqr4mqpzqmu4jjxdtnzzpkhrau3f66c3yy5f7jlszhcgjmvyzsrr3q9u9qzvqythwumn8ghj7mn0wd68ytnnw3skkete9ehx2ap0qyt8wumn8ghj7ur4wfcxcetjv4kxz7fwvdhk6tcpr4mhxue69uhkummnw3ez6vp39eukz6mfdphkumn99e3k7mf0qythwumn8ghj7un9d3shjtnswf5k6ctv9ehx2ap0qyxhwumn8ghj7mn0wvhxcmmvqyw8wumn8ghj7mn0wd68ytfsxyh8jcttd95x7mnwv5hxxmmdqyv8wumn8ghj7un9d3shjtnndehhyapwwdhkx6tpdsq3zamnwvaz7tmwdaehgu3jxyhxxmmdqqrygvt389cx2z3prf7?viewKey=64ec295c73a9836a77da455ea65b912968cd66d6bea5f9e7089481f17598359b" target="_blank">Feedback Form</a>
+  </button>
+
+ 
+  <div class="social-group">
+    <div class="testo social-label" style="background:none; border:none; cursor:default;">Social: </div>
+    <div class="social-buttons">
+
+      <!-- Nostr: N -->
+      <button class="testo" title="Nostr">
+        <a href="profile.html?npub=npub1ty3ftnetpxnlj42lgwkmwdxta69gfm5f9mfljvmwdgymvsf6pkuswhxq4p" target="_blank">
+          <span class="social-letter" style="color:#a855f7;">N</span>
+        </a>
+      </button>
+
+      
+      <button class="testo" title="Mastodon">
+        <a href="https://mastodon.uno/@il_Lost_" target="_blank">
+          <span class="social-letter" style="color:#8b8cf8;">M</span>
+        </a>
+      </button>
+
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ====== INDICE DELL'ANNO ====== -->
+<div style="text-align: center; margin-bottom: 30px;">
+  <label for="select-anno" class="testo" style="padding: 12px 16px; font-size: 1.4rem; margin-right: 12px;">Select Year:</label>
+  <select id="select-anno" class="testo" style="padding: 12px 16px; font-size: 1.4rem; width: 200px;" onchange="aggiornaAnno()">
+    <option value="2025">2025</option>
+    <option value="2026" selected>2026</option>
     <option value="2027">2027</option>
   </select>
 </div>
 
+<!-- ====== LIST OF FOLDERS (MESI) ====== -->
 <div style="max-width: 800px; margin: 0 auto; padding: 0 15px; margin-bottom: 40px;">
-  <div class="mesi-grid" style="display: grid; gap: 15px;">
+  <h1 class="testo" style="text-align:center;">List of folders</h1>
+  <div class="mesi-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('Jan')">Jan</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('February')">February</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('March')">March</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('April')">April</button>
-    
+
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('May')">May</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('June')">June</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('July')">July</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('August')">August</button>
-    
+
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('September')">September</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('October')">October</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('November')">November</button>
@@ -151,21 +258,18 @@
 </div>
 
 <script>
-    // L'anno iniziale impostato di default
-    let annoSelezionato = "2025";
+    // Anno iniziale di default (per la navigazione dei mesi)
+    let annoSelezionato = "2026";
 
-    // Funzione che intercetta il cambio della tendina
+    // Intercetta il cambio della tendina dell'anno
     function aggiornaAnno() {
         const select = document.getElementById("select-anno");
         annoSelezionato = select.value;
     }
 
-    // Funzione che reindirizza al file locale corretto
+    // Reindirizza al file locale del mese selezionato
     function apriFileMese(mese) {
-        // Costruisce la stringa del percorso, ad esempio: "2025/Jan/index.html"
         const percorsoDestinazione = annoSelezionato + "/" + mese + "/index.html";
-        
-        // Apre la pagina del mese nella stessa scheda del browser
         window.location.href = percorsoDestinazione;
     }
 </script>

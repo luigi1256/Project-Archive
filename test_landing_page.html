@@ -137,7 +137,7 @@
                             identifier: identifier,
                             relays: ['wss://relay.damus.io', 'wss://nos.lol'] // I tuoi relay di riferimento
                         });
-                        link = `https://njump.me/${naddr}`;
+                        link = `modfile.html?naddr=${naddr}`;
                         other_link = `https://nostr.ae/${naddr}`;
                         
 
@@ -178,6 +178,36 @@
                     other_link=`https://yumyu.me/?url=${dTag[1]}`;
                     title = title ? title : dTag[1];
                 }}
+            if (event.kind === 30004) {
+                badgeText = 'List Articles';
+                badgeColor = 'bg-green-900 text-green-300';
+                const summaryTag = event.tags.find(t => t[0] === 'summary');
+                if (summaryTag) description = summaryTag[1];
+                const dTag = event.tags.find(t => t[0] === 'd');
+                const identifier = dTag ? dTag[1] : '';
+                try {
+                    const naddr = nip19.naddrEncode({
+                        kind: event.kind,
+                        pubkey: event.pubkey,
+                        identifier: identifier,
+                        relays: ['wss://relay.damus.io', 'wss://nos.lol'] // I tuoi relay di riferimento
+                    });
+                    link = `modfile.html?naddr=${naddr}`;
+                    other_link = `https://nostr.ae/${naddr}`;
+
+                } catch (e) {
+                    console.error("Errore nella generazione dell'naddr", e);
+                    link = `#`;
+                    other_link = `#`;
+                }
+            }
+            
+            
+
+            
+            
+            
+            
                 
 
                 const card = `
