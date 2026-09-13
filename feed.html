@@ -274,6 +274,13 @@
                     profileLink = `profile.html?npub=${npub}`;
                 } catch(e) {}
 
+                let nevent = '';
+                let noteLink = '#';
+                try {
+                    nevent = nip19.neventEncode({ id: event.id });
+                    noteLink = `note.html?nevent=${nevent}`;
+                } catch(e) {}
+
                 const formattedContent = parseNostrContent(event.content);
                 const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
 
@@ -283,6 +290,12 @@
                             <a href="${profileLink}" target="_blank" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition flex items-center gap-1">
                                 👤 ${shortPub}
                             </a>
+                            <div class="flex items-center gap-2">
+                                <a href="${noteLink}" target="_blank" class="text-gray-400 hover:text-purple-300 bg-gray-900/60 border border-gray-700 px-2 py-0.5 rounded transition flex items-center gap-1 font-mono">
+                                    📝 Open Note
+                                </a>
+                                <span class="text-gray-600"></span>
+                            </div>
                             <span class="text-xs text-gray-500">${new Date(event.created_at * 1000).toLocaleString()}</span>
                         </div>
                         <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
