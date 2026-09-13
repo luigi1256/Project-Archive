@@ -42,8 +42,6 @@
         box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
     }
 
-    /* ====== SEZIONE INIZIALE ====== */
-
     .header-buttons {
         display: flex;
         justify-content: center;
@@ -73,7 +71,6 @@
         height: 100%;
     }
 
-    /* ====== 3° ELEMENTO: scritta + 3 social orizzontali ====== */
 
     .social-group {
         display: flex;
@@ -117,15 +114,13 @@
         height: 100%;
     }
 
-    /* Lettera stilizzata */
+    
     .social-letter {
         font-size: 1.6rem;
         font-weight: 800;
         font-style: italic;
         letter-spacing: 0;
     }
-
-    /* ====== INDICE ANNO ====== */
 
     .anno-selector {
         text-align: center;
@@ -156,7 +151,6 @@
         border-color: var(--accent);
     }
 
-    /* ====== TITOLO E GRIGLIA MESI ====== */
 
     h1.testo {
         background: none;
@@ -188,7 +182,6 @@
 </head>
 <body>
 
-<!-- ====== PARTE INIZIALE: 3 BOTTONI ====== -->
 <div class="header-buttons">
 
   
@@ -206,7 +199,7 @@
     <div class="testo social-label" style="background:none; border:none; cursor:default;">Social: </div>
     <div class="social-buttons">
 
-      <!-- Nostr: N -->
+      
       <button class="testo" title="Nostr">
         <a href="profile.html?npub=npub1ty3ftnetpxnlj42lgwkmwdxta69gfm5f9mfljvmwdgymvsf6pkuswhxq4p" target="_blank">
           <span class="social-letter" style="color:#a855f7;">N</span>
@@ -226,19 +219,17 @@
 
 </div>
 
-<!-- ====== INDICE DELL'ANNO ====== -->
-<div style="text-align: center; margin-bottom: 30px;">
-  <label for="select-anno" class="testo" style="padding: 12px 16px; font-size: 1.4rem; margin-right: 12px;">Select Year:</label>
-  <select id="select-anno" class="testo" style="padding: 12px 16px; font-size: 1.4rem; width: 200px;" onchange="aggiornaAnno()">
-    <option value="2025">2025</option>
-    <option value="2026" selected>2026</option>
-    <option value="2027">2027</option>
-  </select>
-</div>
-
-<!-- ====== LIST OF FOLDERS (MESI) ====== -->
 <div style="max-width: 800px; margin: 0 auto; padding: 0 15px; margin-bottom: 40px;">
-  <h1 class="testo" style="text-align:center;">List of folders</h1>
+  <div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
+    <h1 class="testo" style="margin: 0;">List of folders</h1>
+    <label for="select-anno" class="testo" style="padding: 12px 16px; font-size: 1.4rem;">Select Year:</label>
+    <select id="select-anno" class="testo" style="padding: 12px 16px; font-size: 1.4rem; width: 200px;" onchange="aggiornaAnno()">
+      <option value="2025">2025</option>
+      <option value="2026" selected>2026</option>
+      <option value="2027">2027</option>
+    </select>
+  </div>
+
   <div class="mesi-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('Jan')">Jan</button>
     <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('February')">February</button>
