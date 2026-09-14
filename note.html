@@ -318,17 +318,23 @@
         }
 
         function parseContent(text) {
-            let parsed = text.replace(/nostr:(npub1[a-z0-9]+|note1[a-z0-9]+|nevent1[a-z0-9]+)/g, (match, entity) => {
-                try {
-                    if (entity.startsWith('npub1')) {
-                        return `<a href="profile.html?npub=${entity}" class="text-purple-400 font-semibold hover:underline">@${entity.substring(0, 10)}...</a>`;
-                    } else if (entity.startsWith('note1') || entity.startsWith('nevent1')) {
-                        return `<a href="?id=${entity}" class="text-purple-400 font-semibold hover:underline">[Nota collegata]</a>`;
-                    }
-                } catch (e) {}
-                return match;
-            });
-
+            let parsed = text.replace(/nostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[a-z0-9]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+                let url = '#';
+    let label = entity.substring(0, 10) + '...';
+    if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+        label = '👤 ' + label;
+        url = `profile.html?npub=${entity}`;
+    } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+    label = '💬 ' + label;
+    url = `note.html?nevent=${entity}`;   
+                    
+    
+    } else if (entity.startsWith('naddr')) {
+        label = '📚 ' + label;
+        url = `modfile.html?naddr=${entity}`;
+    }
+    return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
+    });
             parsed = parsed.replace(/https?:\/\/[^\s]+/g, (url) => {
                 let clean = url.replace(/[.,!?)]$/, '');
                 

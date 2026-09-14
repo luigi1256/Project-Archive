@@ -292,11 +292,11 @@
                             </a>
                             <div class="flex items-center gap-2">
                                 <a href="${noteLink}" target="_blank" "text-xs text-gray-300 hover:text-purple-300 bg-gray-900/80 border border-gray-700 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5">
-                                    📝 Open Note
+                                    <span class="text-xs text-gray-500">${new Date(event.created_at * 1000).toLocaleString()}</span>
                                 </a>
                                 <span class="text-gray-600"></span>
                             </div>
-                            <span class="text-xs text-gray-500">${new Date(event.created_at * 1000).toLocaleString()}</span>
+                            
                         </div>
                         <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
                     </div>
