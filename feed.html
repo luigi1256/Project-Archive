@@ -161,8 +161,10 @@
                         if (t[0] === 'r' && (!t[2] || t[2] === 'write' || t[2] === '')) {
                             let url = t[1].trim().toLowerCase();
                             if (url.endsWith('/')) url = url.slice(0, -1);
-                            relays.add(url);
-                        }
+                            if (url.startsWith('wss://')) {
+                                relays.add(url);
+                            }
+                                        }
                     });
                     if (relays.size > 0) authorRelaysMap.set(ev.pubkey, relays);
                 });
