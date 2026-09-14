@@ -49,8 +49,7 @@
         const INITIAL_RELAYS = [
             'wss://relay.damus.io',
             'wss://nos.lol',
-            'wss://relay.ditto.pub',
-            'wss://relay.nostr.band'
+            'wss://relay.ditto.pub'
         ];
 
         const pool = new SimplePool();
@@ -254,6 +253,14 @@
             return eTags[0][1] || rootId;
         }
 
+        const KIND_CONFIG = {
+            1111: { label: "Comment (1111)", border: "border-l-4 border-blue-500", badge: "bg-blue-900/80 text-blue-300 border-blue-500/40" },
+            9802: { label: "Highlights (9802)", border: "border-l-4 border-purple-400", badge: "bg-purple-900/80 text-purple-300 border-purple-500/40" },
+            //6:    { label: "Repost", border: "border-l-4 border-green-500", badge: "bg-green-900/80 text-green-300 border-green-500/40" },
+            //16:   { label: "Repost", border: "border-l-4 border-green-500", badge: "bg-green-900/80 text-green-300 border-green-500/40" },
+            //7:    { label: "Reaction", border: "border-l-4 border-pink-500", badge: "bg-pink-900/80 text-pink-300 border-pink-500/40" },
+            9735: { label: "Zap", border: "border-l-4 border-yellow-500", badge: "bg-yellow-900/80 text-yellow-300 border-yellow-500/40" }
+        };
         function renderNoteCard(containerId, event, isMain, level) {
             const container = document.getElementById(containerId);
             renderNoteCardIntoElement(container, event, isMain, level, false);
@@ -286,19 +293,36 @@
                 ];
                 indentClass = indentClasses[level] || indentClasses[6];
             }
+            let kindBorder = '';
+                let kindBadgeHtml = '';
 
+                if (event.kind && event.kind !== 1) {
+                    const config = KIND_CONFIG[event.kind] || { 
+                        label: `Kind ${event.kind}`, 
+                        border: "border-l-4 border-gray-500", 
+                        badge: "bg-gray-700 text-gray-300 border-gray-500/40" 
+                    };
+
+                    kindBorder = config.border;
+                    kindBadgeHtml = `<span class="text-[10px] px-2 py-0.5 rounded-full border font-mono ${config.badge}">${config.label}</span>`;
+                }
+            
             container.className = `${isMain 
                 ? "bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl" 
                 : "bg-gray-800/80 border border-gray-700 p-4 rounded-xl shadow-md"} ${indentClass} transition-all`;
 
             let badgeHtml = '';
             if (!isMain) {
-                if (isQuoteSection) {
-                    badgeHtml = `<span class="bg-blue-900/60 text-blue-300 text-[10px] px-2 py-0.5 rounded-full border border-blue-500/30">Citazione / Quoting</span>`;
-                } else {
-                    badgeHtml = `<span class="bg-purple-900/60 text-purple-300 text-[10px] px-2 py-0.5 rounded-full border border-purple-500/30">Livello ${level}</span>`;
-                }
+        if (isQuoteSection) {
+            badgeHtml = `<span class="bg-blue-900/60 text-blue-300 text-[10px] px-2 py-0.5 rounded-full border border-blue-500/30">Citazione / Quoting</span>`;
+        } else {
+            badgeHtml = `<span class="bg-purple-900/60 text-purple-300 text-[10px] px-2 py-0.5 rounded-full border border-purple-500/30">Livello ${level}</span>`;
+        }
             }
+
+            container.className = `${isMain 
+        ? "bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl" 
+        : `bg-gray-800/80 border border-gray-700 p-4 rounded-xl shadow-md ${kindBorder}`} ${indentClass} transition-all`;
 
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-3">
@@ -308,10 +332,11 @@
                         </a>
                         <a href="${profileLink}" target="_blank" class="text-[10px] text-gray-500 hover:underline">(Coracle)</a>
                     </div>
-                    <div class="flex items-center gap-2">
-                        ${badgeHtml}
-                        <span class="text-xs text-gray-500">${dateStr}</span>
-                    </div>
+                    <div class="flex items-center gap-2 flex-wrap justify-end">
+                ${kindBadgeHtml}
+                ${badgeHtml}
+                <span class="text-xs text-gray-500">${dateStr}</span>
+            </div>
                 </div>
                 <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
             `;
