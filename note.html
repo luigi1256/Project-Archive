@@ -6,40 +6,40 @@
     <title>Nostr Thread & Nota</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans antialiased overflow-x-hidden">
 
-    <header class="max-w-3xl mx-auto pt-12 pb-6 px-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-purple-400">Nostr Thread</h1>
-        <a href="index.html" class="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium hover:bg-gray-600 transition">← Torna Indietro</a>
+    <header class="max-w-3xl mx-auto pt-8 pb-4 px-3 sm:px-4 flex justify-between items-center">
+        <h1 class="text-xl sm:text-2xl font-bold text-purple-400">Nostr Thread</h1>
+        <a href="index.html" class="px-3 py-1.5 bg-gray-700 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-600 transition">← Torna Indietro</a>
     </header>
 
-    <main class="max-w-3xl mx-auto px-4 pb-24">
-        <div id="loading" class="text-center text-gray-400 text-lg py-12">Caricamento nota e thread...</div>
+    <main class="max-w-3xl mx-auto px-3 sm:px-4 pb-24">
+        <div id="loading" class="text-center text-gray-400 text-base sm:text-lg py-12">Caricamento nota e thread...</div>
 
         <!-- Nota Principale -->
-        <div id="mainNoteContainer" class="hidden mb-8">
-            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Nota Principale</h3>
-            <div id="mainNoteCard" class="bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl"></div>
+        <div id="mainNoteContainer" class="hidden mb-6 sm:mb-8">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 sm:mb-3">Nota Principale</h3>
+            <div id="mainNoteCard" class="bg-gray-800 border-2 border-purple-500/50 p-4 sm:p-6 rounded-2xl shadow-xl"></div>
         </div>
 
         <!-- Selettore Tab / Sezioni -->
-        <div id="tabsContainer" class="hidden flex border-b border-gray-700 mb-6">
-            <button id="tabReplies" onclick="switchTab('replies')" class="px-6 py-3 text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition">
+        <div id="tabsContainer" class="hidden flex border-b border-gray-700 mb-6 overflow-x-auto scrollbar-none">
+            <button id="tabReplies" onclick="switchTab('replies')" class="px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap">
                 Thread & Risposte (<span id="replyCountTab">0</span>)
             </button>
-            <button id="tabQuotes" onclick="switchTab('quotes')" class="px-6 py-3 text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition">
+            <button id="tabQuotes" onclick="switchTab('quotes')" class="px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap">
                 Citazioni e Menzioni (<span id="quoteCountTab">0</span>)
             </button>
         </div>
 
         <!-- Sezione Risposte / Thread -->
-        <div id="repliesContainer" class="hidden space-y-4">
-            <div id="repliesList" class="space-y-4"></div>
+        <div id="repliesContainer" class="hidden space-y-3 sm:space-y-4">
+            <div id="repliesList" class="space-y-3 sm:space-y-4"></div>
         </div>
 
         <!-- Sezione Citazioni / Menzioni -->
-        <div id="quotesContainer" class="hidden space-y-4">
-            <div id="quotesList" class="space-y-4"></div>
+        <div id="quotesContainer" class="hidden space-y-3 sm:space-y-4">
+            <div id="quotesList" class="space-y-3 sm:space-y-4"></div>
         </div>
     </main>
 
@@ -63,13 +63,13 @@
             if (tabName === 'replies') {
                 repliesDiv.classList.remove('hidden');
                 quotesDiv.classList.add('hidden');
-                tabReplies.className = "px-6 py-3 text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition";
-                tabQuotes.className = "px-6 py-3 text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition";
+                tabReplies.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap";
+                tabQuotes.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap";
             } else {
                 quotesDiv.classList.remove('hidden');
                 repliesDiv.classList.add('hidden');
-                tabQuotes.className = "px-6 py-3 text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition";
-                tabReplies.className = "px-6 py-3 text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition";
+                tabQuotes.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap";
+                tabReplies.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap";
             }
         }
 
@@ -125,26 +125,37 @@
 
                 const mainEvent = mainEvents[0];
 
-                // 2. Scarica le note correlate tramite tag 'e' o tag 'q'
+                // 2. Scarica le note correlate tramite tag 'e'
                 const relatedEvents = await pool.querySync(queryRelays, {
                     kinds: [1],
                     '#e': [targetId]
                 });
 
-                // Separiamo le note in Thread (risposte dirette/albero) e Citazioni/Menzioni (q tag o e tag con marker mention)
+                function classifyEvent(ev, rootId) {
+                    const eTags = ev.tags.filter(t => t[0] === 'e');
+                    const qTags = ev.tags.filter(t => t[0] === 'q');
+
+                    const isExplicitQuote = qTags.some(t => t[1] === rootId) || eTags.some(t => t[1] === rootId && t[3] === 'mention');
+                    if (isExplicitQuote) return 'quote';
+
+                    const targetsTarget = eTags.some(t => t[1] === rootId);
+                    if (targetsTarget) return 'reply';
+
+                    return 'other';
+                }
+
                 let directRepliesEvents = [];
                 let quoteEvents = [];
 
                 relatedEvents.forEach(ev => {
-                    const isQuote = ev.tags.some(t => (t[0] === 'q' && t[1] === targetId) || (t[0] === 'e' && t[1] === targetId && t[3] === 'mention'));
-                    if (isQuote) {
+                    const type = classifyEvent(ev, targetId);
+                    if (type === 'quote') {
                         quoteEvents.push(ev);
-                    } else {
+                    } else if (type === 'reply') {
                         directRepliesEvents.push(ev);
                     }
                 });
 
-                // Per le risposte dirette, facciamo il fetch ricorsivo per costruire l'albero completo
                 let allThreadEventsMap = new Map();
                 allThreadEventsMap.set(targetId, mainEvent);
                 directRepliesEvents.forEach(ev => allThreadEventsMap.set(ev.id, ev));
@@ -160,20 +171,19 @@
                     let newParentIds = [];
                     fetched.forEach(ev => {
                         if (!allThreadEventsMap.has(ev.id)) {
-                            allThreadEventsMap.set(ev.id, ev);
-                            newParentIds.push(ev.id);
+                            const classification = classifyEvent(ev, targetId);
+                            if (classification !== 'quote') {
+                                allThreadEventsMap.set(ev.id, ev);
+                                newParentIds.push(ev.id);
+                            }
                         }
                     });
                     currentParentIds = newParentIds;
                 }
 
-                // Costruisce la mappa dei figli per il thread
                 const childrenMap = new Map();
                 allThreadEventsMap.forEach((ev, id) => {
                     if (id === targetId) return;
-                    // Escludiamo eventuali quote finite qui dentro per errore
-                    const isQ = ev.tags.some(t => (t[0] === 'q' && t[1] === targetId) || (t[0] === 'e' && t[1] === targetId && t[3] === 'mention'));
-                    if (isQ) return;
 
                     const parentId = getParentId(ev, targetId);
                     if (!childrenMap.has(parentId)) childrenMap.set(parentId, []);
@@ -256,11 +266,9 @@
         const KIND_CONFIG = {
             1111: { label: "Comment (1111)", border: "border-l-4 border-blue-500", badge: "bg-blue-900/80 text-blue-300 border-blue-500/40" },
             9802: { label: "Highlights (9802)", border: "border-l-4 border-purple-400", badge: "bg-purple-900/80 text-purple-300 border-purple-500/40" },
-            //6:    { label: "Repost", border: "border-l-4 border-green-500", badge: "bg-green-900/80 text-green-300 border-green-500/40" },
-            //16:   { label: "Repost", border: "border-l-4 border-green-500", badge: "bg-green-900/80 text-green-300 border-green-500/40" },
-            //7:    { label: "Reaction", border: "border-l-4 border-pink-500", badge: "bg-pink-900/80 text-pink-300 border-pink-500/40" },
             9735: { label: "Zap", border: "border-l-4 border-yellow-500", badge: "bg-yellow-900/80 text-yellow-300 border-yellow-500/40" }
         };
+
         function renderNoteCard(containerId, event, isMain, level) {
             const container = document.getElementById(containerId);
             renderNoteCardIntoElement(container, event, isMain, level, false);
@@ -277,97 +285,126 @@
             } catch(e) {}
 
             const formattedContent = parseContent(event.content);
-            const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
+            const shortPub = npub ? `${npub.substring(0, 8)}...${npub.slice(-4)}` : 'anon';
             const dateStr = new Date(event.created_at * 1000).toLocaleString();
+
+            let replyBadgeHtml = '';
+            const eTags = event.tags.filter(t => t[0] === 'e');
+            if (eTags.length > 0) {
+                const parentTag = eTags.find(t => t[3] === 'reply') || eTags[eTags.length - 1];
+                
+                if (parentTag && parentTag[1]) {
+                    const parentIdHex = parentTag[1];
+                    const parentRelay = parentTag[2] || '';
+                    
+                    let parentIdentifier = parentIdHex;
+                    let relayStatusText = "";
+
+                    try {
+                        if (parentRelay && parentRelay.startsWith('wss://')) {
+                            parentIdentifier = nip19.neventEncode({
+                                id: parentIdHex,
+                                relays: [parentRelay]
+                            });
+                            relayStatusText = `(${parentRelay.replace('wss://', '').split('/')[0]})`;
+                        } else {
+                            parentIdentifier = nip19.noteEncode(parentIdHex);
+                            relayStatusText = "(not found relay)";
+                        }
+                    } catch(e) {
+                        relayStatusText = "(not found relay)";
+                    }
+                    
+                    replyBadgeHtml = `<a href="note.html?nevent=${parentIdentifier}" class="inline-flex items-center gap-1 bg-purple-950/80 text-purple-300 text-[10px] px-2.5 py-1 rounded-full border border-purple-500/40 hover:bg-purple-900 transition font-mono max-w-full truncate">💬 <span>Risposta a ${parentIdHex.substring(0, 4)}...</span> <span class="text-gray-400 italic truncate">${relayStatusText}</span></a>`;
+                }
+            }
 
             let indentClass = '';
             if (!isMain && !isQuoteSection) {
                 const indentClasses = [
                     '',
                     'ml-0', 
-                    'ml-4 md:ml-8 border-l-2 border-purple-500/30 pl-3',
-                    'ml-8 md:ml-16 border-l-2 border-purple-500/30 pl-3',
-                    'ml-12 md:ml-24 border-l-2 border-purple-500/30 pl-3',
-                    'ml-16 md:ml-32 border-l-2 border-purple-500/30 pl-3',
-                    'ml-20 md:ml-40 border-l-2 border-purple-500/30 pl-3'
+                    'ml-2 sm:ml-6 border-l-2 border-purple-500/30 pl-2 sm:pl-3',
+                    'ml-4 sm:ml-12 border-l-2 border-purple-500/30 pl-2 sm:pl-3',
+                    'ml-6 sm:ml-16 border-l-2 border-purple-500/30 pl-2 sm:pl-3',
+                    'ml-8 sm:ml-20 border-l-2 border-purple-500/30 pl-2 sm:pl-3',
+                    'ml-10 sm:ml-24 border-l-2 border-purple-500/30 pl-2 sm:pl-3'
                 ];
                 indentClass = indentClasses[level] || indentClasses[6];
             }
+
             let kindBorder = '';
-                let kindBadgeHtml = '';
+            let kindBadgeHtml = '';
 
-                if (event.kind && event.kind !== 1) {
-                    const config = KIND_CONFIG[event.kind] || { 
-                        label: `Kind ${event.kind}`, 
-                        border: "border-l-4 border-gray-500", 
-                        badge: "bg-gray-700 text-gray-300 border-gray-500/40" 
-                    };
+            if (event.kind && event.kind !== 1) {
+                const config = KIND_CONFIG[event.kind] || { 
+                    label: `Kind ${event.kind}`, 
+                    border: "border-l-4 border-gray-500", 
+                    badge: "bg-gray-700 text-gray-300 border-gray-500/40" 
+                };
 
-                    kindBorder = config.border;
-                    kindBadgeHtml = `<span class="text-[10px] px-2 py-0.5 rounded-full border font-mono ${config.badge}">${config.label}</span>`;
-                }
-            
-            container.className = `${isMain 
-                ? "bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl" 
-                : "bg-gray-800/80 border border-gray-700 p-4 rounded-xl shadow-md"} ${indentClass} transition-all`;
+                kindBorder = config.border;
+                kindBadgeHtml = `<span class="text-[10px] px-2 py-0.5 rounded-full border font-mono ${config.badge}">${config.label}</span>`;
+            }
 
             let badgeHtml = '';
             if (!isMain) {
-        if (isQuoteSection) {
-            badgeHtml = `<span class="bg-blue-900/60 text-blue-300 text-[10px] px-2 py-0.5 rounded-full border border-blue-500/30">Citazione / Quoting</span>`;
-        } else {
-            badgeHtml = `<span class="bg-purple-900/60 text-purple-300 text-[10px] px-2 py-0.5 rounded-full border border-purple-500/30">Livello ${level}</span>`;
-        }
+                if (isQuoteSection) {
+                    badgeHtml = `<span class="bg-blue-900/60 text-blue-300 text-[10px] px-2 py-0.5 rounded-full border border-blue-500/30">Citazione</span>`;
+                } else {
+                    badgeHtml = `<span class="bg-purple-900/60 text-purple-300 text-[10px] px-2 py-0.5 rounded-full border border-purple-500/30">Lvl ${level}</span>`;
+                }
             }
 
             container.className = `${isMain 
-        ? "bg-gray-800 border-2 border-purple-500/50 p-6 rounded-2xl shadow-xl" 
-        : `bg-gray-800/80 border border-gray-700 p-4 rounded-xl shadow-md ${kindBorder}`} ${indentClass} transition-all`;
+                ? "bg-gray-800 border-2 border-purple-500/50 p-4 sm:p-6 rounded-2xl shadow-xl" 
+                : `bg-gray-800/80 border border-gray-700 p-3 sm:p-4 rounded-xl shadow-md ${kindBorder}`} ${indentClass} transition-all overflow-hidden`;
 
             container.innerHTML = `
-                <div class="flex justify-between items-center mb-3">
-                    <div class="flex items-center gap-2">
-                        <a href="${profilePageLink}" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition flex items-center gap-1">
+                ${isMain && replyBadgeHtml ? `<div class="mb-3">${replyBadgeHtml}</div>` : ''}
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-3">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <a href="${profilePageLink}" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition truncate flex items-center gap-1">
                             👤 ${shortPub}
                         </a>
-                        <a href="${profileLink}" target="_blank" class="text-[10px] text-gray-500 hover:underline">(Coracle)</a>
+                        <a href="${profileLink}" target="_blank" class="text-[10px] text-gray-500 hover:underline shrink-0">(Coracle)</a>
                     </div>
-                    <div class="flex items-center gap-2 flex-wrap justify-end">
-                ${kindBadgeHtml}
-                ${badgeHtml}
-                <span class="text-xs text-gray-500">${dateStr}</span>
-            </div>
+                    <div class="flex items-center gap-1.5 flex-wrap justify-start sm:justify-end">
+                        ${!isMain ? replyBadgeHtml : ''}
+                        ${kindBadgeHtml}
+                        ${badgeHtml}
+                        <span class="text-[11px] text-gray-500">${dateStr}</span>
+                    </div>
                 </div>
-                <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
+                <div class="text-gray-200 whitespace-pre-wrap text-xs sm:text-sm leading-relaxed break-words">${formattedContent}</div>
             `;
         }
 
         function parseContent(text) {
             let parsed = text.replace(/nostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[a-z0-9]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
                 let url = '#';
-    let label = entity.substring(0, 10) + '...';
-    if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
-        label = '👤 ' + label;
-        url = `profile.html?npub=${entity}`;
-    } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
-    label = '💬 ' + label;
-    url = `note.html?nevent=${entity}`;   
-                    
-    
-    } else if (entity.startsWith('naddr')) {
-        label = '📚 ' + label;
-        url = `modfile.html?naddr=${entity}`;
-    }
-    return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
-    });
+                let label = entity.substring(0, 8) + '...';
+                if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+                    label = '👤 ' + label;
+                    url = `profile.html?npub=${entity}`;
+                } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+                    label = '💬 ' + label;
+                    url = `note.html?nevent=${entity}`;     
+                } else if (entity.startsWith('naddr')) {
+                    label = '📚 ' + label;
+                    url = `modfile.html?naddr=${entity}`;
+                }
+                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
+            });
+
             parsed = parsed.replace(/https?:\/\/[^\s]+/g, (url) => {
                 let clean = url.replace(/[.,!?)]$/, '');
                 
                 if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
-                    return `<br><img src="${clean}" class="mt-2 max-h-80 rounded-lg object-cover border border-gray-700" loading="lazy"><br>`;
+                    return `<br><img src="${clean}" class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg object-cover border border-gray-700" loading="lazy"><br>`;
                 }
                 if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
-                    return `<br><video controls class="mt-2 max-h-80 w-full rounded-lg"><source src="${clean}"></video><br>`;
+                    return `<br><video controls class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg"><source src="${clean}"></video><br>`;
                 }
                 if (/\.(mp3|ogg|wav)(\?.*)?$/i.test(clean)) {
                     return `<br><audio controls class="mt-2 w-full"><source src="${clean}"></audio><br>`;

@@ -267,44 +267,85 @@
                 grid.innerHTML = `<p class="text-gray-400 text-center py-8">${emptyMessage}</p>`;
                 return;
             }
-
+            
             events.forEach(event => {
-                let npub = '';
-                let profileLink = '#';
-                try {
-                    npub = nip19.npubEncode(event.pubkey);
-                    profileLink = `profile.html?npub=${npub}`;
-                } catch(e) {}
+    let npub = '';
+    let profileLink = '#';
+    try {
+        npub = nip19.npubEncode(event.pubkey);
+        profileLink = `profile.html?npub=${npub}`;
+    } catch(e) {}
 
-                let nevent = '';
-                let noteLink = '#';
-                try {
-                    nevent = nip19.neventEncode({ id: event.id });
-                    noteLink = `note.html?nevent=${nevent}`;
-                } catch(e) {}
+    let nevent = '';
+    let noteLink = '#';
+    try {
+        nevent = nip19.neventEncode({ id: event.id });
+        noteLink = `note.html?nevent=${nevent}`;
+    } catch(e) {}
 
-                const formattedContent = parseNostrContent(event.content);
-                const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
+    const formattedContent = parseNostrContent(event.content);
+    const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
+    const dateStr = new Date(event.created_at * 1000).toLocaleString();
 
-                const card = `
-                    <div class="bg-gray-800 border border-gray-700 p-5 rounded-xl shadow-md">
-                        <div class="flex justify-between items-center mb-3">
-                            <a href="${profileLink}" target="_blank" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition flex items-center gap-1">
-                                👤 ${shortPub}
-                            </a>
-                            <div class="flex items-center gap-2">
-                                <a href="${noteLink}" target="_blank" "text-xs text-gray-300 hover:text-purple-300 bg-gray-900/80 border border-gray-700 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5">
-                                    <span class="text-xs text-gray-500">${new Date(event.created_at * 1000).toLocaleString()}</span>
-                                </a>
-                                <span class="text-gray-600"></span>
-                            </div>
-                            
-                        </div>
-                        <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
-                    </div>
-                `;
-                grid.innerHTML += card;
-            });
+    // 1. Verifichiamo se l'evento è una root o un reply
+    let isRoot = true;
+    let rootEventId = '';
+    
+    if (event.tags && event.tags.length > 0) {
+        const eTags = event.tags.filter(t => t[0] === 'e');
+        if (eTags.length > 0) {
+            const rootTag = eTags.find(t => t[3] === 'root');
+            if (rootTag) {
+                isRoot = false;
+                rootEventId = rootTag[1];
+            } else if (eTags.length > 0) {
+                isRoot = false;
+                rootEventId = eTags[0][1];
+            }
+        }
+    }
+
+    // 2. Se NON è una root, creiamo il badge/pulsante da mettere SOPRA la npub
+    let replyBadgeHtml = '';
+    if (!isRoot && rootEventId) {
+        let rootNevent = '';
+        try {
+            rootNevent = nip19.neventEncode({ id: rootEventId });
+        } catch(e) {}
+        
+        replyBadgeHtml = `
+            <div class="mb-2.5">
+                <a href="note.html?nevent=${rootNevent}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-purple-300 bg-purple-950/70 border border-purple-800/50 px-2.5 py-1 rounded-lg hover:bg-purple-900/50 transition-colors font-mono shadow-sm">
+                    <span>↩️ Reply (Show Thread)</span>
+                </a>
+            </div>
+        `;
+    }
+
+    const card = `
+        <div class="bg-gray-800 border border-gray-700 p-5 rounded-xl shadow-md transition-all hover:border-gray-600">
+            <!-- Se non è una root, il badge appare qui sopra -->
+            ${replyBadgeHtml}
+            
+            <div class="flex justify-between items-center mb-3">
+                <div class="flex items-center gap-2">
+                    <a href="${profileLink}" target="_blank" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition flex items-center gap-1">
+                        👤 ${shortPub}
+                    </a>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="${noteLink}" target="_blank" class="text-xs text-gray-300 hover:text-purple-300 bg-gray-900/80 border border-gray-700 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5">
+                        <span>💬 Open</span>
+                    </a>
+                    <span class="text-xs text-gray-500">${dateStr}</span>
+                </div>
+            </div>
+            <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
+        </div>
+    `;
+    grid.innerHTML += card;
+});
+            
         }
 
         function parseNostrContent(content) {
