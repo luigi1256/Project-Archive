@@ -579,31 +579,23 @@ async function publishStarterPack() {
 
     let signedEvent = null;
 
-            try {
-                // 2. Firma evento
-                if (method === 'nip07') {
+    try {
+        // 2. Firma evento
+        if (method === 'nip07') {
             if (!window.nostr || typeof window.nostr.signEvent !== 'function') {
-                throw new Error("Nessuna estensione NIP-07 funzionante trovata (Alby, nos2x, ecc.). Installane una e riprova.");
+                throw new Error("Nessuna estensione NIP-07 funzionante trovata (Alby, nos2x...). Installane una e riprova.");
             }
-
-            // Aggiungi pubkey se mancante (alcune implementazioni lo richiedono)
+            
+            // Verifica che l'extension sia autorizzata
             try {
-                event.pubkey = await window.nostr.getPublicKey();
-            } catch (e) {
-                console.warn("Impossibile ottenere pubkey:", e);
+                await window.nostr.getPublicKey();
+            } catch (permErr) {
+                throw new Error("Estensione NIP-07 non autorizzata. Approva l'accesso nelle impostazioni dell'estensione.");
             }
-
+            
             statusEl.innerText = "In attesa di firma dall'estensione NIP-07...";
-
-            try {
-                signedEvent = await window.nostr.signEvent(event);
-            } catch (signError) {
-                console.error("Errore durante la firma NIP-07:", signError);
-                throw new Error(`Firma fallita: ${signError.message}. Verifica che l'estensione NIP-07 sia autorizzata.`);
-            }
-        }
-
-        else {
+            signedEvent = await window.nostr.signEvent(event);
+        } else {
             // Firma con chiave privata inserita manualmente
             const privKeyRaw = document.getElementById('privkeyInput').value.trim();
             if (!privKeyRaw) {
@@ -619,32 +611,77 @@ async function publishStarterPack() {
                 hexSecret = decoded.data;
             }
 
-            // Converte stringa hex in Uint8Array per nostr-tools
             const secretBytes = new Uint8Array(hexSecret.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
             signedEvent = finalizeEvent(event, secretBytes);
         }
 
-        // 3. Pubblicazione sui Relay
+        // 3. VALIDAZIONE EVENTO FIRMATO (CRITICO!)
+        if (!signedEvent || !signedEvent.id || !signedEvent.sig) {
+            console.error("Evento firmato non valido:", signedEvent);
+            throw new Error("Evento firmato non valido. Manca ID o firma.");
+        }
+
+        console.log("Evento firmato pronto:", {
+            id: signedEvent.id,
+            kind: signedEvent.kind,
+            pubkey: signedEvent.pubkey,
+            tags_count: signedEvent.tags.length
+        });
+
+        // 4. Pubblicazione sui Relay - GESTIONE CORRETTA
         statusEl.innerText = "Invio in corso sui relay...";
         
-        const pubs = pool.publish(GENERAL_RELAYS, signedEvent);
-        await Promise.all(pubs);
+        const publishPromises = [];
+        const relayResults = {};
+        
+        // Publica su ogni relay separatamente per tracciare gli errori
+        for (const relayUrl of GENERAL_RELAYS) {
+            try {
+                const pubPromise = pool.publish([relayUrl], signedEvent);
+                publishPromises.push(
+                    pubPromise.then(() => {
+                        relayResults[relayUrl] = 'success';
+                        console.log(`✓ Pubblicato su ${relayUrl}`);
+                    }).catch(relayErr => {
+                        relayResults[relayUrl] = relayErr.message || 'unknown error';
+                        console.error(`✗ Errore su ${relayUrl}:`, relayErr);
+                    })
+                );
+            } catch (relayInitErr) {
+                relayResults[relayUrl] = relayInitErr.message || 'init error';
+                console.error(`✗ Init error ${relayUrl}:`, relayInitErr);
+            }
+        }
+
+        // Attendi tutti i risultati
+        await Promise.allSettled(publishPromises);
+        
+        // Verifica almeno un relay ha accettato
+        const successCount = Object.values(relayResults).filter(r => r === 'success').length;
+        
+        if (successCount === 0) {
+            throw new Error(`Nessun relay ha accettato l'evento. Risultati: ${JSON.stringify(relayResults)}`);
+        }
 
         statusEl.className = "text-xs text-center text-green-400 font-bold";
-        statusEl.innerText = " Starter Pack pubblicato con successo sui relay!";
+        statusEl.innerText = `✅ Starter Pack pubblicato! (${successCount}/${GENERAL_RELAYS.length} relay)`;
 
         // Aggiorna gli Starter Pack visualizzati per includere quello appena creato
         setTimeout(() => {
             fetchStarterPacks();
-        }, 1500);
+        }, 2000);
 
     } catch (err) {
-        console.error("Errore pubblicazione:", err);
+        console.error("Errore pubblicazione completo:", {
+            message: err.message,
+            stack: err.stack,
+            event: signedEvent ? { id: signedEvent.id, kind: signedEvent.kind } : 'no signed event'
+        });
         statusEl.className = "text-xs text-center text-red-400 font-bold";
-        statusEl.innerText = `Errore: ${err.message}`;
+        statusEl.innerText = `❌ Errore: ${err.message}`;
     }
 }
 
-    </script>
+</script>
 </body>
 </html>
