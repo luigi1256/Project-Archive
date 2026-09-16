@@ -25,6 +25,10 @@
                 <div>
                     <h2 class="font-bold text-sm text-purple-200">La tua Raccolta Personalizzata</h2>
                     <p class="text-xs text-purple-300" id="selectedCount">0 profili selezionati</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5" id="forkOriginInfo" style="display:none;">
+                        Basato su: <span id="forkOriginalName" class="text-purple-300"></span>
+                        <button id="clearForkBtn" class="ml-2 text-gray-400 hover:text-white cursor-pointer">×</button>
+                    </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -90,7 +94,7 @@
 
     <!-- Modal Esportazione e Pubblicazione -->
     <div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-xl w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-2xl w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-gray-700 pb-3">
                 <h3 class="text-lg font-bold text-purple-300">Esporta o Pubblica Starter Pack</h3>
                 <button id="closeModalBtn" class="text-gray-400 hover:text-white font-bold text-lg cursor-pointer">&times;</button>
@@ -102,23 +106,40 @@
                     <span>🚀</span> Pubblica direttamente su Nostr (Kind 39089)
                 </h4>
                 
-                <div class="grid grid-cols-1 gap-2 text-xs">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div class="md:col-span-2">
                         <label class="block text-gray-400 mb-1">Titolo Pack *</label>
                         <input type="text" id="packTitle" placeholder="Es. I miei sviluppatori preferiti" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
                     </div>
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="block text-gray-400 mb-1">Descrizione</label>
-                        <input type="text" id="packDesc" placeholder="Es. Una selezione di sviluppatori Nostr italiani..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
+                        <textarea id="packDesc" rows="2" placeholder="Es. Una selezione di sviluppatori Nostr italiani..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none resize-none"></textarea>
                     </div>
-                    <div>
+                    
+                    <!-- Nuovo campo per riferimento originale (solo se forkato) -->
+                    <div id="originalPackRef" class="hidden md:col-span-2 bg-gray-900 border border-gray-700 rounded p-3">
+                        <div class="flex items-center gap-2 text-gray-400 mb-2">
+                            <span>🔗</span>
+                            <span class="text-xs">Derivato da:</span>
+                        </div>
+                        <div class="text-xs text-gray-300 space-y-1">
+                            <p><strong>Titolo originale:</strong> <span id="originalPackTitle" class="text-purple-300"></span></p>
+                            <p><strong>ID evento:</strong> <code id="originalEventId" class="text-gray-500 select-all"></code></p>
+                            <label class="flex items-center gap-2 mt-2">
+                                <input type="checkbox" id="includeOriginalTag" checked class="accent-purple-500">
+                                <span>Includi tag @r con riferimento originale</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-2">
                         <label class="block text-gray-400 mb-1">Metodo di Firma</label>
                         <select id="signingMethod" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
                             <option value="nip07">Estensione Browser (NIP-07 - Alby, nos2x, ecc.)</option>
                             <option value="privkey">Chiave Privata (nsec / Hex)</option>
                         </select>
                     </div>
-                    <div id="privkeyContainer" class="hidden">
+                    <div id="privkeyContainer" class="hidden md:col-span-2">
                         <label class="block text-gray-400 mb-1">Chiave Privata (nsec1... o hex)</label>
                         <input type="password" id="privkeyInput" placeholder="nsec1..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
                     </div>
@@ -175,6 +196,9 @@
 
         // Tracciamento stato Shift
         let lastSelected = { packId: null, index: null };
+        
+        // 🔀 Nuovo: tracking fork origin
+        let forkOrigin = null;
 
         // ==========================================
         // PATCH 1: Chiudi pool quando la pagina viene chiusa
@@ -196,7 +220,6 @@
             try {
                 let hexSecret = privKeyRaw.trim();
                 
-                // Decodifica nsec1
                 if (hexSecret.startsWith('nsec1')) {
                     const decoded = nip19.decode(hexSecret);
                     if (decoded.type !== 'nsec') {
@@ -205,10 +228,8 @@
                     hexSecret = decoded.data;
                 }
                 
-                // Rimuovi eventuali spazi/caratteri speciali
                 hexSecret = hexSecret.replace(/\s/g, '');
                 
-                // Valida che sia hex valido (64 char)
                 if (!/^[0-9a-fA-F]{64}$/.test(hexSecret)) {
                     throw new Error("Formato chiave invalido (atteso 64 caratteri hex)");
                 }
@@ -230,12 +251,81 @@
                 throw new Error(`Evento incompleto: mancano ${missing.join(', ')}`);
             }
             
-            // Verifica contenuto non vuoto per Kind 39089
             if (ev.kind === 39089 && !ev.tags.find(t => t[0] === 'p')) {
                 throw new Error("Starter Pack deve contenere almeno un tag @p");
             }
             
             return true;
+        }
+
+        // ==========================================
+        // 🔀 NEW: Funzioni Fork/Load Pack
+        // ==========================================
+        function loadPackToSelection(packEvent, mergeMode = false) {
+            if (!mergeMode) {
+                if (selectedProfiles.size > 0) {
+                    const confirmReplace = confirm(
+                        `Hai ${selectedProfiles.size} profili selezionati. Vuoi sostituirli con quelli del pack o aggiungerli?`
+                    );
+                    if (!confirmReplace) {
+                        mergeMode = true;
+                    }
+                }
+            }
+            
+            const memberPubkeys = packEvent.tags.filter(t => t[0] === 'p' && t[1]).map(t => t[1]);
+            
+            memberPubkeys.forEach(pk => {
+                const meta = profilesCache.get(pk) || {};
+                selectedProfiles.set(pk, meta);
+            });
+            
+            // Set fork origin
+            const titleTag = packEvent.tags.find(t => t[0] === 'title' || t[0] === 'name');
+            forkOrigin = {
+                eventId: packEvent.id,
+                title: titleTag ? titleTag[1] : 'Pack sconosciuto',
+                authorPubkey: packEvent.pubkey,
+                created_at: packEvent.created_at
+            };
+            
+            updateAllBadges();
+            updateSelectedCounter();
+            updateForkOriginDisplay();
+            
+            // Auto-popula modulo export se aperto
+            const modal = document.getElementById('exportModal');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('packTitle').value = `${forkOrigin.title} (modificato)`;
+                document.getElementById('originalPackTitle').textContent = forkOrigin.title;
+                document.getElementById('originalEventId').textContent = `${forkOrigin.eventId.substring(0,16)}...`;
+                document.getElementById('originalPackRef').classList.remove('hidden');
+            }
+            
+            alert(`${mergeMode ? 'Aggiunti' : 'Caricati'} ${memberPubkeys.length} profili dal pack!`);
+        }
+
+        function clearForkOrigin() {
+            forkOrigin = null;
+            updateForkOriginDisplay();
+            
+            const modal = document.getElementById('exportModal');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('originalPackRef').classList.add('hidden');
+            }
+        }
+
+        function updateForkOriginDisplay() {
+            const infoEl = document.getElementById('forkOriginInfo');
+            const nameEl = document.getElementById('forkOriginalName');
+            
+            if (forkOrigin) {
+                infoEl.style.display = 'block';
+                nameEl.textContent = forkOrigin.title;
+                infoEl.querySelector('#clearForkBtn').onclick = clearForkOrigin;
+            } else {
+                infoEl.style.display = 'none';
+            }
         }
 
         document.getElementById('searchBtn').addEventListener('click', fetchStarterPacks);
@@ -280,7 +370,6 @@
                 loading.classList.add('hidden');
                 statusStats.innerText = `Trovati ${fetchedPacks.length} Starter Pack.`;
 
-                // Pre-fetch dei profili per velocizzare la resa
                 const allPubkeys = new Set();
                 fetchedPacks.forEach(ev => {
                     ev.tags.filter(t => t[0] === 'p' && t[1]).forEach(t => allPubkeys.add(t[1]));
@@ -309,7 +398,6 @@
                         profilesCache.set(ev.pubkey, JSON.parse(ev.content));
                     } catch(e) {}
                 });
-                // Ridisegna i badge per aggiornare nomi/immagini caricate
                 updateAllBadges();
             } catch(e) {
                 console.error("Errore preload profili:", e);
@@ -353,11 +441,19 @@
                 const card = document.createElement('div');
                 card.className = "bg-gray-800 border border-gray-700 rounded-xl p-6 flex flex-col justify-between hover:border-purple-500/50 transition shadow-md";
                 
+                // 🔀 NEW: Calcola profili già presenti nella selezione
+                const alreadySelected = memberPubkeys.filter(pk => selectedProfiles.has(pk)).length;
+                const newProfiles = memberPubkeys.length - alreadySelected;
+
                 card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start mb-2 gap-2">
                             <h3 class="font-bold text-xl text-purple-200 leading-snug">${title}</h3>
                             <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                <!-- 🔀 NEW: Bottone Fork/Load -->
+                                <button data-action="load-pack" class="text-xs bg-green-900/50 hover:bg-green-900 text-green-300 border border-green-700 px-2 py-1 rounded transition cursor-pointer" title="Carica profili in selezione">
+                                    🔀 ${alreadySelected > 0 ? 'Aggiungi' : 'Fork'} (${memberPubkeys.length})
+                                </button>
                                 <button data-action="all" class="text-xs bg-purple-900/50 hover:bg-purple-900 text-purple-300 border border-purple-700 px-2 py-1 rounded transition cursor-pointer">
                                     + Tutti
                                 </button>
@@ -384,14 +480,21 @@
                     </div>
 
                     <div class="mt-6 pt-3 border-t border-gray-700/70 flex justify-between items-center text-xs text-gray-400">
-                        <span>📅 ${dateStr}</span>
+                        <div class="flex items-center gap-2">
+                            <span>📅 ${dateStr}</span>
+                            ${newProfiles > 0 && alreadySelected > 0 ? `<span class="bg-blue-900/50 text-blue-300 border border-blue-700 px-2 py-0.5 rounded">🔄 ${alreadySelected} già selezionati</span>` : ''}
+                        </div>
                         <a href="feed.html?naddr=${naddr}" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition">
                             Apri Feed Pack →
                         </a>
                     </div>
                 `;
 
-                // Action Listeners per i controlli di gruppo nel Pack
+                // 🔀 NEW: Listener per fork/load
+                card.querySelector('[data-action="load-pack"]').addEventListener('click', () => {
+                    loadPackToSelection(ev, true);
+                });
+                
                 card.querySelector('[data-action="all"]').addEventListener('click', () => {
                     memberPubkeys.forEach(pk => toggleProfile(pk, true));
                 });
@@ -537,6 +640,17 @@
                 return;
             }
             document.getElementById('exportModal').classList.remove('hidden');
+            
+            // Se c'è un fork origin, popola i campi
+            if (forkOrigin) {
+                document.getElementById('packTitle').value = `${forkOrigin.title} (modificato)`;
+                document.getElementById('originalPackTitle').textContent = forkOrigin.title;
+                document.getElementById('originalEventId').textContent = forkOrigin.eventId;
+                document.getElementById('originalPackRef').classList.remove('hidden');
+            } else {
+                document.getElementById('originalPackRef').classList.add('hidden');
+            }
+            
             switchExportFormat(currentExportFormat);
         }
 
@@ -574,7 +688,7 @@
             alert("Lista copiata negli appunti!");
         }
 
-        // Gestione mostra/nascondi campo chiave privata in base al metodo scelto
+        // Gestione mostra/nascondi campo chiave privata
         document.getElementById('signingMethod').addEventListener('change', (e) => {
             const privkeyContainer = document.getElementById('privkeyContainer');
             if (e.target.value === 'privkey') {
@@ -584,17 +698,14 @@
             }
         });
 
-        // Listener per il pulsante di pubblicazione
         document.getElementById('publishPackBtn').addEventListener('click', publishStarterPack);
 
-        // ==========================================
-        // PATCH 4: publishStarterPack completamente rivisto
-        // ==========================================
         async function publishStarterPack() {
             const statusEl = document.getElementById('publishStatus');
             const title = document.getElementById('packTitle').value.trim();
             const description = document.getElementById('packDesc').value.trim();
             const method = document.getElementById('signingMethod').value;
+            const includeOriginalTag = document.getElementById('includeOriginalTag').checked;
             
             if (!title) {
                 alert("Inserisci un titolo per lo Starter Pack.");
@@ -613,7 +724,7 @@
             // 1. Costruzione p-tags
             const pTags = Array.from(selectedProfiles.keys()).map(pk => ["p", pk]);
             
-            // Identificatore univoco "d" basato sullo slug del titolo + timestamp
+            // Identificatore univoco "d"
             const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
             const dIdentifier = `${slug}-${Math.floor(Date.now() / 1000)}`;
 
@@ -623,11 +734,20 @@
                 ...pTags
             ];
 
+            // 🔀 NEW: Aggiungi tag @r se c'è fork origin
+            if (forkOrigin && includeOriginalTag) {
+                const naddr = nip19.naddrEncode({
+                    kind: 39089,
+                    pubkey: forkOrigin.authorPubkey,
+                    identifier: forkOrigin.eventId.substring(0, 32)
+                });
+                tags.push(["r", naddr]);
+            }
+
             if (description) {
                 tags.push(["description", description]);
             }
 
-            // Struttura evento Kind 39089
             let event = {
                 kind: 39089,
                 created_at: Math.floor(Date.now() / 1000),
@@ -638,14 +758,11 @@
             let signedEvent = null;
 
             try {
-                // 2. Firma evento
                 if (method === 'nip07') {
-                    // Verifica presenza estensione
                     if (!window.nostr || typeof window.nostr.signEvent !== 'function') {
                         throw new Error("Nessuna estensione NIP-07 funzionante trovata (Alby, nos2x...). Installane una e riprova.");
                     }
                     
-                    // Verifica che l'estensione sia autorizzata chiedendo il pubkey
                     statusEl.innerText = "Verifica autorizzazione estensione...";
                     
                     try {
@@ -667,18 +784,15 @@
                         throw new Error(`Firma fallita: ${signError.message}. Verifica che l'estensione NIP-07 sia autorizzata.`);
                     }
                 } else {
-                    // Firma con chiave privata inserita manualmente
                     const privKeyRaw = document.getElementById('privkeyInput').value.trim();
                     if (!privKeyRaw) {
                         throw new Error("Inserisci la chiave privata per continuare.");
                     }
 
-                    // Usa funzione robusta parsePrivateKey
                     const secretBytes = parsePrivateKey(privKeyRaw);
                     signedEvent = finalizeEvent(event, secretBytes);
                 }
 
-                // 3. VALIDAZIONE EVENTO FIRMATO (CRITICO!)
                 validateEvent(signedEvent);
 
                 console.log("✅ Evento firmato pronto:", {
@@ -689,13 +803,11 @@
                     d_tag: signedEvent.tags.find(t => t[0] === 'd')?.[1]
                 });
 
-                // 4. Pubblicazione sui Relay - GESTIONE CORRETTA
                 statusEl.innerText = "Invio in corso sui relay...";
                 
                 const publishPromises = [];
                 const relayResults = {};
                 
-                // Publica su ogni relay separatamente per tracciare gli errori
                 for (const relayUrl of GENERAL_RELAYS) {
                     try {
                         const pubPromise = pool.publish([relayUrl], signedEvent);
@@ -710,14 +822,12 @@
                         );
                     } catch (relayInitErr) {
                         relayResults[relayUrl] = relayInitErr.message || 'init error';
-                        console.error(`✗ Init error ${relayUrl}:`, relayInitErr);
+                        console.error(`✗ Init error ${relayUrl}:`, relayInitInitErr);
                     }
                 }
 
-                // Attendi tutti i risultati
                 await Promise.allSettled(publishPromises);
                 
-                // Verifica almeno un relay ha accettato
                 const successCount = Object.values(relayResults).filter(r => r === 'success').length;
                 
                 console.log(`📊 Risultati pubblicazione: ${JSON.stringify(relayResults)}`);
@@ -727,9 +837,12 @@
                 }
 
                 statusEl.className = "text-xs text-center text-green-400 font-bold";
-                statusEl.innerText = `✅ Starter Pack pubblicato! (${successCount}/${GENERAL_RELAYS.length} relay)`;
+                const forkSuffix = forkOrigin ? ' (fork)' : '';
+                statusEl.innerText = `✅ Starter Pack pubblicato! (${successCount}/${GENERAL_RELAYS.length} relay)${forkSuffix}`;
 
-                // Aggiorna gli Starter Pack visualizzati per includere quello appena creato
+                // Reset fork origin dopo pubblicazione opzionale
+                // clearForkOrigin();
+
                 setTimeout(() => {
                     fetchStarterPacks();
                 }, 2000);
