@@ -579,15 +579,31 @@ async function publishStarterPack() {
 
     let signedEvent = null;
 
-    try {
-        // 2. Firma evento
-        if (method === 'nip07') {
-            if (!window.nostr) {
-                throw new Error("Nessuna estensione NIP-07 (Alby, nos2x...) trovata nel browser.");
+            try {
+                // 2. Firma evento
+                if (method === 'nip07') {
+            if (!window.nostr || typeof window.nostr.signEvent !== 'function') {
+                throw new Error("Nessuna estensione NIP-07 funzionante trovata (Alby, nos2x, ecc.). Installane una e riprova.");
             }
+
+            // Aggiungi pubkey se mancante (alcune implementazioni lo richiedono)
+            try {
+                event.pubkey = await window.nostr.getPublicKey();
+            } catch (e) {
+                console.warn("Impossibile ottenere pubkey:", e);
+            }
+
             statusEl.innerText = "In attesa di firma dall'estensione NIP-07...";
-            signedEvent = await window.nostr.signEvent(event);
-        } else {
+
+            try {
+                signedEvent = await window.nostr.signEvent(event);
+            } catch (signError) {
+                console.error("Errore durante la firma NIP-07:", signError);
+                throw new Error(`Firma fallita: ${signError.message}. Verifica che l'estensione NIP-07 sia autorizzata.`);
+            }
+        }
+
+        else {
             // Firma con chiave privata inserita manualmente
             const privKeyRaw = document.getElementById('privkeyInput').value.trim();
             if (!privKeyRaw) {
