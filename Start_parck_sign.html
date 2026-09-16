@@ -116,21 +116,23 @@
                         <textarea id="packDesc" rows="2" placeholder="Es. Una selezione di sviluppatori Nostr italiani..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none resize-none"></textarea>
                     </div>
                     
-                    <!-- Nuovo campo per riferimento originale (solo se forkato) -->
+                    
+                    <!-- Modifica questo blocco nella sezione exportModal -->
                     <div id="originalPackRef" class="hidden md:col-span-2 bg-gray-900 border border-gray-700 rounded p-3">
                         <div class="flex items-center gap-2 text-gray-400 mb-2">
-                            <span>🔗</span>
-                            <span class="text-xs">Derivato da:</span>
+                            <span id="operationIcon">🔗</span>
+                            <span class="text-xs" id="operationLabel">Derivato da:</span>
                         </div>
                         <div class="text-xs text-gray-300 space-y-1">
                             <p><strong>Titolo originale:</strong> <span id="originalPackTitle" class="text-purple-300"></span></p>
-                            <p><strong>ID evento:</strong> <code id="originalEventId" class="text-gray-500 select-all"></code></p>
+                            <p><strong>d-tag originale:</strong> <code id="originalDTag" class="text-gray-500 select-all font-mono text-[10px]"></code></p>
                             <label class="flex items-center gap-2 mt-2">
                                 <input type="checkbox" id="includeOriginalTag" checked class="accent-purple-500">
-                                <span>Includi tag @r con riferimento originale</span>
+                                <span id="includeLabel">Includi a-tag con riferimento originale</span>
                             </label>
+                            <p id="editWarning" class="hidden text-yellow-500 mt-2">⚠️ Mantieni lo stesso d-tag: questo sarà un EDIT del pack esistente</p>
                         </div>
-                    </div>
+                    </div> 
                     
                     <div class="md:col-span-2">
                         <label class="block text-gray-400 mb-1">Metodo di Firma</label>
@@ -261,51 +263,231 @@
         // ==========================================
         // 🔀 NEW: Funzioni Fork/Load Pack
         // ==========================================
-        function loadPackToSelection(packEvent, mergeMode = false) {
-            if (!mergeMode) {
-                if (selectedProfiles.size > 0) {
-                    const confirmReplace = confirm(
-                        `Hai ${selectedProfiles.size} profili selezionati. Vuoi sostituirli con quelli del pack o aggiungerli?`
-                    );
-                    if (!confirmReplace) {
-                        mergeMode = true;
-                    }
+
+        // 🔀 NEW: Aggiorna fork origin per track anche author pubkey
+function loadPackToSelection(packEvent, mergeMode = false) {
+    if (!mergeMode) {
+        if (selectedProfiles.size > 0) {
+            const confirmReplace = confirm(
+                `Hai ${selectedProfiles.size} profili selezionati. Vuoi sostituirli con quelli del pack o aggiungerli?`
+            );
+            if (!confirmReplace) {
+                mergeMode = true;
+            }
+        }
+    }
+    
+    const memberPubkeys = packEvent.tags.filter(t => t[0] === 'p' && t[1]).map(t => t[1]);
+    
+    memberPubkeys.forEach(pk => {
+        const meta = profilesCache.get(pk) || {};
+        selectedProfiles.set(pk, meta);
+    });
+    
+    // Otteniamo il d-tag dal pack originale
+    const dTag = packEvent.tags.find(t => t[0] === 'd')?.[1] || '';
+    const titleTag = packEvent.tags.find(t => t[0] === 'title' || t[0] === 'name');
+    
+    forkOrigin = {
+        eventId: packEvent.id,
+        title: titleTag ? titleTag[1] : 'Pack sconosciuto',
+        authorPubkey: packEvent.pubkey,
+        dTag: dTag,
+        created_at: packEvent.created_at
+    };
+    
+    updateAllBadges();
+    updateSelectedCounter();
+    updateForkOriginDisplay();
+    
+    const modal = document.getElementById('exportModal');
+    if (!modal.classList.contains('hidden')) {
+        document.getElementById('packTitle').value = `${forkOrigin.title} (modificato)`;
+        document.getElementById('originalPackTitle').textContent = forkOrigin.title;
+        document.getElementById('originalEventId').textContent = `${forkOrigin.eventId.substring(0,16)}...`;
+        document.getElementById('originalPackRef').classList.remove('hidden');
+    }
+    
+    alert(`${mergeMode ? 'Aggiunti' : 'Caricati'} ${memberPubkeys.length} profili dal pack!`);
+}
+
+// =================================================================
+// 🔀 MODIFICATA: publishStarterPack con a-tag corretto
+// =================================================================
+async function publishStarterPack() {
+    const statusEl = document.getElementById('publishStatus');
+    const title = document.getElementById('packTitle').value.trim();
+    const description = document.getElementById('packDesc').value.trim();
+    const method = document.getElementById('signingMethod').value;
+    const includeOriginalTag = document.getElementById('includeOriginalTag').checked;
+    
+    if (!title) {
+        alert("Inserisci un titolo per lo Starter Pack.");
+        return;
+    }
+
+    if (selectedProfiles.size === 0) {
+        alert("Seleziona almeno un profilo prima di pubblicare.");
+        return;
+    }
+
+    statusEl.classList.remove('hidden', 'text-red-400', 'text-green-400');
+    statusEl.className = "text-xs text-center text-purple-300";
+    statusEl.innerText = "Preparazione evento...";
+
+    // 1. Genera o riutilizza d-tag
+    let dIdentifier;
+    let isEdit = false;
+    
+    if (forkOrigin && forkOrigin.dTag && includeOriginalTag) {
+        // Stesso autore + stesso d-tag = EDIT del pack esistente
+        dIdentifier = forkOrigin.dTag;
+        isEdit = true;
+        console.log("📝 Riconosciuto come EDIT del pack originale:", forkOrigin.eventId);
+    } else {
+        // NUOVO pack o diverso autore = FORK
+        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        dIdentifier = `${slug}-${Math.floor(Date.now() / 1000)}`;
+        console.log("🔀 Nuovo FORK con d-tag:", dIdentifier);
+    }
+
+    // 2. Costruzione tags - ORDINE CORRETTO secondo best practices
+    const tags = [];
+    
+    // Tag d sempre primo
+    tags.push(["d", dIdentifier]);
+    
+    // Tag title secondo
+    tags.push(["title", title]);
+    
+    // 🔀 MODIFICATO: a-tag come terzo elemento (se fork/edit)
+    if (forkOrigin && includeOriginalTag) {
+        // Formato a-tag: "kind:pubkey:identifier"
+        const aTagValue = `39089:${forkOrigin.authorPubkey}:${forkOrigin.dTag || ''}`;
+        tags.push(["a", aTagValue]);
+        
+        console.log("🔗 a-tag aggiunto:", aTagValue);
+    }
+    
+    // Tag p (profili) da quarto elemento in poi
+    const pTags = Array.from(selectedProfiles.keys()).map(pk => ["p", pk]);
+    tags.push(...pTags);
+
+    // Tag description opzionale
+    if (description) {
+        tags.push(["description", description]);
+    }
+
+    let event = {
+        kind: 39089,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: tags,
+        content: description || ""
+    };
+
+    let signedEvent = null;
+
+    try {
+        if (method === 'nip07') {
+            if (!window.nostr || typeof window.nostr.signEvent !== 'function') {
+                throw new Error("Nessuna estensione NIP-07 funzionante trovata (Alby, nos2x...). Installane una e riprova.");
+            }
+            
+            statusEl.innerText = "Verifica autorizzazione estensione...";
+            
+            try {
+                const pubKey = await window.nostr.getPublicKey();
+                if (!pubKey) {
+                    throw new Error("Nessuna chiave pubblica restituita dall'estensione");
                 }
+            } catch (authErr) {
+                console.error("Auth error:", authErr);
+                throw new Error(`Autorizzazione NIP-07 fallita: ${authErr.message}. Prova ad autorizzare l'estensione manualmente.`);
             }
             
-            const memberPubkeys = packEvent.tags.filter(t => t[0] === 'p' && t[1]).map(t => t[1]);
+            statusEl.innerText = "In attesa di firma dall'estensione NIP-07...";
             
-            memberPubkeys.forEach(pk => {
-                const meta = profilesCache.get(pk) || {};
-                selectedProfiles.set(pk, meta);
-            });
-            
-            // Set fork origin
-            const titleTag = packEvent.tags.find(t => t[0] === 'title' || t[0] === 'name');
-            forkOrigin = {
-                eventId: packEvent.id,
-                title: titleTag ? titleTag[1] : 'Pack sconosciuto',
-                authorPubkey: packEvent.pubkey,
-                created_at: packEvent.created_at
-            };
-            
-            updateAllBadges();
-            updateSelectedCounter();
-            updateForkOriginDisplay();
-            
-            // Auto-popula modulo export se aperto
-            const modal = document.getElementById('exportModal');
-            if (!modal.classList.contains('hidden')) {
-                document.getElementById('packTitle').value = `${forkOrigin.title} (modificato)`;
-                document.getElementById('originalPackTitle').textContent = forkOrigin.title;
-                document.getElementById('originalEventId').textContent = `${forkOrigin.eventId.substring(0,16)}...`;
-                document.getElementById('originalPackRef').classList.remove('hidden');
+            try {
+                signedEvent = await window.nostr.signEvent(event);
+            } catch (signError) {
+                console.error("Errore durante la firma NIP-07:", signError);
+                throw new Error(`Firma fallita: ${signError.message}. Verifica che l'estensione NIP-07 sia autorizzata.`);
             }
-            
-            alert(`${mergeMode ? 'Aggiunti' : 'Caricati'} ${memberPubkeys.length} profili dal pack!`);
+        } else {
+            const privKeyRaw = document.getElementById('privkeyInput').value.trim();
+            if (!privKeyRaw) {
+                throw new Error("Inserisci la chiave privata per continuare.");
+            }
+
+            const secretBytes = parsePrivateKey(privKeyRaw);
+            signedEvent = finalizeEvent(event, secretBytes);
         }
 
-        function clearForkOrigin() {
+        validateEvent(signedEvent);
+
+        console.log("✅ Evento firmato pronto:", {
+            id: signedEvent.id,
+            kind: signedEvent.kind,
+            pubkey: signedEvent.pubkey,
+            tags_count: signedEvent.tags.length,
+            d_tag: signedEvent.tags.find(t => t[0] === 'd')?.[1],
+            is_edit: isEdit,
+            a_tag: signedEvent.tags.find(t => t[0] === 'a')?.[1]
+        });
+
+        statusEl.innerText = "Invio in corso sui relay...";
+        
+        const publishPromises = [];
+        const relayResults = {};
+        
+        for (const relayUrl of GENERAL_RELAYS) {
+            try {
+                const pubPromise = pool.publish([relayUrl], signedEvent);
+                publishPromises.push(
+                    pubPromise.then(() => {
+                        relayResults[relayUrl] = 'success';
+                        console.log(`✓ Pubblicato su ${relayUrl}`);
+                    }).catch(relayErr => {
+                        relayResults[relayUrl] = relayErr.message || 'unknown error';
+                        console.error(`✗ Errore su ${relayUrl}:`, relayErr);
+                    })
+                );
+            } catch (relayInitErr) {
+                relayResults[relayUrl] = relayInitErr.message || 'init error';
+                console.error(`✗ Init error ${relayUrl}:`, relayInitErr);
+            }
+        }
+
+        await Promise.allSettled(publishPromises);
+        
+        const successCount = Object.values(relayResults).filter(r => r === 'success').length;
+        
+        console.log(`📊 Risultati pubblicazione: ${JSON.stringify(relayResults)}`);
+        
+        if (successCount === 0) {
+            throw new Error(`Nessun relay ha accettato l'evento. Risultati: ${Object.entries(relayResults).map(([k,v]) => `${k}:${v}`).join(', ')}`);
+        }
+
+        statusEl.className = "text-xs text-center text-green-400 font-bold";
+        const operationType = isEdit ? 'EDIT' : 'FORK';
+        statusEl.innerText = `✅ Starter Pack ${operationType} pubblicato! (${successCount}/${GENERAL_RELAYS.length} relay)`;
+
+        setTimeout(() => {
+            fetchStarterPacks();
+        }, 2000);
+
+    } catch (err) {
+        console.error("❌ Errore pubblicazione completo:", {
+            message: err.message,
+            stack: err.stack,
+            event: signedEvent ? { id: signedEvent.id, kind: signedEvent.kind } : 'no signed event'
+        });
+        statusEl.className = "text-xs text-center text-red-400 font-bold";
+        statusEl.innerText = `❌ Errore: ${err.message}`;
+    }
+}
+
+      function clearForkOrigin() {
             forkOrigin = null;
             updateForkOriginDisplay();
             
@@ -634,25 +816,39 @@
             document.getElementById('selectedCount').innerText = `${selectedProfiles.size} profili selezionati`;
         }
 
-        function openExportModal() {
-            if (selectedProfiles.size === 0) {
-                alert("Seleziona almeno un profilo dai vari Starter Pack prima di esportare.");
-                return;
-            }
-            document.getElementById('exportModal').classList.remove('hidden');
-            
-            // Se c'è un fork origin, popola i campi
-            if (forkOrigin) {
-                document.getElementById('packTitle').value = `${forkOrigin.title} (modificato)`;
-                document.getElementById('originalPackTitle').textContent = forkOrigin.title;
-                document.getElementById('originalEventId').textContent = forkOrigin.eventId;
-                document.getElementById('originalPackRef').classList.remove('hidden');
-            } else {
-                document.getElementById('originalPackRef').classList.add('hidden');
-            }
-            
-            switchExportFormat(currentExportFormat);
-        }
+        // Dopo l'apertura del modal in openExportModal():
+function openExportModal() {
+    if (selectedProfiles.size === 0) {
+        alert("Seleziona almeno un profilo dai vari Starter Pack prima di esportare.");
+        return;
+    }
+    document.getElementById('exportModal').classList.remove('hidden');
+    
+    if (forkOrigin) {
+        document.getElementById('packTitle').value = `${forkOrigin.title} (modificato)`;
+        document.getElementById('originalPackTitle').textContent = forkOrigin.title;
+        document.getElementById('originalDTag').textContent = forkOrigin.dTag || '(assente)';
+        document.getElementById('originalPackRef').classList.remove('hidden');
+        
+        // Determina se è edit o fork
+        const operationIcon = document.getElementById('operationIcon');
+        const operationLabel = document.getElementById('operationLabel');
+        const includeLabel = document.getElementById('includeLabel');
+        const editWarning = document.getElementById('editWarning');
+        
+        // Qui dovresti avere la tua chiave pubblica per comparare
+        // Per semplicità, assumiamo che se forkOrigin esiste sia sempre considerato edit possibile
+        
+        operationIcon.textContent = forkOrigin ? '🔄' : '🔗';
+        operationLabel.textContent = 'Edits/Fork da:';
+        includeLabel.textContent = 'Mantieni stesso d-tag (EDIT del pack esistente)';
+        editWarning.classList.remove('hidden');
+    } else {
+        document.getElementById('originalPackRef').classList.add('hidden');
+    }
+    
+    switchExportFormat(currentExportFormat);
+}
 
         function switchExportFormat(format) {
             currentExportFormat = format;
