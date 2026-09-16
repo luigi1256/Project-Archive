@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nostr Explorer - Starter Packs & Custom List</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <header class="max-w-5xl mx-auto pt-10 pb-4 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-purple-400 mb-3">
+            Esploratore Starter Pack
+        </h1>
+        <p class="text-gray-400 text-base max-w-2xl mx-auto">
+            Esplora gli Starter Pack (Kind 39089), seleziona i profili e crea la tua raccolta personalizzata.
+        </p>
+    </header>
+
+    <!-- Barra della Raccolta Personalizzata -->
+    <section class="max-w-5xl mx-auto px-4 sticky top-4 z-50 mb-6">
+        <div class="bg-purple-950/90 backdrop-blur border border-purple-700 p-4 rounded-xl shadow-2xl flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">📋</span>
+                <div>
+                    <h2 class="font-bold text-sm text-purple-200">La tua Raccolta Personalizzata</h2>
+                    <p class="text-xs text-purple-300" id="selectedCount">0 profili selezionati</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="clearSelectionBtn" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold rounded-lg transition border border-gray-600 cursor-pointer">
+                    Svuota
+                </button>
+                <button id="exportListBtn" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition shadow cursor-pointer">
+                    Esporta Lista ↓
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pannello Filtri -->
+    <section class="max-w-5xl mx-auto px-4 mb-8">
+        <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg flex flex-col gap-4">
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Limite Risultati</label>
+                    <select id="limitFilter" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-purple-500">
+                        <option value="10">10 pack</option>
+                        <option value="20" selected>20 pack</option>
+                        <option value="50">50 pack</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Finestra Temporale</label>
+                    <select id="timeFilter" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-purple-500">
+                        <option value="all">Tutti i tempi</option>
+                        <option value="7">Ultimi 7 giorni</option>
+                        <option value="30" selected>Ultimi 30 giorni</option>
+                        <option value="90">Ultimi 90 giorni</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Filtra Pack (Titolo/Desc)</label>
+                    <input type="text" id="searchFilter" placeholder="Cerca pack..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-purple-300 mb-1">Filtra Persone nei Pack</label>
+                    <input type="text" id="searchPersonFilter" placeholder="Cerca nome utente..." class="w-full bg-gray-900 border border-purple-800 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500">
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-gray-700/60">
+                <span id="statusStats" class="text-xs text-gray-400">Pronto per la ricerca...</span>
+                <button id="searchBtn" class="px-5 py-2 bg-purple-600 hover:bg-purple-500 font-semibold text-sm rounded-lg transition shadow-md cursor-pointer flex items-center gap-2">
+                    🔍 Cerca Starter Pack
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contenitore Risultati -->
+    <main class="max-w-5xl mx-auto px-4 pb-24">
+        <div id="loading" class="text-center text-gray-400 text-lg py-12 hidden">Ricerca Starter Pack sui relay Nostr...</div>
+        <div id="resultsGrid" class="grid grid-cols-1 gap-6"></div>
+    </main>
+
+    <!-- Modal Esportazione -->
+    <!-- Modal Esportazione e Pubblicazione -->
+<div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-xl w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+            <h3 class="text-lg font-bold text-purple-300">Esporta o Pubblica Starter Pack</h3>
+            <button id="closeModalBtn" class="text-gray-400 hover:text-white font-bold text-lg cursor-pointer">&times;</button>
+        </div>
+
+        <!-- Sezione Pubblica come Kind 39089 -->
+        <div class="bg-purple-950/40 border border-purple-800/60 p-4 rounded-xl flex flex-col gap-3">
+            <h4 class="text-sm font-bold text-purple-200 flex items-center gap-2">
+                <span>🚀</span> Pubblica direttamente su Nostr (Kind 39089)
+            </h4>
+            
+            <div class="grid grid-cols-1 gap-2 text-xs">
+                <div>
+                    <label class="block text-gray-400 mb-1">Titolo Pack *</label>
+                    <input type="text" id="packTitle" placeholder="Es. I miei sviluppatori preferiti" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Descrizione</label>
+                    <input type="text" id="packDesc" placeholder="Es. Una selezione di sviluppatori Nostr italiani..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-400 mb-1">Metodo di Firma</label>
+                    <select id="signingMethod" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
+                        <option value="nip07">Estensione Browser (NIP-07 - Alby, nos2x, ecc.)</option>
+                        <option value="privkey">Chiave Privata (nsec / Hex)</option>
+                    </select>
+                </div>
+                <div id="privkeyContainer" class="hidden">
+                    <label class="block text-gray-400 mb-1">Chiave Privata (nsec1... o hex)</label>
+                    <input type="password" id="privkeyInput" placeholder="nsec1..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
+                </div>
+            </div>
+
+            <button id="publishPackBtn" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-lg transition shadow cursor-pointer">
+                Pubblica Starter Pack sui Relay
+            </button>
+            <span id="publishStatus" class="text-xs text-center hidden"></span>
+        </div>
+
+        <div class="relative flex py-1 items-center">
+            <div class="flex-grow border-t border-gray-700"></div>
+            <span class="flex-shrink mx-4 text-gray-500 text-xs uppercase font-semibold">oppure esporta in testo</span>
+            <div class="flex-grow border-t border-gray-700"></div>
+        </div>
+
+        <!-- Sezione Formato Testuale -->
+        <div class="flex flex-col gap-2">
+            <div class="flex gap-2 border-b border-gray-700 pb-2">
+                <button id="formatNpubBtn" class="text-xs font-bold px-3 py-1 bg-purple-600 rounded text-white cursor-pointer">Formato npub</button>
+                <button id="formatHexBtn" class="text-xs font-bold px-3 py-1 bg-gray-700 rounded text-gray-300 cursor-pointer">Formato Hex</button>
+                <button id="formatJsonBtn" class="text-xs font-bold px-3 py-1 bg-gray-700 rounded text-gray-300 cursor-pointer">JSON (p-tags)</button>
+            </div>
+
+            <textarea id="exportTextarea" class="w-full h-28 bg-gray-900 border border-gray-700 rounded-lg p-3 text-xs font-mono text-gray-200 focus:outline-none focus:border-purple-500" readonly></textarea>
+
+            <button id="copyExportBtn" class="w-full py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs font-bold rounded-lg transition cursor-pointer">
+                📋 Copia negli appunti
+            </button>
+        </div>
+    </div>
+</div>
+
+    
+
+    <script type="module">
+        import { SimplePool, nip19, finalizeEvent } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+
+        const GENERAL_RELAYS = [
+            'wss://relay.damus.io',
+            'wss://nos.lol',
+            'wss://nostr.stakey.net',
+            'wss://relay.ditto.pub'
+        ];
+
+        const PROFILE_RELAYS = [
+            ...GENERAL_RELAYS,
+            'wss://purplepag.es'
+        ];
+
+        const pool = new SimplePool();
+        let fetchedPacks = [];
+        const profilesCache = new Map();
+        const selectedProfiles = new Map();
+
+        // Tracciamento stato Shift
+        let lastSelected = { packId: null, index: null };
+
+        document.getElementById('searchBtn').addEventListener('click', fetchStarterPacks);
+        document.getElementById('searchFilter').addEventListener('input', renderStarterPacks);
+        document.getElementById('searchPersonFilter').addEventListener('input', filterProfilesOnly);
+        document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
+        document.getElementById('exportListBtn').addEventListener('click', openExportModal);
+        document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('exportModal').classList.add('hidden'));
+        document.getElementById('copyExportBtn').addEventListener('click', copyToClipboard);
+
+        let currentExportFormat = 'npub';
+        document.getElementById('formatNpubBtn').addEventListener('click', () => switchExportFormat('npub'));
+        document.getElementById('formatHexBtn').addEventListener('click', () => switchExportFormat('hex'));
+        document.getElementById('formatJsonBtn').addEventListener('click', () => switchExportFormat('json'));
+
+        async function fetchStarterPacks() {
+            const loading = document.getElementById('loading');
+            const grid = document.getElementById('resultsGrid');
+            const statusStats = document.getElementById('statusStats');
+            
+            grid.innerHTML = '';
+            loading.classList.remove('hidden');
+            statusStats.innerText = `Interrogazione relay...`;
+
+            const limitVal = parseInt(document.getElementById('limitFilter').value);
+            const timeVal = document.getElementById('timeFilter').value;
+
+            const packFilter = { kinds: [39089], limit: limitVal };
+
+            if (timeVal !== 'all') {
+                const days = parseInt(timeVal);
+                const nowSec = Math.floor(Date.now() / 1000);
+                packFilter.since = nowSec - (days * 24 * 60 * 60);
+            }
+
+            try {
+                const events = await pool.querySync(GENERAL_RELAYS, packFilter);
+                const uniqueMap = new Map();
+                events.forEach(ev => uniqueMap.set(ev.id, ev));
+                fetchedPacks = Array.from(uniqueMap.values()).sort((a, b) => b.created_at - a.created_at);
+
+                loading.classList.add('hidden');
+                statusStats.innerText = `Trovati ${fetchedPacks.length} Starter Pack.`;
+
+                // Pre-fetch dei profili per velocizzare la resa
+                const allPubkeys = new Set();
+                fetchedPacks.forEach(ev => {
+                    ev.tags.filter(t => t[0] === 'p' && t[1]).forEach(t => allPubkeys.add(t[1]));
+                });
+                
+                preloadProfiles(Array.from(allPubkeys));
+
+                renderStarterPacks();
+            } catch (err) {
+                console.error(err);
+                loading.innerText = "Errore durante il recupero dei dati dai relay.";
+            }
+        }
+
+        async function preloadProfiles(pubkeys) {
+            const missing = pubkeys.filter(pk => !profilesCache.has(pk));
+            if (missing.length === 0) return;
+
+            try {
+                const events = await pool.querySync(PROFILE_RELAYS, {
+                    kinds: [0],
+                    authors: missing
+                });
+                events.forEach(ev => {
+                    try {
+                        profilesCache.set(ev.pubkey, JSON.parse(ev.content));
+                    } catch(e) {}
+                });
+                // Ridisegna i badge per aggiornare nomi/immagini caricate
+                updateAllBadges();
+            } catch(e) {
+                console.error("Errore preload profili:", e);
+            }
+        }
+
+        function renderStarterPacks() {
+            const searchTerm = document.getElementById('searchFilter').value.toLowerCase().trim();
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+
+            const filtered = fetchedPacks.filter(ev => {
+                const titleTag = ev.tags.find(t => t[0] === 'title' || t[0] === 'name');
+                const title = titleTag ? titleTag[1] : '';
+                const descriptionTag = ev.tags.find(t => t[0] === 'description');
+                const description = descriptionTag ? descriptionTag[1] : ev.content;
+
+                return title.toLowerCase().includes(searchTerm) || description.toLowerCase().includes(searchTerm);
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<p class="text-gray-400 text-center py-8">Nessun Starter Pack trovato.</p>`;
+                return;
+            }
+
+            filtered.forEach(ev => {
+                const titleTag = ev.tags.find(t => t[0] === 'title' || t[0] === 'name');
+                const title = titleTag ? titleTag[1] : 'Starter Pack senza titolo';
+                const descriptionTag = ev.tags.find(t => t[0] === 'description');
+                const description = descriptionTag ? descriptionTag[1] : (ev.content || 'Nessuna descrizione');
+                
+                const memberPubkeys = ev.tags.filter(t => t[0] === 'p' && t[1]).map(t => t[1]);
+                const dateStr = new Date(ev.created_at * 1000).toLocaleDateString();
+
+                let dTag = ev.tags.find(t => t[0] === 'd')?.[1] || '';
+                let naddr = '';
+                try {
+                    naddr = nip19.naddrEncode({ kind: 39089, pubkey: ev.pubkey, identifier: dTag });
+                } catch(e) {}
+
+                const card = document.createElement('div');
+                card.className = "bg-gray-800 border border-gray-700 rounded-xl p-6 flex flex-col justify-between hover:border-purple-500/50 transition shadow-md";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-2 gap-2">
+                            <h3 class="font-bold text-xl text-purple-200 leading-snug">${title}</h3>
+                            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                <button data-action="all" class="text-xs bg-purple-900/50 hover:bg-purple-900 text-purple-300 border border-purple-700 px-2 py-1 rounded transition cursor-pointer">
+                                    + Tutti
+                                </button>
+                                <button data-action="none" class="text-xs bg-gray-900 hover:bg-gray-700 text-gray-400 border border-gray-700 px-2 py-1 rounded transition cursor-pointer">
+                                    - Nessuno
+                                </button>
+                                <button data-action="invert" class="text-xs bg-gray-900 hover:bg-gray-700 text-purple-300 border border-purple-800 px-2 py-1 rounded transition cursor-pointer">
+                                    ↔ Inverti
+                                </button>
+                                <span class="bg-purple-950 text-purple-300 border border-purple-800 text-xs px-2.5 py-1 rounded-full font-semibold">
+                                    👥 ${memberPubkeys.length}
+                                </span>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 text-sm mb-4 leading-relaxed">${description}</p>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-700/60">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Profili nel pack:</h4>
+                                <span class="text-[11px] text-gray-500"><kbd class="bg-gray-900 border border-gray-700 px-1 rounded text-gray-400">Shift + Click</kbd> per selezioni multiple</span>
+                            </div>
+                            <div class="profiles-container flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-3 border-t border-gray-700/70 flex justify-between items-center text-xs text-gray-400">
+                        <span>📅 ${dateStr}</span>
+                        <a href="feed.html?naddr=${naddr}" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition">
+                            Apri Feed Pack →
+                        </a>
+                    </div>
+                `;
+
+                // Action Listeners per i controlli di gruppo nel Pack
+                card.querySelector('[data-action="all"]').addEventListener('click', () => {
+                    memberPubkeys.forEach(pk => toggleProfile(pk, true));
+                });
+                card.querySelector('[data-action="none"]').addEventListener('click', () => {
+                    memberPubkeys.forEach(pk => toggleProfile(pk, false));
+                });
+                card.querySelector('[data-action="invert"]').addEventListener('click', () => {
+                    memberPubkeys.forEach(pk => toggleProfile(pk, !selectedProfiles.has(pk)));
+                });
+
+                const container = card.querySelector('.profiles-container');
+                renderPackBadges(container, ev.id, memberPubkeys);
+
+                grid.appendChild(card);
+            });
+
+            filterProfilesOnly();
+        }
+
+        function renderPackBadges(container, eventId, pubkeys) {
+            container.innerHTML = '';
+            
+            if (pubkeys.length === 0) {
+                container.innerHTML = `<span class="text-xs text-gray-500">Nessun profilo presente in questo pack.</span>`;
+                return;
+            }
+
+            pubkeys.forEach((pk, idx) => {
+                const badge = document.createElement('div');
+                badge.dataset.pubkey = pk;
+                badge.dataset.packId = eventId;
+                badge.dataset.index = idx;
+                
+                updateBadgeElement(badge, pk);
+
+                badge.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    const isShift = e.shiftKey && lastSelected.packId === eventId && lastSelected.index !== null;
+                    const targetState = !selectedProfiles.has(pk);
+
+                    if (isShift) {
+                        const start = Math.min(lastSelected.index, idx);
+                        const end = Math.max(lastSelected.index, idx);
+                        const range = pubkeys.slice(start, end + 1);
+                        range.forEach(pKey => toggleProfile(pKey, targetState));
+                    } else {
+                        toggleProfile(pk, targetState);
+                    }
+
+                    lastSelected = { packId: eventId, index: idx };
+                });
+
+                container.appendChild(badge);
+            });
+        }
+
+        function toggleProfile(pubkey, forceState) {
+            const meta = profilesCache.get(pubkey) || {};
+            
+            if (forceState === true) {
+                selectedProfiles.set(pubkey, meta);
+            } else if (forceState === false) {
+                selectedProfiles.delete(pubkey);
+            } else {
+                if (selectedProfiles.has(pubkey)) {
+                    selectedProfiles.delete(pubkey);
+                } else {
+                    selectedProfiles.set(pubkey, meta);
+                }
+            }
+
+            updateAllBadgesForPubkey(pubkey);
+            updateSelectedCounter();
+        }
+
+        function updateBadgeElement(badge, pk) {
+            const meta = profilesCache.get(pk) || {};
+            let npub = '';
+            try { npub = nip19.npubEncode(pk); } catch(e) {}
+            const name = meta.display_name || meta.name || (npub ? `${npub.substring(0, 6)}...` : pk.substring(0,6));
+            const isSelected = selectedProfiles.has(pk);
+            const picture = meta.picture || '';
+
+            badge.dataset.name = name.toLowerCase();
+            badge.dataset.npub = npub.toLowerCase();
+
+            badge.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition cursor-pointer border select-none ${
+                isSelected 
+                ? 'bg-purple-600 text-white border-purple-400 font-semibold shadow-sm' 
+                : 'bg-gray-900 text-gray-200 border-gray-700 hover:border-purple-600'
+            }`;
+
+            const imgHtml = picture 
+                ? `<img src="${picture}" class="w-4 h-4 rounded-full object-cover shrink-0" onerror="this.onerror=null; this.parentNode.removeChild(this);">`
+                : `<span class="text-xs">👤</span>`;
+
+            badge.innerHTML = `
+                ${imgHtml}
+                <span class="truncate max-w-[120px]">${name}</span>
+            `;
+        }
+
+        function updateAllBadgesForPubkey(pubkey) {
+            const badges = document.querySelectorAll(`[data-pubkey="${pubkey}"]`);
+            badges.forEach(b => updateBadgeElement(b, pubkey));
+        }
+
+        function updateAllBadges() {
+            const badges = document.querySelectorAll('[data-pubkey]');
+            badges.forEach(b => updateBadgeElement(b, b.dataset.pubkey));
+        }
+
+        function filterProfilesOnly() {
+            const personTerm = document.getElementById('searchPersonFilter').value.toLowerCase().trim();
+            const allBadges = document.querySelectorAll('[data-pubkey]');
+
+            allBadges.forEach(badge => {
+                const name = badge.dataset.name || '';
+                const npub = badge.dataset.npub || '';
+
+                if (!personTerm || name.includes(personTerm) || npub.includes(personTerm)) {
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            });
+        }
+
+        function clearSelection() {
+            selectedProfiles.clear();
+            updateAllBadges();
+            updateSelectedCounter();
+        }
+
+        function updateSelectedCounter() {
+            document.getElementById('selectedCount').innerText = `${selectedProfiles.size} profili selezionati`;
+        }
+
+        function openExportModal() {
+            if (selectedProfiles.size === 0) {
+                alert("Seleziona almeno un profilo dai vari Starter Pack prima di esportare.");
+                return;
+            }
+            document.getElementById('exportModal').classList.remove('hidden');
+            switchExportFormat(currentExportFormat);
+        }
+
+        function switchExportFormat(format) {
+            currentExportFormat = format;
+            const textarea = document.getElementById('exportTextarea');
+            const pubkeys = Array.from(selectedProfiles.keys());
+
+            ['Npub', 'Hex', 'Json'].forEach(f => {
+                const btn = document.getElementById(`format${f}Btn`);
+                if (f.toLowerCase() === format) {
+                    btn.className = "text-xs font-bold px-3 py-1 bg-purple-600 rounded text-white cursor-pointer";
+                } else {
+                    btn.className = "text-xs font-bold px-3 py-1 bg-gray-700 rounded text-gray-300 cursor-pointer";
+                }
+            });
+
+            if (format === 'npub') {
+                const npubs = pubkeys.map(pk => {
+                    try { return nip19.npubEncode(pk); } catch(e) { return pk; }
+                });
+                textarea.value = npubs.join('\n');
+            } else if (format === 'hex') {
+                textarea.value = pubkeys.join('\n');
+            } else if (format === 'json') {
+                const pTags = pubkeys.map(pk => ["p", pk]);
+                textarea.value = JSON.stringify(pTags, null, 2);
+            }
+        }
+
+        function copyToClipboard() {
+            const textarea = document.getElementById('exportTextarea');
+            textarea.select();
+            navigator.clipboard.writeText(textarea.value);
+            alert("Lista copiata negli appunti!");
+        }
+
+        fetchStarterPacks();
+
+
+        //new thing
+        // Gestione mostra/nascondi campo chiave privata in base al metodo scelto
+document.getElementById('signingMethod').addEventListener('change', (e) => {
+    const privkeyContainer = document.getElementById('privkeyContainer');
+    if (e.target.value === 'privkey') {
+        privkeyContainer.classList.remove('hidden');
+    } else {
+        privkeyContainer.classList.add('hidden');
+    }
+});
+
+// Listener per il pulsante di pubblicazione
+document.getElementById('publishPackBtn').addEventListener('click', publishStarterPack);
+
+async function publishStarterPack() {
+    const statusEl = document.getElementById('publishStatus');
+    const title = document.getElementById('packTitle').value.trim();
+    const description = document.getElementById('packDesc').value.trim();
+    const method = document.getElementById('signingMethod').value;
+    
+    if (!title) {
+        alert("Inserisci un titolo per lo Starter Pack.");
+        return;
+    }
+
+    if (selectedProfiles.size === 0) {
+        alert("Seleziona almeno un profilo prima di pubblicare.");
+        return;
+    }
+
+    statusEl.classList.remove('hidden', 'text-red-400', 'text-green-400');
+    statusEl.className = "text-xs text-center text-purple-300";
+    statusEl.innerText = "Preparazione evento...";
+
+    // 1. Costruzione p-tags
+    const pTags = Array.from(selectedProfiles.keys()).map(pk => ["p", pk]);
+    
+    // Identificatore univoco "d" basato sullo slug del titolo + timestamp
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const dIdentifier = `${slug}-${Math.floor(Date.now() / 1000)}`;
+
+    const tags = [
+        ["d", dIdentifier],
+        ["title", title],
+        ...pTags
+    ];
+
+    if (description) {
+        tags.push(["description", description]);
+    }
+
+    // Struttura evento Kind 39089
+    let event = {
+        kind: 39089,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: tags,
+        content: description || ""
+    };
+
+    let signedEvent = null;
+
+    try {
+        // 2. Firma evento
+        if (method === 'nip07') {
+            if (!window.nostr) {
+                throw new Error("Nessuna estensione NIP-07 (Alby, nos2x...) trovata nel browser.");
+            }
+            statusEl.innerText = "In attesa di firma dall'estensione NIP-07...";
+            signedEvent = await window.nostr.signEvent(event);
+        } else {
+            // Firma con chiave privata inserita manualmente
+            const privKeyRaw = document.getElementById('privkeyInput').value.trim();
+            if (!privKeyRaw) {
+                throw new Error("Inserisci la chiave privata per continuare.");
+            }
+
+            let hexSecret = privKeyRaw;
+            if (privKeyRaw.startsWith('nsec1')) {
+                const decoded = nip19.decode(privKeyRaw);
+                if (decoded.type !== 'nsec') {
+                    throw new Error("Chiave nsec non valida.");
+                }
+                hexSecret = decoded.data;
+            }
+
+            // Converte stringa hex in Uint8Array per nostr-tools
+            const secretBytes = new Uint8Array(hexSecret.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            signedEvent = finalizeEvent(event, secretBytes);
+        }
+
+        // 3. Pubblicazione sui Relay
+        statusEl.innerText = "Invio in corso sui relay...";
+        
+        const pubs = pool.publish(GENERAL_RELAYS, signedEvent);
+        await Promise.all(pubs);
+
+        statusEl.className = "text-xs text-center text-green-400 font-bold";
+        statusEl.innerText = " Starter Pack pubblicato con successo sui relay!";
+
+        // Aggiorna gli Starter Pack visualizzati per includere quello appena creato
+        setTimeout(() => {
+            fetchStarterPacks();
+        }, 1500);
+
+    } catch (err) {
+        console.error("Errore pubblicazione:", err);
+        statusEl.className = "text-xs text-center text-red-400 font-bold";
+        statusEl.innerText = `Errore: ${err.message}`;
+    }
+}
+
+    </script>
+</body>
+</html>
