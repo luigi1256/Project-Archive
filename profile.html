@@ -60,10 +60,58 @@
             'wss://relay.damus.io',
             'wss://nos.lol',
             'wss://relay.ditto.pub',
-            'wss://relay.nostr.band'
+            
         ];
 
         const pool = new SimplePool();
+        
+        function parseContent(text) {
+    if (!text) return '';
+
+    let parsed = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+    parsed = parsed.replace(/\bnostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[a-z0-9]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+        let url = '#';
+        let label = entity.substring(0, 8) + '...';
+        
+        if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+            label = '👤 ' + label;
+            url = `profile.html?npub=${entity}`;
+        } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+            label = '💬 ' + label;
+            url = `note.html?nevent=${entity}`;     
+        } else if (entity.startsWith('naddr')) {
+            label = '📚 ' + label;
+            url = `modfile.html?naddr=${entity}`;
+        }
+        return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
+    });
+
+    parsed = parsed.replace(/https?:\/\/[^\s<]+/g, (url) => {
+        let matchPunct = url.match(/[.,!?)]+$/);
+        let punct = matchPunct ? matchPunct[0] : '';
+        let clean = url.substring(0, url.length - punct.length);
+        
+        if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
+            return `<br><img src="${clean}" class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg object-cover border border-gray-700" loading="lazy"><br>${punct}`;
+        }
+        if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
+            return `<br><video controls class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg"><source src="${clean}"></video><br>${punct}`;
+        }
+        if (/\.(mp3|ogg|wav)(\?.*)?$/i.test(clean)) {
+            return `<br><audio controls class="mt-2 w-full"><source src="${clean}"></audio><br>${punct}`;
+        }
+        //return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${url}</a>`;
+        return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;
+    });
+
+    return parsed;
+    }
 
         async function initProfile() {
             try {
@@ -116,11 +164,13 @@
                 }
 
                 const npub = nip19.npubEncode(targetPubkey);
-
+                const aboutbio=(profileData.about)
+                const bioParsed = aboutbio ? parseContent(aboutbio) : 'Nessuna bio disponibile.';
+                
                 // Popolamento UI
                 document.getElementById('profileName').innerText = profileData.name || profileData.username || 'Sconosciuto';
                 document.getElementById('profileDisplayName').innerText = profileData.display_name ? `@${profileData.display_name}` : `@${npub.substring(0, 10)}...`;
-                document.getElementById('profileAbout' ).innerText = profileData.about || 'Nessuna bio disponibile.';
+                document.getElementById('profileAbout').innerHTML = bioParsed;
                 document.getElementById('profileNpub').innerText = npub;
                 document.getElementById('profileHex').innerText = targetPubkey;
 
