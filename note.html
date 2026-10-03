@@ -22,7 +22,6 @@
             <div id="mainNoteCard" class="bg-gray-800 border-2 border-purple-500/50 p-4 sm:p-6 rounded-2xl shadow-xl"></div>
         </div>
 
-        <!-- Selettore Tab / Sezioni -->
         <div id="tabsContainer" class="hidden flex border-b border-gray-700 mb-6 overflow-x-auto scrollbar-none">
             <button id="tabReplies" onclick="switchTab('replies')" class="px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap">
                 Thread & Risposte (<span id="replyCountTab">0</span>)
@@ -32,12 +31,10 @@
             </button>
         </div>
 
-        <!-- Sezione Risposte / Thread -->
         <div id="repliesContainer" class="hidden space-y-3 sm:space-y-4">
             <div id="repliesList" class="space-y-3 sm:space-y-4"></div>
         </div>
 
-        <!-- Sezione Citazioni / Menzioni -->
         <div id="quotesContainer" class="hidden space-y-3 sm:space-y-4">
             <div id="quotesList" class="space-y-3 sm:space-y-4"></div>
         </div>
@@ -47,11 +44,13 @@
         import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
 
         const INITIAL_RELAYS = [
-            'wss://relay.damus.io',
+            'https://relay.snort.social',
             'wss://nos.lol',
             'wss://relay.ditto.pub'
         ];
 
+        const PROFILE_RELAYS=["wss://purplepag.es/",...INITIAL_RELAYS]
+        const profilesCache = new Map();
         const pool = new SimplePool();
 
         window.switchTab = function(tabName) {
@@ -72,6 +71,26 @@
                 tabReplies.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap";
             }
         }
+
+        async function preloadProfiles(pubkeys) {
+            const uniquePubkeys = [...new Set(pubkeys)];
+            const missing = uniquePubkeys.filter(pk => !profilesCache.has(pk));
+            if (missing.length === 0) return;
+            try {
+                const events = await pool.querySync(PROFILE_RELAYS, {
+                    kinds: [0],
+                    authors: missing
+                });
+                events.forEach(ev => {
+                    try {
+                        profilesCache.set(ev.pubkey, JSON.parse(ev.content));
+                    } catch(e) {}
+                });
+            } catch(e) {
+                console.error("Errore preload profili:", e);
+            }
+        }
+
 
         async function initThread() {
             try {
@@ -125,23 +144,25 @@
 
                 const mainEvent = mainEvents[0];
 
-                // 2. Scarica le note correlate tramite tag 'e'
                 const relatedEvents = await pool.querySync(queryRelays, {
-                    kinds: [1],
+                    kinds: [1,1111],
                     '#e': [targetId]
                 });
 
                 function classifyEvent(ev, rootId) {
-                    const eTags = ev.tags.filter(t => t[0] === 'e');
-                    const qTags = ev.tags.filter(t => t[0] === 'q');
+                const eTags = ev.tags.filter(t => t[0] === 'e' || t[0] === 'E');
+                const qTags = ev.tags.filter(t => t[0] === 'q' || t[0] === 'Q');
 
-                    const isExplicitQuote = qTags.some(t => t[1] === rootId) || eTags.some(t => t[1] === rootId && t[3] === 'mention');
-                    if (isExplicitQuote) return 'quote';
-
-                    const targetsTarget = eTags.some(t => t[1] === rootId);
-                    if (targetsTarget) return 'reply';
-
-                    return 'other';
+                const isExplicitQuote = qTags.some(t => t[1] === rootId) || eTags.some(t => t[1] === rootId && t[3] === 'mention');
+                if (isExplicitQuote) return 'quote';
+                const targetsRoot = eTags.some(t => t[1] === rootId);
+                if (targetsRoot || ev.tags.some(t => (t[0] === 'E' || t[3] === 'root') && t[1] === rootId)) {
+                    return 'reply'; 
+                }
+            
+                if (eTags.some(t => t[1] === rootId)) return 'reply';
+            
+                return 'other';
                 }
 
                 let directRepliesEvents = [];
@@ -164,7 +185,7 @@
                 for (let depth = 0; depth < 3; depth++) {
                     if (currentParentIds.length === 0) break;
                     const fetched = await pool.querySync(queryRelays, {
-                        kinds: [1],
+                        kinds: [1,1111],
                         '#e': currentParentIds
                     });
 
@@ -204,6 +225,13 @@
 
                 const threadedReplies = flattenTree(targetId, 1);
                 quoteEvents.sort((a, b) => b.created_at - a.created_at);
+
+                // --- 3. PRELOAD DEI PROFILI (INSERITO QUI) ---
+                const allPubkeys = [];
+                allThreadEventsMap.forEach(ev => allPubkeys.push(ev.pubkey));
+                quoteEvents.forEach(ev => allPubkeys.push(ev.pubkey));
+                await preloadProfiles(allPubkeys);
+                // -------------------------------------------
 
                 // Renderizza la nota principale
                 renderNoteCard('mainNoteCard', mainEvent, true, 0);
@@ -249,17 +277,22 @@
         }
 
         function getParentId(event, rootId) {
-            const eTags = event.tags.filter(t => t[0] === 'e');
+            const eTags = event.tags.filter(t => t[0] === 'e' || t[0] === 'E');
             if (eTags.length === 0) return rootId;
-
             const replyTag = eTags.find(t => t[3] === 'reply');
-            if (replyTag) return replyTag[1];
+            if (replyTag && replyTag[1]) return replyTag[1];
 
+            const nonRootTags = eTags.filter(t => t[1] !== rootId && t[3] !== 'root');
+            if (nonRootTags.length > 0) {
+                
+                return nonRootTags[nonRootTags.length - 1][1];
+            }
+        
             if (eTags.length > 1) {
                 const lastE = eTags[eTags.length - 1][1];
                 if (lastE !== rootId) return lastE;
             }
-
+        
             return eTags[0][1] || rootId;
         }
 
@@ -283,11 +316,17 @@
                 profileLink = `https://coracle.social/people/${npub}`;
                 profilePageLink = `profile.html?npub=${npub}`;
             } catch(e) {}
-
+        
+            const meta = profilesCache.get(event.pubkey) || {};
+            const name = meta.display_name || meta.name || (npub ? `${npub.substring(0, 6)}...` : event.pubkey.substring(0, 6));
+            const picture = meta.picture || '';
+            const imgHtml = picture 
+                ? `<img src="${picture}" class="w-5 h-5 rounded-full object-cover shrink-0" onerror="this.onerror=null; this.parentNode.replaceWith(document.createTextNode('👤'));">`
+                : `<span class="text-xs">👤</span>`;
+        
             const formattedContent = parseContent(event.content);
-            const shortPub = npub ? `${npub.substring(0, 8)}...${npub.slice(-4)}` : 'anon';
             const dateStr = new Date(event.created_at * 1000).toLocaleString();
-
+    
             let replyBadgeHtml = '';
             const eTags = event.tags.filter(t => t[0] === 'e');
             if (eTags.length > 0) {
@@ -363,9 +402,11 @@
             container.innerHTML = `
                 ${isMain && replyBadgeHtml ? `<div class="mb-3">${replyBadgeHtml}</div>` : ''}
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-3">
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <a href="${profilePageLink}" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition truncate flex items-center gap-1">
-                            👤 ${shortPub}
+                    <div class="flex items-center gap-2 overflow-hidden">                       
+                        <a href="${profilePageLink}" class="text-xs text-purple-400 hover:text-purple-300 font-semibold transition truncate flex items-center gap-1.5">
+                            ${imgHtml}
+                            <span class="truncate max-w-[160px]">${name}</span>
+                            <span class="text-[10px] text-gray-500 font-mono">(${npub ? `${npub.substring(0, 6)}...` : ''})</span>
                         </a>
                         <a href="${profileLink}" target="_blank" class="text-[10px] text-gray-500 hover:underline shrink-0">(Coracle)</a>
                     </div>
