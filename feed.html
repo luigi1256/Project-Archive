@@ -47,7 +47,7 @@
         <!-- Griglia Note Standard (Nascosta di default) -->
         <div id="feedGridText" class="space-y-6 hidden"></div>
     </main>
-
+    <script src="cache.js"></script>
     <script type="module">
         import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
 
@@ -285,6 +285,8 @@
 
     const formattedContent = parseNostrContent(event.content);
     const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
+    const profile = getProfileFromCache(npub);
+    const nickname = profile ? (profile.name || profile.display_name || shortPub) : shortPub;
     const dateStr = new Date(event.created_at * 1000).toLocaleString();
 
     // 1. Verifichiamo se l'evento è una root o un reply
@@ -330,7 +332,7 @@
             <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center gap-2">
                     <a href="${profileLink}" target="_blank" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition flex items-center gap-1">
-                        👤 ${shortPub}
+                        👤 ${nickname}
                     </a>
                 </div>
                 <div class="flex items-center gap-2">
