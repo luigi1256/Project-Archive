@@ -39,7 +39,7 @@
             <div id="quotesList" class="space-y-3 sm:space-y-4"></div>
         </div>
     </main>
-
+    <script src="cache.js"></script>
     <script type="module">
         import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
 
@@ -83,7 +83,9 @@
                 });
                 events.forEach(ev => {
                     try {
-                        profilesCache.set(ev.pubkey, JSON.parse(ev.content));
+                        const profileData = JSON.parse(ev.content);
+                        profilesCache.set(ev.pubkey, profileData);
+                        setProfileCache(ev.pubkey, profileData);
                     } catch(e) {}
                 });
             } catch(e) {
