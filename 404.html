@@ -6,16 +6,39 @@
     <title>404 - Pagina non trovata</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen font-sans flex items-center justify-center">
-    <div class="text-center px-4 py-16">
-        <h1 class="text-8xl md:text-9xl font-extrabold text-purple-400 mb-4">404</h1>
-        <p class="text-2xl font-semibold text-white mb-2">Pagina non trovata</p>
-        <p class="text-gray-400 mb-8 max-w-md mx-auto">
-            La risorsa che cerchi non esiste (forse è finita in un relay fantasma 👻).
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans flex items-center justify-center p-4">
+    <div class="text-center w-full max-w-md py-12">
+        <h1 class="text-7xl font-extrabold text-purple-400 mb-2">404</h1>
+        <p class="text-xl font-semibold text-white mb-1">Pagina non trovata</p>
+        <p class="text-gray-400 text-sm mb-8">
+            La risorsa che cerchi non esiste (forse è finita in un relay fantasma 👻). Dai un'occhiata qui sotto:
         </p>
-        <a href="index.html" class="px-6 py-3 bg-purple-600 rounded-lg font-medium hover:bg-purple-500 transition">
-            ← Torna alla home
-        </a>
+        
+        <div class="flex flex-col gap-3">
+            <a href="index.html" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                <span class="flex items-center gap-3">
+                    <span class="text-xl">🏠</span> 
+                    <span>Torna alla Home</span>
+                </span>
+                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
+            </a>
+
+            <a href="resource_hub.html" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                <span class="flex items-center gap-3">
+                    <span class="text-xl">📚</span> 
+                    <span>Esplora le Risorse</span>
+                </span>
+                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
+            </a>
+
+            <a href="https://formstr.app/f/naddr1qvzqqqr4mqpzqgfcew29une34vg0vm5ccwr7gpj5nzcmfx7dwc5ndl58lp3khj2xqyg8wumn8ghj7mn0wd68ytnddakj7qqx09vh25mxfs0msp0p#nkeys1qqrhv6t9wa9k27gpgq6xvvp4xgcr2dm9v5mxxepj8y6nyvpjx9nxge33vcuxxctzvgenwdmpxajkvcfhv5ckxwp5v9jnsdtxxeskgvnzxc6nzenyxcekxcehlfkgrf" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                <span class="flex items-center gap-3">
+                    <span class="text-xl">✉️</span> 
+                    <span>Feedback Form</span>
+                </span>
+                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
+            </a>
+        </div>
     </div>
 </body>
 </html>
