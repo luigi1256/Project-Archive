@@ -80,7 +80,13 @@
         let label = entity.substring(0, 8) + '...';
         
         if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
-            label = '👤 ' + label;
+            const profile = getProfileFromCache(entity);
+                    if (profile) {
+                        const name = profile.display_name || profile.name || entity.substring(0, 8) + '...';
+                        label = '👤 ' + name;
+                    } else {
+                        label = '👤 ' + entity.substring(0, 8) + '...';
+                    }
             url = `profile.html?npub=${entity}`;
         } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
             label = '💬 ' + label;
@@ -201,6 +207,27 @@
         }
 
         initProfile();
+
+        function getProfileFromCache(key) {
+            if (!key || typeof profilesCache === 'undefined') return null;
+            if (profilesCache.has(key)) return profilesCache.get(key);
+            if (key.startsWith('npub')) {
+                try {
+                    const decoded = nip19.decode(key);
+                    if (decoded.type === 'npub' && profilesCache.has(decoded.data)) {
+                        return profilesCache.get(decoded.data);
+                    }
+                } catch(e) {}
+            }
+            
+            
+            try {
+                const npubKey = nip19.npubEncode(key);
+                if (profilesCache.has(npubKey)) return profilesCache.get(npubKey);
+            } catch(e) {}
+
+            return null;
+        }
     </script>
 </body>
 </html>
