@@ -85,7 +85,8 @@
                     try {
                         const profileData = JSON.parse(ev.content);
                         profilesCache.set(ev.pubkey, profileData);
-                        setProfileCache(ev.pubkey, profileData);
+                        const npub = nip19.npubEncode(ev.pubkey);
+                        setProfileCache(npub, profileData);
                     } catch(e) {}
                 });
             } catch(e) {
