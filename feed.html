@@ -286,7 +286,6 @@
     const formattedContent = parseNostrContent(event.content);
     const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
     const profile = getProfileFromCache(npub);
-    console.log(profile)
     const nickname = profile ? (profile.name || profile.display_name || shortPub) : shortPub;
     const dateStr = new Date(event.created_at * 1000).toLocaleString();
 
