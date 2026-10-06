@@ -245,7 +245,7 @@
                 document.getElementById('feedGridRich').classList.remove('hidden');
 
             } catch (err) {
-                console.error(err);
+                console.warn(err);
                 document.getElementById('loading').innerText = "Errore durante la generazione dello smart feed.";
             }
         }
@@ -285,7 +285,7 @@
 
     const formattedContent = parseNostrContent(event.content);
     const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
-    const profile = getProfileFromCache(npub);
+    const profile = getProfileFromCache(event.pubkey);
     const nickname = profile ? (profile.name || profile.display_name || shortPub) : shortPub;
     const dateStr = new Date(event.created_at * 1000).toLocaleString();
 

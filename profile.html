@@ -80,6 +80,16 @@
         let label = entity.substring(0, 8) + '...';
         
         if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+            try {
+            const decoded = nip19.decode(entity);
+            if (decoded.type === 'npub') {
+                hexKey = decoded.data;
+            } else if (decoded.type === 'nprofile') {
+                hexKey = decoded.data.pubkey; // nprofile contiene un oggetto con dentro la pubkey hex
+            }
+        } catch (e) {
+        console.warn("Errore nel decode di npub/nprofile:", e);
+        }
             const profile = getProfileFromCache(entity);
                     if (profile) {
                         const name = profile.display_name || profile.name || entity.substring(0, 8) + '...';
@@ -181,7 +191,7 @@
                 document.getElementById('profileHex').innerText = targetPubkey;
 
                 if (profileData.picture) {
-                    setProfileCache(npub,profileData)
+                    setProfileCache(targetPubkey,profileData)
                     document.getElementById('profilePicture').src = profileData.picture;
                 }
                 if (profileData.banner) {
