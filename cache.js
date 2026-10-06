@@ -1,4 +1,6 @@
 const CACHE_PREFIX = 'nostr_profile_';
+import { nip19 } from 'nostr-tools';
+
 
 function getHexKey(key) {
     if (!key) return null;
