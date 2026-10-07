@@ -460,52 +460,51 @@
                 `;
                 grid.innerHTML += card;
             });
-        }
-
+        }        
+        
         function parseNostrContent(content) {
-            let parsed = content.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
-                let url = '#';
-                let label = entity.substring(0, 10) + '...';
-                if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
-                    label = '👤 ' + label;
-                    url = `profile.html?npub=${entity}`;
-                } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
-                    label = '💬 ' + label;
-                    url = `note.html?nevent=${entity}`;                
-                } else if (entity.startsWith('naddr')) {
-                    label = '📚 ' + label;
-                    url = `modfile.html?naddr=${entity}`;
-                }
-                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
-            });
-
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            parsed = parsed.replace(urlRegex, (url) => {
-                let cleanUrl = url.replace(/[.,!?)]$/, '');
-                let trailing = url.slice(cleanUrl.length);
-
-                if (cleanUrl.includes('njump.to') || cleanUrl.includes('njump.me')) return url;
-
-                let lower = cleanUrl.toLowerCase();
-                let typeBadge = "🔗 Link";
-                let badgeClass = "bg-blue-950 text-blue-300 border-blue-800";
-
-                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
-                    typeBadge = "🖼️ Foto";
-                    badgeClass = "bg-emerald-950 text-emerald-300 border-emerald-800";
-                } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
-                    typeBadge = "🎬 Video";
-                    badgeClass = "bg-amber-950 text-amber-300 border-amber-800";
-                }
-
-                let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
-                if (displayUrl.length > 35) displayUrl = displayUrl.substring(0, 32) + '...';
-
-                return `<a href="${cleanUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-2 py-0.5 my-1 rounded text-xs border ${badgeClass} hover:underline font-medium"><span class="opacity-80">${typeBadge}</span> <span>${displayUrl}</span></a>` + trailing;
-            });
-
-            return parsed;
+    let parsed = content.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+        let url = '#';
+        let label = entity.substring(0, 10) + '...';
+        if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+            label = '👤 ' + label;
+            url = `profile.html?npub=${entity}`;
+        } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+            label = '💬 ' + label;
+            url = `note.html?nevent=${entity}`;                
+        } else if (entity.startsWith('naddr')) {
+            label = '📚 ' + label;
+            url = `modfile.html?naddr=${entity}`;
         }
+        return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
+    });
+    
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    parsed = parsed.replace(urlRegex, (url) => {
+        let cleanUrl = url.replace(/[.,!?)]$/, '');
+        let trailing = url.slice(cleanUrl.length);
+        if (cleanUrl.includes('njump.to') || cleanUrl.includes('njump.me')) return url;
+        let lower = cleanUrl.toLowerCase();
+        
+        let typeBadge = "🔗 Link";
+        let badgeClass = "bg-blue-950 text-blue-300 border-blue-800"; // Blu per i link
+        
+        if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
+            typeBadge = "🖼️ Foto";
+            badgeClass = "bg-cyan-950 text-cyan-300 border-cyan-800"; // Ciano per le foto
+        } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
+            typeBadge = "🎬 Video";
+            badgeClass = "bg-purple-950 text-purple-300 border-purple-800"; // Viola per i video
+        }
+        
+        let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
+        if (displayUrl.length > 35) displayUrl = displayUrl.substring(0, 32) + '...';
+        
+        return `<a href="${cleanUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-2 py-0.5 my-1 rounded text-xs border ${badgeClass} hover:underline font-medium"><span class="opacity-80">${typeBadge}</span> <span>${displayUrl}</span></a>` + trailing;
+    });
+    
+    return parsed;
+}
 
         initSmartFeed();
     </script>
