@@ -26,9 +26,19 @@
         </div>
     </section>
 
-    <!-- Selettore Schede (Tabs) -->
+    <!-- Barra Stile Instagram per gli Autori -->
+    <section class="max-w-5xl mx-auto px-4 mb-6 hidden" id="authorsBarSection">
+        <div class="bg-gray-800 border border-gray-700 p-4 rounded-xl shadow-lg">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Autori in Evidenza</h3>
+            <div id="authorsBarContainer" class="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600">
+                <!-- Popolato da updatequadro() -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Selettore Schede (Tabs) - Ora gestito dinamicamente -->
     <section class="max-w-5xl mx-auto px-4 mb-6 hidden" id="tabsSection">
-        <div class="flex border-b border-gray-700">
+        <div class="flex border-b border-gray-700" id="tabsContainer">
             <button id="tabRichBtn" onclick="switchTab('rich')" class="px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer">
                 🔗 Contents Link (<span id="richCount">0</span>)
             </button>
@@ -44,9 +54,10 @@
         <!-- Griglia Contenuti Ricchi -->
         <div id="feedGridRich" class="space-y-6"></div>
         
-        <!-- Griglia Note Standard (Nascosta di default) -->
+        <!-- Griglia Note Standard -->
         <div id="feedGridText" class="space-y-6 hidden"></div>
     </main>
+
     <script src="cache.js"></script>
     <script type="module">
         import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
@@ -61,6 +72,7 @@
         const pool = new SimplePool();
         let globalRichEvents = [];
         let globalTextEvents = [];
+        let globalSelectedRelays = INITIAL_RELAYS;
 
         window.switchTab = function(tabName) {
             const richBtn = document.getElementById('tabRichBtn');
@@ -69,13 +81,13 @@
             const gridText = document.getElementById('feedGridText');
 
             if (tabName === 'rich') {
-                richBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer";
-                textBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer";
+                if (richBtn) richBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer";
+                if (textBtn) textBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer";
                 gridRich.classList.remove('hidden');
                 gridText.classList.add('hidden');
             } else {
-                textBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer";
-                richBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer";
+                if (textBtn) textBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer";
+                if (richBtn) richBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer";
                 gridText.classList.remove('hidden');
                 gridRich.classList.add('hidden');
             }
@@ -114,7 +126,7 @@
                 }
 
                 if (!targetEvent) {
-                    document.getElementById('loading').innerText = "Nessun evento o lista valida specificata nell'URL (mancano parametri naddr o id).";
+                    document.getElementById('loading').innerText = "Nessun evento o lista valida specificata nell'URL.";
                     return;
                 }
 
@@ -153,7 +165,6 @@
                     authors: authors,
                     kinds: [10002]
                 });
-
                 const authorRelaysMap = new Map();
                 relayListEvents.forEach(ev => {
                     const relays = new Set();
@@ -161,10 +172,8 @@
                         if (t[0] === 'r' && (!t[2] || t[2] === 'write' || t[2] === '')) {
                             let url = t[1].trim().toLowerCase();
                             if (url.endsWith('/')) url = url.slice(0, -1);
-                            if (url.startsWith('wss://')) {
-                                relays.add(url);
-                            }
-                                        }
+                            if (url.startsWith('wss://')) relays.add(url);
+                        }
                     });
                     if (relays.size > 0) authorRelaysMap.set(ev.pubkey, relays);
                 });
@@ -174,7 +183,6 @@
 
                 while (selectedRelays.length < 10 && remainingAuthors.size > 0) {
                     const relayCoverage = new Map();
-
                     authorRelaysMap.forEach((relays, author) => {
                         if (remainingAuthors.has(author)) {
                             relays.forEach(relay => {
@@ -187,7 +195,6 @@
                     });
 
                     if (relayCoverage.size === 0) break;
-
                     let bestRelay = null;
                     let maxCovered = -1;
                     relayCoverage.forEach((coveredAuthors, relay) => {
@@ -198,7 +205,6 @@
                     });
 
                     if (!bestRelay || maxCovered === 0) break;
-
                     selectedRelays.push(bestRelay);
                     relayCoverage.get(bestRelay).forEach(author => remainingAuthors.delete(author));
                 }
@@ -207,9 +213,10 @@
                     selectedRelays.push(...INITIAL_RELAYS);
                 }
 
+                globalSelectedRelays = selectedRelays;
+
                 const statsDiv = document.getElementById('relayStats');
                 statsDiv.innerHTML = `<span class="font-semibold text-purple-400">Top ${selectedRelays.length} Relay Dinamici:</span> <span class="text-gray-400">${selectedRelays.join(', ')}</span>`;
-
 
                 document.getElementById('statusText').innerText = "Scaricamento del feed in corso...";
 
@@ -232,21 +239,132 @@
                     }
                 });
 
+                // Gestione dinamica delle Tab se una categoria è vuota
+                const tabRichBtn = document.getElementById('tabRichBtn');
+                const tabTextBtn = document.getElementById('tabTextBtn');
+                const tabsSection = document.getElementById('tabsSection');
+
                 document.getElementById('richCount').innerText = globalRichEvents.length;
                 document.getElementById('textCount').innerText = globalTextEvents.length;
 
-                renderFeedSection('feedGridRich', globalRichEvents, 'Nessun contenuto ricco recente trovato.');
-                renderFeedSection('feedGridText', globalTextEvents, 'Nessuna nota standard trovata.');
-                
-                document.getElementById('statusText').innerText = `Feed caricato con successo (${sortedFeed.length} eventi totali elaborati).`;
+                if (globalRichEvents.length > 0 && globalTextEvents.length > 0) {
+                    tabsSection.classList.remove('hidden');
+                    tabRichBtn.style.display = 'block';
+                    tabTextBtn.style.display = 'block';
+                    switchTab('rich');
+                } else if (globalRichEvents.length > 0) {
+                    // Solo contenuti ricchi disponibili
+                    tabsSection.classList.add('hidden'); // Nasconde le tab se ce n'è solo una
+                    document.getElementById('feedGridRich').classList.remove('hidden');
+                    document.getElementById('feedGridText').classList.add('hidden');
+                } else if (globalTextEvents.length > 0) {
+                    // Solo note standard disponibili
+                    tabsSection.classList.add('hidden');
+                    document.getElementById('feedGridText').classList.remove('hidden');
+                    document.getElementById('feedGridRich').classList.add('hidden');
+                }
 
+                renderFeedSection('feedGridRich', globalRichEvents, 'Nessun contenuto ricco trovato per questi autori.');
+                renderFeedSection('feedGridText', globalTextEvents, 'Nessuna nota standard trovata per questi autori.');
+                
+                // Chiamata alla funzione esterna per la barra Instagram e Kind 0
+                await updatequadro(sortedFeed);
+
+                document.getElementById('statusText').innerText = `Feed caricato con successo (${sortedFeed.length} eventi totali).`;
                 document.getElementById('loading').classList.add('hidden');
-                document.getElementById('tabsSection').classList.remove('hidden');
-                document.getElementById('feedGridRich').classList.remove('hidden');
+                document.getElementById('authorsBarSection').classList.remove('hidden');
 
             } catch (err) {
                 console.warn(err);
                 document.getElementById('loading').innerText = "Errore durante la generazione dello smart feed.";
+            }
+        }
+
+        // Funzione esterna per gestire Kind 0, Cache e Barra Instagram
+        async function updatequadro(events) {
+            const container = document.getElementById('authorsBarContainer');
+            container.innerHTML = '';
+
+            const activePubkeys = [...new Set(events.map(ev => ev.pubkey))];
+            
+            if (activePubkeys.length === 0) {
+                document.getElementById('authorsBarSection').classList.add('hidden');
+                return;
+            }
+
+            const missingPubkeys = [];
+            const authorDataMap = new Map();
+
+            activePubkeys.forEach(pubkey => {
+                let profile = null;
+                if (typeof getProfileFromCache === 'function') {
+                    profile = getProfileFromCache(pubkey);
+                }
+
+                if (profile) {
+                    authorDataMap.set(pubkey, profile);
+                } else {
+                    missingPubkeys.push(pubkey);
+                }
+            });
+
+            if (missingPubkeys.length > 0) {
+                try {
+                    const metadataEvents = await pool.querySync(globalSelectedRelays, {
+                        authors: missingPubkeys,
+                        kinds: [0]
+                    });
+
+                    metadataEvents.forEach(ev => {
+                        try {
+                            const profileContent = JSON.parse(ev.content);
+                            authorDataMap.set(ev.pubkey, profileContent);
+                            
+                            if (typeof saveProfileToCache === 'function') {
+                                saveProfileToCache(ev.pubkey, profileContent);
+                            } else if (typeof cacheProfile === 'function') {
+                                cacheProfile(ev.pubkey, profileContent);
+                            }
+                        } catch (e) {}
+                    });
+                } catch (e) {
+                    console.warn("Errore recupero Kind 0:", e);
+                }
+            }
+
+            activePubkeys.forEach(pubkey => {
+                let npub = '';
+                try { npub = nip19.npubEncode(pubkey); } catch(e) {}
+                
+                const profile = authorDataMap.get(pubkey);
+                const name = profile ? (profile.name || profile.display_name || (npub ? npub.substring(0, 8) + '...' : 'Anon')) : (npub ? npub.substring(0, 8) + '...' : 'Anon');
+                const picture = profile && profile.picture ? profile.picture : `https://api.dicebear.com/7.x/identicon/svg?seed=${pubkey}`;
+                
+                const count = events.filter(ev => ev.pubkey === pubkey).length;
+
+                const itemHtml = `
+                    <div class="flex flex-col items-center cursor-pointer shrink-0 group" onclick="scrollToAuthor('${pubkey}')" title="${name} (${count} note)">
+                        <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 transition-transform group-hover:scale-105">
+                            <img src="${picture}" alt="${name}" class="w-full h-full rounded-full object-cover bg-gray-900 border-2 border-gray-900">
+                        </div>
+                        <span class="text-xs text-gray-300 mt-1.5 max-w-[70px] truncate text-center">${name}</span>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            });
+        }
+
+        window.scrollToAuthor = function(pubkey) {
+            const activeGrid = document.querySelector('main > div:not(.hidden)');
+            if (!activeGrid) return;
+            const cards = activeGrid.querySelectorAll('[data-pubkey]');
+            for (let card of cards) {
+                if (card.getAttribute('data-pubkey') === pubkey) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.classList.add('ring-2', 'ring-purple-400');
+                    setTimeout(() => card.classList.remove('ring-2', 'ring-purple-400'), 2000);
+                    break;
+                }
             }
         }
 
@@ -269,89 +387,82 @@
             }
             
             events.forEach(event => {
-    let npub = '';
-    let profileLink = '#';
-    try {
-        npub = nip19.npubEncode(event.pubkey);
-        profileLink = `profile.html?npub=${npub}`;
-    } catch(e) {}
+                let npub = '';
+                let profileLink = '#';
+                try {
+                    npub = nip19.npubEncode(event.pubkey);
+                    profileLink = `profile.html?npub=${npub}`;
+                } catch(e) {}
 
-    let nevent = '';
-    let noteLink = '#';
-    try {
-        nevent = nip19.neventEncode({ id: event.id });
-        noteLink = `note.html?nevent=${nevent}`;
-    } catch(e) {}
+                let nevent = '';
+                let noteLink = '#';
+                try {
+                    nevent = nip19.neventEncode({ id: event.id });
+                    noteLink = `note.html?nevent=${nevent}`;
+                } catch(e) {}
 
-    const formattedContent = parseNostrContent(event.content);
-    const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
-    const profile = getProfileFromCache(event.pubkey);
-    const nickname = profile ? (profile.name || profile.display_name || shortPub) : shortPub;
-    const dateStr = new Date(event.created_at * 1000).toLocaleString();
+                const formattedContent = parseNostrContent(event.content);
+                const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
+                const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(event.pubkey) : null;
+                const nickname = profile ? (profile.name || profile.display_name || shortPub) : shortPub;
+                const dateStr = new Date(event.created_at * 1000).toLocaleString();
 
-    // 1. Verifichiamo se l'evento è una root o un reply
-    let isRoot = true;
-    let rootEventId = '';
-    
-    if (event.tags && event.tags.length > 0) {
-        const eTags = event.tags.filter(t => t[0] === 'e');
-        if (eTags.length > 0) {
-            const rootTag = eTags.find(t => t[3] === 'root');
-            if (rootTag) {
-                isRoot = false;
-                rootEventId = rootTag[1];
-            } else if (eTags.length > 0) {
-                isRoot = false;
-                rootEventId = eTags[0][1];
-            }
-        }
-    }
+                let isRoot = true;
+                let rootEventId = '';
+                
+                if (event.tags && event.tags.length > 0) {
+                    const eTags = event.tags.filter(t => t[0] === 'e');
+                    if (eTags.length > 0) {
+                        const rootTag = eTags.find(t => t[3] === 'root');
+                        if (rootTag) {
+                            isRoot = false;
+                            rootEventId = rootTag[1];
+                        } else if (eTags.length > 0) {
+                            isRoot = false;
+                            rootEventId = eTags[0][1];
+                        }
+                    }
+                }
 
-    // 2. Se NON è una root, creiamo il badge/pulsante da mettere SOPRA la npub
-    let replyBadgeHtml = '';
-    if (!isRoot && rootEventId) {
-        let rootNevent = '';
-        try {
-            rootNevent = nip19.neventEncode({ id: rootEventId });
-        } catch(e) {}
-        
-        replyBadgeHtml = `
-            <div class="mb-2.5">
-                <a href="note.html?nevent=${rootNevent}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-purple-300 bg-purple-950/70 border border-purple-800/50 px-2.5 py-1 rounded-lg hover:bg-purple-900/50 transition-colors font-mono shadow-sm">
-                    <span>↩️ Reply (Show Thread)</span>
-                </a>
-            </div>
-        `;
-    }
+                let replyBadgeHtml = '';
+                if (!isRoot && rootEventId) {
+                    let rootNevent = '';
+                    try { rootNevent = nip19.neventEncode({ id: rootEventId }); } catch(e) {}
+                    
+                    replyBadgeHtml = `
+                        <div class="mb-2.5">
+                            <a href="note.html?nevent=${rootNevent}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-purple-300 bg-purple-950/70 border border-purple-800/50 px-2.5 py-1 rounded-lg hover:bg-purple-900/50 transition-colors font-mono shadow-sm">
+                                <span>↩️ Reply (Show Thread)</span>
+                            </a>
+                        </div>
+                    `;
+                }
 
-    const card = `
-        <div class="bg-gray-800 border border-gray-700 p-5 rounded-xl shadow-md transition-all hover:border-gray-600">
-            <!-- Se non è una root, il badge appare qui sopra -->
-            ${replyBadgeHtml}
-            
-            <div class="flex justify-between items-center mb-3">
-                <div class="flex items-center gap-2">
-                    <a href="${profileLink}" target="_blank" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition flex items-center gap-1">
-                        👤 ${nickname}
-                    </a>
-                </div>
-                <div class="flex items-center gap-2">
-                    <a href="${noteLink}" target="_blank" class="text-xs text-gray-300 hover:text-purple-300 bg-gray-900/80 border border-gray-700 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5">
-                        <span>💬 Open</span>
-                    </a>
-                    <span class="text-xs text-gray-500">${dateStr}</span>
-                </div>
-            </div>
-            <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
-        </div>
-    `;
-    grid.innerHTML += card;
-});
-            
+                const card = `
+                    <div data-pubkey="${event.pubkey}" class="bg-gray-800 border border-gray-700 p-5 rounded-xl shadow-md transition-all hover:border-gray-600">
+                        ${replyBadgeHtml}
+                        
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-2">
+                                <a href="${profileLink}" target="_blank" class="text-xs text-purple-400 hover:text-purple-300 font-mono font-semibold transition flex items-center gap-1">
+                                    👤 ${nickname}
+                                </a>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a href="${noteLink}" target="_blank" class="text-xs text-gray-300 hover:text-purple-300 bg-gray-900/80 border border-gray-700 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5">
+                                    <span>💬 Open</span>
+                                </a>
+                                <span class="text-xs text-gray-500">${dateStr}</span>
+                            </div>
+                        </div>
+                        <div class="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">${formattedContent}</div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
         }
 
         function parseNostrContent(content) {
-            // 1. Prima gestiamo le entità NIP-27 (nostr:...) convertendole direttamente in HTML pulito
             let parsed = content.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
                 let url = '#';
                 let label = entity.substring(0, 10) + '...';
@@ -359,10 +470,8 @@
                     label = '👤 ' + label;
                     url = `profile.html?npub=${entity}`;
                 } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
-                label = '💬 ' + label;
-                url = `note.html?nevent=${entity}`;   
-                                
-                
+                    label = '💬 ' + label;
+                    url = `note.html?nevent=${entity}`;                
                 } else if (entity.startsWith('naddr')) {
                     label = '📚 ' + label;
                     url = `modfile.html?naddr=${entity}`;
@@ -370,16 +479,12 @@
                 return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
             });
 
-            // 2. Poi gestiamo i link web standard, escludendo eventuali URL che contengono già njump
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             parsed = parsed.replace(urlRegex, (url) => {
                 let cleanUrl = url.replace(/[.,!?)]$/, '');
                 let trailing = url.slice(cleanUrl.length);
 
-                // Se il link punta già a njump, non lo riprocessiamo per evitare sovrapposizioni
-                if (cleanUrl.includes('njump.to') || cleanUrl.includes('njump.me')) {
-                    return url;
-                }
+                if (cleanUrl.includes('njump.to') || cleanUrl.includes('njump.me')) return url;
 
                 let lower = cleanUrl.toLowerCase();
                 let typeBadge = "🔗 Link";
@@ -394,9 +499,7 @@
                 }
 
                 let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
-                if (displayUrl.length > 35) {
-                    displayUrl = displayUrl.substring(0, 32) + '...';
-                }
+                if (displayUrl.length > 35) displayUrl = displayUrl.substring(0, 32) + '...';
 
                 return `<a href="${cleanUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-2 py-0.5 my-1 rounded text-xs border ${badgeClass} hover:underline font-medium"><span class="opacity-80">${typeBadge}</span> <span>${displayUrl}</span></a>` + trailing;
             });
