@@ -500,6 +500,8 @@
         }
 
         initProfile();
+        window.switchTab = switchTab;
+        window.handleQuickSearch= handleQuickSearch
         window.openZapModal = openZapModal;
         window.sendLike = async (targetId, targetAuthorPubkey) => {
         await sendLike(defaultRelays, targetId, targetAuthorPubkey);
