@@ -17,24 +17,18 @@
         <div id="loading" class="text-center text-gray-400 text-lg py-12">Caricamento profilo in corso...</div>
 
         <div id="profileContainer" class="hidden bg-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl">
-            <!-- Banner -->
             <div id="profileBanner" class="h-40 bg-gray-700 bg-cover bg-center"></div>
-            
-            <div class="px-6 pb-6 relative">
-                <!-- Avatar -->
+                <div class="px-6 pb-6 relative">
+                
                 <div class="flex justify-between items-end -mt-16 mb-4">
                     <img id="profilePicture" src="https://via.placeholder.com/150" alt="Avatar" class="w-32 h-32 rounded-full border-4 border-gray-800 bg-gray-900 object-cover shadow-lg">
-                    <a id="externalProfile" href="#" target="_blank" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg transition shadow">Apri su Coracle</a>
+                    <a id="externalProfile" href="#" target="_blank" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg transition shadow">Apri Profilo</a>
                 </div>
 
-                <!-- Nome e Display Name -->
                 <h2 id="profileName" class="text-3xl font-extrabold text-white">Nome Utente</h2>
                 <p id="profileDisplayName" class="text-purple-400 text-sm mb-4">@display_name</p>
-
-                <!-- About / Bio -->
                 <p id="profileAbout" class="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap bg-gray-900/50 p-4 rounded-xl mb-6 border border-gray-700/50">Bio utente...</p>
-
-                <!-- Dettagli Chiavi -->
+               
                 <div class="space-y-3 text-xs font-mono bg-gray-900 p-4 rounded-xl border border-gray-800">
                     <div>
                         <span class="text-gray-500 block mb-1">NPUB:</span>
@@ -60,74 +54,73 @@
             'wss://relay.damus.io',
             'wss://nos.lol',
             'wss://relay.ditto.pub',
-            
         ];
 
         const pool = new SimplePool();
         
         function parseContent(text) {
-    if (!text) return '';
+            if (!text) return '';
 
-    let parsed = text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+            let parsed = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
 
-    parsed = parsed.replace(/\bnostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[a-z0-9]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
-        let url = '#';
-        let label = entity.substring(0, 8) + '...';
-        
-        if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
-            try {
-            const decoded = nip19.decode(entity);
-            if (decoded.type === 'npub') {
-                hexKey = decoded.data;
-            } else if (decoded.type === 'nprofile') {
-                hexKey = decoded.data.pubkey; // nprofile contiene un oggetto con dentro la pubkey hex
-            }
-        } catch (e) {
-        console.warn("Errore nel decode di npub/nprofile:", e);
-        }
-            const profile = getProfileFromCache(entity);
+            parsed = parsed.replace(/\bnostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+                let url = '#';
+                let label = entity.substring(0, 8) + '...';
+                
+                if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+                    try {
+                        const decoded = nip19.decode(entity);
+                        if (decoded.type === 'npub') {
+                            // hexKey = decoded.data; // Rimosso se non globale o gestito altrove
+                        } else if (decoded.type === 'nprofile') {
+                            // hexKey = decoded.data.pubkey;
+                        }
+                    } catch (e) {
+                        console.warn("Errore nel decode di npub/nprofile:", e);
+                    }
+                    
+                    const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(entity) : null;
                     if (profile) {
                         const name = profile.display_name || profile.name || entity.substring(0, 8) + '...';
                         label = '👤 ' + name;
                     } else {
                         label = '👤 ' + entity.substring(0, 8) + '...';
                     }
-            url = `profile.html?npub=${entity}`;
-        } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
-            label = '💬 ' + label;
-            url = `note.html?nevent=${entity}`;     
-        } else if (entity.startsWith('naddr')) {
-            label = '📚 ' + label;
-            url = `modfile.html?naddr=${entity}`;
-        }
-        return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
-    });
+                    url = `profile.html?npub=${entity}`;
+                } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+                    label = '💬 ' + label;
+                    url = `note.html?nevent=${entity}`;    
+                } else if (entity.startsWith('naddr')) {
+                    label = '📚 ' + label;
+                    url = `modfile.html?naddr=${entity}`;
+                }
+                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
+            });
 
-    parsed = parsed.replace(/https?:\/\/[^\s<]+/g, (url) => {
-        let matchPunct = url.match(/[.,!?)]+$/);
-        let punct = matchPunct ? matchPunct[0] : '';
-        let clean = url.substring(0, url.length - punct.length);
-        
-        if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
-            return `<br><img src="${clean}" class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg object-cover border border-gray-700" loading="lazy"><br>${punct}`;
-        }
-        if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
-            return `<br><video controls class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg"><source src="${clean}"></video><br>${punct}`;
-        }
-        if (/\.(mp3|ogg|wav)(\?.*)?$/i.test(clean)) {
-            return `<br><audio controls class="mt-2 w-full"><source src="${clean}"></audio><br>${punct}`;
-        }
-        //return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${url}</a>`;
-        return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;
-    });
+            parsed = parsed.replace(/https?:\/\/[^\s<]+/g, (url) => {
+                let matchPunct = url.match(/[.,!?)]+$/);
+                let punct = matchPunct ? matchPunct[0] : '';
+                let clean = url.substring(0, url.length - punct.length);
+                
+                if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
+                    return `<br><img src="${clean}" class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg object-cover border border-gray-700" loading="lazy"><br>${punct}`;
+                }
+                if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
+                    return `<br><video controls class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg"><source src="${clean}"></video><br>${punct}`;
+                }
+                if (/\.(mp3|ogg|wav)(\?.*)?$/i.test(clean)) {
+                    return `<br><audio controls class="mt-2 w-full"><source src="${clean}"></audio><br>${punct}`;
+                }
+                return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;
+            });
 
-    return parsed;
-    }
+            return parsed;
+        }
 
         async function initProfile() {
             try {
@@ -142,7 +135,6 @@
                     return;
                 }
 
-                // Se inizia con npub1, nprofile1 o simili, usiamo nip19.decode
                 if (rawParam.startsWith('npub1') || rawParam.startsWith('nprofile1')) {
                     const decoded = nip19.decode(rawParam);
                     if (decoded.type === 'npub') {
@@ -154,7 +146,6 @@
                         }
                     }
                 } else {
-                    // Altrimenti lo trattiamo direttamente come chiave HEX grezza
                     targetPubkey = rawParam;
                 }
 
@@ -163,7 +154,6 @@
                     return;
                 }
 
-                // Query per Kind 0 (Metadati) sui relay trovati (inclusi quelli dell'nprofile se presenti)
                 const events = await pool.querySync(queryRelays, {
                     authors: [targetPubkey],
                     kinds: [0],
@@ -180,10 +170,9 @@
                 }
 
                 const npub = nip19.npubEncode(targetPubkey);
-                const aboutbio=(profileData.about)
+                const aboutbio = profileData.about;
                 const bioParsed = aboutbio ? parseContent(aboutbio) : 'Nessuna bio disponibile.';
                 
-                // Popolamento UI
                 document.getElementById('profileName').innerText = profileData.name || profileData.username || 'Sconosciuto';
                 document.getElementById('profileDisplayName').innerText = profileData.display_name ? `@${profileData.display_name}` : `@${npub.substring(0, 10)}...`;
                 document.getElementById('profileAbout').innerHTML = bioParsed;
@@ -191,7 +180,9 @@
                 document.getElementById('profileHex').innerText = targetPubkey;
 
                 if (profileData.picture) {
-                    setProfileCache(targetPubkey,profileData)
+                    if (typeof setProfileCache === 'function') {
+                        setProfileCache(targetPubkey, profileData);
+                    }
                     document.getElementById('profilePicture').src = profileData.picture;
                 }
                 if (profileData.banner) {
@@ -206,7 +197,7 @@
                     webContainer.classList.remove('hidden');
                 }
 
-                document.getElementById('externalProfile').href = `https://coracle.social/people/${npub}`;
+                document.getElementById('externalProfile').href = `profile-social.html?npub=${npub}`;
 
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('profileContainer').classList.remove('hidden');
@@ -218,8 +209,6 @@
         }
 
         initProfile();
-    
-        
     </script>
 </body>
 </html>

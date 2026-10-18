@@ -239,7 +239,6 @@
                     }
                 });
 
-                // Gestione dinamica delle Tab se una categoria è vuota
                 const tabRichBtn = document.getElementById('tabRichBtn');
                 const tabTextBtn = document.getElementById('tabTextBtn');
                 const tabsSection = document.getElementById('tabsSection');
@@ -253,12 +252,11 @@
                     tabTextBtn.style.display = 'block';
                     switchTab('rich');
                 } else if (globalRichEvents.length > 0) {
-                    // Solo contenuti ricchi disponibili
-                    tabsSection.classList.add('hidden'); // Nasconde le tab se ce n'è solo una
+                    
+                    tabsSection.classList.add('hidden'); 
                     document.getElementById('feedGridRich').classList.remove('hidden');
                     document.getElementById('feedGridText').classList.add('hidden');
                 } else if (globalTextEvents.length > 0) {
-                    // Solo note standard disponibili
                     tabsSection.classList.add('hidden');
                     document.getElementById('feedGridText').classList.remove('hidden');
                     document.getElementById('feedGridRich').classList.add('hidden');
@@ -266,8 +264,6 @@
 
                 renderFeedSection('feedGridRich', globalRichEvents, 'Nessun contenuto ricco trovato per questi autori.');
                 renderFeedSection('feedGridText', globalTextEvents, 'Nessuna nota standard trovata per questi autori.');
-                
-                // Chiamata alla funzione esterna per la barra Instagram e Kind 0
                 await updatequadro(sortedFeed);
 
                 document.getElementById('statusText').innerText = `Feed caricato con successo (${sortedFeed.length} eventi totali).`;
@@ -280,7 +276,6 @@
             }
         }
 
-        // Funzione esterna per gestire Kind 0, Cache e Barra Instagram
         async function updatequadro(events) {
             const container = document.getElementById('authorsBarContainer');
             container.innerHTML = '';
@@ -322,8 +317,8 @@
                             
                             if (typeof saveProfileToCache === 'function') {
                                 saveProfileToCache(ev.pubkey, profileContent);
-                            } else if (typeof cacheProfile === 'function') {
-                                cacheProfile(ev.pubkey, profileContent);
+                            } else if (typeof setProfileCache === 'function') {
+                                setProfileCache(ev.pubkey, profileContent);
                             }
                         } catch (e) {}
                     });
@@ -487,14 +482,14 @@
         let lower = cleanUrl.toLowerCase();
         
         let typeBadge = "🔗 Link";
-        let badgeClass = "bg-blue-950 text-blue-300 border-blue-800"; // Blu per i link
+        let badgeClass = "bg-blue-950 text-blue-300 border-blue-800";  
         
         if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
             typeBadge = "🖼️ Foto";
-            badgeClass = "bg-cyan-950 text-cyan-300 border-cyan-800"; // Ciano per le foto
+            badgeClass = "bg-cyan-950 text-cyan-300 border-cyan-800"; 
         } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
             typeBadge = "🎬 Video";
-            badgeClass = "bg-purple-950 text-purple-300 border-purple-800"; // Viola per i video
+            badgeClass = "bg-purple-950 text-purple-300 border-purple-800"; 
         }
         
         let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
