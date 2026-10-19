@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profilo Sharp Style</title>
+    <title>Profile Sharp Style</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
@@ -53,6 +53,7 @@
         let currentPubkey = '';
         let globalPool = null;
         let cachedNpub = ''; 
+        let profileuserdata='';
         
         const defaultRelays = [
             'wss://relay.damus.io',
@@ -137,6 +138,7 @@
                 let metaEvent = await globalPool.get(defaultRelays, { kinds: [0], authors: [currentPubkey] });
                 let profileData = metaEvent && metaEvent.content ? JSON.parse(metaEvent.content) : {};
                 renderProfileHeader(profileData, npubParam);
+                profileuserdata=profileData
                 switchTab('notes');
             } catch (err) {
                 console.error("Errore caricamento profilo:", err);
@@ -341,8 +343,9 @@
                         relays: ['wss://relay.damus.io', 'wss://nos.lol']
                     });
                 } catch(e) {}
-            
-                const authorPic = 'https://www.gravatar.com/avatar/?d=mp'; 
+                
+                const name_user = profileuserdata.display_name || profileuserdata.name || "User" + '...';    
+                const authorPic = profileuserdata.picture || 'https://www.gravatar.com/avatar/?d=mp';            
             
                 return `
                     <div class="bg-zinc-900 border border-zinc-800 p-4 mb-4 flex gap-4 hover:border-zinc-700 transition-colors">
@@ -354,7 +357,7 @@
 
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2 mb-2">
                             <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
-                                <span class="text-xs font-bold text-zinc-200 font-mono shrink-0">Utente</span>
+                                <span class="text-xs font-bold text-zinc-200 font-mono shrink-0">${name_user}</span>
                                 ${replyHtml}
                             </div>
                             <span class="text-[11px] sm:text-xs text-zinc-500 font-mono shrink-0">${date}</span>

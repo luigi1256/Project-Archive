@@ -121,30 +121,32 @@
     ];
 
         let buttonsHtml = '';
-    quickRelays.forEach(r => {
-        buttonsHtml += `
-            <button onclick="window.location.href='relay-feed.html?relay=${r.url}'" style="text-align: left; padding: 18px 20px; background: #262626; border: 2px solid #555; display: flex; flex-direction: column; justify-content: space-between; height: 100%; margin: 0; cursor: pointer;">
-                <div>
-                    <div style="font-weight: bold; color: #ffffff; font-size: 1.15em;">${r.name}</div>
-                    <div style="font-size: 0.9em; color: #d0d0d0; margin-top: 8px; line-height: 1.4;">${r.desc}</div>
-                </div>
-            </button>
-        `;
-    });
-
-    document.getElementById('loading').innerHTML = `
-        <div style="text-align: center; padding: 20px 10px;">
-            <p style="font-weight: bold; font-size: 1.25em; color: #ffffff; margin-bottom: 6px;">No feed selected</p>
-            <p style="font-size: 0.95em; color: #cccccc; margin-bottom: 20px;">Choose a block or an exploration relay:</p>
             
-            <div style="max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px;">
-                ${buttonsHtml}
+        quickRelays.forEach(r => {
+    buttonsHtml += `
+        <button onclick="window.location.href='relay-feed.html?relay=${r.url}'" style="text-align: left; padding: 16px; background: #262626; border: 2px solid #555; display: flex; flex-direction: column; justify-content: space-between; height: 100%; margin: 0; cursor: pointer; box-sizing: border-box; width: 100%;">
+            <div>
+                <div style="font-weight: bold; color: #ffffff; font-size: 1.1em; word-break: break-word;">${r.name}</div>
+                <div style="font-size: 0.85em; color: #d0d0d0; margin-top: 6px; line-height: 1.4; word-break: break-word;">${r.desc}</div>
             </div>
-        </div>
+        </button>
     `;
+});
+
+document.getElementById('loading').innerHTML = `
+    <div style="width: 100%; box-sizing: border-box; padding: 15px 12px; margin: 0 auto; text-align: center;">
+        <p style="font-weight: bold; font-size: 1.15em; color: #ffffff; margin-bottom: 6px;">Choose from these feeds</p>
+        <p style="font-size: 0.9em; color: #cccccc; margin-bottom: 16px;">Choose a block or an exploration relay:</p>
+        
+        <div style="width: 100%; max-width: 600px; margin: 0 auto; display: grid; grid-template-columns: 100%; gap: 12px; box-sizing: border-box;">
+            ${buttonsHtml}
+        </div>
+    </div>
+`;
+
+document.getElementById('statusText').innerText = "select a starting feed...";
+return;
     
-    document.getElementById('statusText').innerText = "select a starting feed...";
-    return;
 }    
 
         let targetEvent = null;
@@ -331,17 +333,20 @@
                 }
 
         const card = `
-              <div data-pubkey="${event.pubkey}" class="card clickable-card" onclick="window.open('${noteLink}', '_blank')" style="margin-bottom: 12px; cursor: pointer;">
+              <div data-pubkey="${event.pubkey}" class="card" style="margin-bottom: 12px;">
                   ${replyBadgeHtml}
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.85em;">
                       <div style="display: flex; align-items: center; gap: 8px;">
-                          <!-- Usiamo event.stopPropagation() per evitare che il click sul profilo apra la nota anziché il profilo -->
                           <a href="${profileLink}" target="_blank" onclick="event.stopPropagation()" style="color: #bb86fc; text-decoration: none; font-weight: bold;">
                               👤 ${nickname}
                           </a>
                       </div>
                       <div style="display: flex; align-items: center; gap: 10px;">
-                          <span style="color: #777; font-size: 0.9em;">${dateStr}</span>
+                        <span onclick="window.open('${noteLink}', '_blank')" style="color: #999; font-size: 0.9em; cursor: pointer; text-decoration: underline;" title="Open note">
+                            ${dateStr}
+                        </span>
+                        
+                        
                       </div>
                   </div>
                   <div style="color: #e0e0e0; white-space: pre-wrap; font-size: 0.9em; line-height: 1.4;">${formattedContent}</div>
