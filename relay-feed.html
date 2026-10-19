@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Relay Feed</title>
+</head>
+<body >
+  
+<header class="app-header">
+    <div>
+        <h1 id="feedTitle" style="margin: 0; font-size: 1.2em;">Relay Smart Feed</h1>
+        <p id="statusText" style="margin: 4px 0 0 0; font-size: 0.85em; color: #8ab4f8;">
+            Reading parameters and analyzing the relay set...
+        </p>
+    </div>
+    
+    <a href="resource_hub.html" style="text-decoration: none;">
+        <button type="button" style="margin: 0;">← Back to Resources 📁</button>
+    </a>
+    <a href="relay-feed.html" style="text-decoration: none;">               
+        <button type="button" style="margin: 0;">📡 Relay feed</button>
+    </a>                                                                      
+</header>
+
+<section id="relay-value" class="card hidden" style="margin-bottom: 10px;">
+    
+    <div class="relay-two-columns">
+        
+        <div style="flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 8px;">
+                      
+            <div id="nip11Info" class="nip11-box" style="flex: 1;">
+                Select one relay...
+            </div>
+        </div>
+        
+        <div style="flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 8px;">
+            <div class="section-title">🟢 Users (<span id="userCount">0</span>)</div>
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <div id="activeUsersList">
+                    <div style="font-size: 0.75em; color: #666; font-style: italic;">No events...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+</section>
+<section class="hidden card" id="tabsSection" style="margin-bottom: 2px; padding: 6px;">
+
+    <div class="right-panel" id="tabsContainer" style="display: flex; flex-direction: row; gap: 8px;">
+        <button id="tabRichBtn" onclick="switchTab('rich')" class="primary" style="margin: 0; padding: 6px 10px;">
+            🔗 Note Link (<span id="richCount">0</span>)
+        </button>
+        <button id="tabTextBtn" onclick="switchTab('text')" style="margin: 0; padding: 6px 10px;">
+            📝 Note Simple (<span id="textCount">0</span>)
+        </button>
+    </div>
+
+</section>
+
+<main class="card canvas-area" style="flex: 1;">
+    <div id="loading" style="text-align: center; color: #888; padding: 20px;">Loading...</div>
+    
+    <div id="feedGridRich"></div>
+    
+    <div id="feedGridText" class="hidden"></div>
+</main> 
+       
+
+    <script src="cache.js"></script>
+    <script type="module">
+        import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+
+        const INITIAL_RELAYS = [
+            'wss://relay.damus.io',
+            'wss://nos.lol',
+            'wss://nostr.stakey.net',
+            'wss://relay.ditto.pub'
+        ];
+
+        const pool = new SimplePool();
+        let globalRichEvents = [];
+        let globalTextEvents = [];
+        let globalSelectedRelays = INITIAL_RELAYS;
+
+        window.switchTab = function(tabName) {
+            const richBtn = document.getElementById('tabRichBtn');
+            const textBtn = document.getElementById('tabTextBtn');
+            const gridRich = document.getElementById('feedGridRich');
+            const gridText = document.getElementById('feedGridText');
+
+            if (tabName === 'rich') {
+                if (richBtn) richBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer";
+                if (textBtn) textBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer";
+                gridRich.classList.remove('hidden');
+                gridText.classList.add('hidden');
+            } else {
+                if (textBtn) textBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer";
+                if (richBtn) richBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-200 focus:outline-none transition cursor-pointer";
+                gridText.classList.remove('hidden');
+                gridRich.classList.add('hidden');
+            }
+        }
+
+        async function initSmartFeed() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const naddrParam = urlParams.get('naddr');
+        const relayParam = urlParams.get('relay');
+        
+        if (!naddrParam && !relayParam) {
+    const quickRelays = [
+        { name: "🌲 Forest", url: "wss://theforest.nostr1.com/", desc: "Notes and discussions from the Forest community" },
+        { name: "🌅 Dawn", url: "wss://spatia-arcana.com/", desc: "Content stream from the Spatia Arcana" },
+        { name: "🕸️ WoT", url: "wss://wot.shaving.kiwi/", desc: "Web of Trust and network reputation" },
+        {name:"🔥 Trending", url:"wss://trending.relays.land/", desc: "returns a feed of trending notes powered by nostr.wine"},
+        {name:"💻 Tchncs", url:"wss://relay.tchncs.de/", desc: "You must whitelist yourself"},
+        {name:"🛰️ Sovbit",url:"wss://freelay.sovbit.host/", desc: "It's open to everyone, free, and spam-filtered — great for trying things out or as a backup."}
+    ];
+
+        let buttonsHtml = '';
+    quickRelays.forEach(r => {
+        buttonsHtml += `
+            <button onclick="window.location.href='relay-feed.html?relay=${r.url}'" style="text-align: left; padding: 18px 20px; background: #262626; border: 2px solid #555; display: flex; flex-direction: column; justify-content: space-between; height: 100%; margin: 0; cursor: pointer;">
+                <div>
+                    <div style="font-weight: bold; color: #ffffff; font-size: 1.15em;">${r.name}</div>
+                    <div style="font-size: 0.9em; color: #d0d0d0; margin-top: 8px; line-height: 1.4;">${r.desc}</div>
+                </div>
+            </button>
+        `;
+    });
+
+    document.getElementById('loading').innerHTML = `
+        <div style="text-align: center; padding: 20px 10px;">
+            <p style="font-weight: bold; font-size: 1.25em; color: #ffffff; margin-bottom: 6px;">No feed selected</p>
+            <p style="font-size: 0.95em; color: #cccccc; margin-bottom: 20px;">Choose a block or an exploration relay:</p>
+            
+            <div style="max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px;">
+                ${buttonsHtml}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('statusText').innerText = "select a starting feed...";
+    return;
+}    
+
+        let targetEvent = null;
+        let queryRelays = INITIAL_RELAYS; 
+
+        function cleanRelayUrl(url) {
+            if (!url) return null;
+            let clean = url.trim();
+            if (!clean.startsWith('wss://') && !clean.startsWith('ws://')) {
+                clean = 'wss://' + clean;
+            }
+            if (clean.endsWith('/')) {
+                clean = clean.slice(0, -1);
+            }
+            return clean;
+        }
+
+        if (naddrParam) {
+            const decoded = nip19.decode(naddrParam);
+            if (decoded.type === 'naddr') {
+                const { kind, pubkey, identifier, relays } = decoded.data;
+                
+                if (relays && relays.length > 0) {
+                    queryRelays = relays.map(cleanRelayUrl).filter(Boolean);
+                }
+
+                const events = await pool.querySync(queryRelays, {
+                    authors: [pubkey],
+                    kinds: [kind],
+                    '#d': [identifier],
+                    limit: 1
+                });
+                if (events.length > 0) targetEvent = events[0];
+            }
+        }
+
+        let setRelays = [];
+        if (targetEvent) {
+            let titleTag = targetEvent.tags.find(t => t[0] === 'title');
+            let dTag = targetEvent.tags.find(t => t[0] === 'd');
+            let feedName = titleTag ? titleTag[1] : (dTag ? dTag[1] : 'Set Relay');
+            document.getElementById('feedTitle').innerText = `Feed: ${feedName}`;
+            
+            targetEvent.tags.forEach(t => {
+                if (t[0] === 'relay') {
+                    let cleaned = cleanRelayUrl(t[1]);
+                    if (cleaned) setRelays.push(cleaned);
+                }
+            });
+        } else if (relayParam) {
+            await fetchNip11(relayParam)
+            let cleanedRelay = cleanRelayUrl(relayParam);
+            if (cleanedRelay) setRelays.push(cleanedRelay);
+            document.getElementById('feedTitle').innerText = `Relay Feed: ${relayParam}`;
+        }
+
+        globalSelectedRelays = setRelays.length > 0 ? setRelays : INITIAL_RELAYS;
+        document.getElementById('statusText').innerText = "Downloading notes from the set's relays...";
+
+        let feedEvents = await pool.querySync(globalSelectedRelays, {
+            kinds: [1],
+            limit: 100
+        });
+
+        const sortedFeed = feedEvents.sort((a, b) => b.created_at - a.created_at);
+                                                                                                                                                         
+                globalRichEvents = [];
+                globalTextEvents = [];
+
+                sortedFeed.forEach(event => {
+                    handleIncomingEvent(event)    
+                    if (hasRichContent(event.content)) {
+                        globalRichEvents.push(event);
+                    } else {
+                        globalTextEvents.push(event);
+                    }
+                });
+
+                const tabRichBtn = document.getElementById('tabRichBtn');
+                const tabTextBtn = document.getElementById('tabTextBtn');
+                const tabsSection = document.getElementById('tabsSection');
+                const relaySection = document.getElementById('relay-value');
+                updateUserInterface();
+
+                document.getElementById('richCount').innerText = globalRichEvents.length;
+                document.getElementById('textCount').innerText = globalTextEvents.length;
+
+                if (globalRichEvents.length > 0 && globalTextEvents.length > 0) {
+                    tabsSection.classList.remove('hidden');
+                    relaySection.classList.remove('hidden');
+                    tabRichBtn.style.display = 'block';
+                    tabTextBtn.style.display = 'block';
+                    switchTab('rich');
+                } else if (globalRichEvents.length > 0) {
+                    tabsSection.classList.add('hidden'); 
+                    document.getElementById('feedGridRich').classList.remove('hidden');
+                    document.getElementById('feedGridText').classList.add('hidden');
+                } else if (globalTextEvents.length > 0) {
+                    tabsSection.classList.add('hidden');
+                    document.getElementById('feedGridText').classList.remove('hidden');
+                    document.getElementById('feedGridRich').classList.add('hidden');
+                }
+
+                renderFeedSection('feedGridRich', globalRichEvents, 'No rich content found.');
+                renderFeedSection('feedGridText', globalTextEvents, 'No standard note found.');
+
+                document.getElementById('statusText').innerText = `Feed successfully loaded (${sortedFeed.length} total events).`;
+                document.getElementById('loading').classList.add('hidden');
+
+            } catch (err) {
+                console.warn(err);
+                document.getElementById('loading').innerText = "Error while loading the relay-feed.";
+            }
+        }
+
+        function hasRichContent(content) {
+            const hasNostrUri = /nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi.test(content);
+            if (hasNostrUri) return true;
+
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const matches = content.match(urlRegex);
+            return matches !== null && matches.length > 0;
+        }
+
+        function renderFeedSection(containerId, events, emptyMessage) {
+            const grid = document.getElementById(containerId);
+            grid.innerHTML = '';
+
+            if (events.length === 0) {
+                grid.innerHTML = `<p class="text-gray-400 text-center py-8">${emptyMessage}</p>`;
+                return;
+            }
+            
+            events.forEach(event => {
+                let npub = '';
+                let profileLink = '#';
+                try {
+                    npub = nip19.npubEncode(event.pubkey);
+                    profileLink = `profile.html?npub=${npub}`;
+                } catch(e) {}
+
+                let nevent = '';
+                let noteLink = '#';
+                try {
+                    nevent = nip19.neventEncode({ id: event.id });
+                    noteLink = `note.html?nevent=${nevent}`;
+                } catch(e) {}
+
+                const formattedContent = parseNostrContent(event.content);
+                const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
+                const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(event.pubkey) : null;
+                const nickname = profile ? (profile.name || profile.display_name || shortPub) : shortPub;
+                const dateStr = new Date(event.created_at * 1000).toLocaleString();
+
+                let isRoot = true;
+                let rootEventId = '';
+                
+                if (event.tags && event.tags.length > 0) {
+                    const eTags = event.tags.filter(t => t[0] === 'e');
+                    if (eTags.length > 0) {
+                        const rootTag = eTags.find(t => t[3] === 'root');
+                        if (rootTag) {
+                            isRoot = false;
+                            rootEventId = rootTag[1];
+                        } else if (eTags.length > 0) {
+                            isRoot = false;
+                            rootEventId = eTags[0][1];
+                        }
+                    }
+                }
+
+                let replyBadgeHtml = '';
+                if (!isRoot && rootEventId) {
+                    let rootNevent = '';
+                    try { rootNevent = nip19.neventEncode({ id: rootEventId }); } catch(e) {}
+                    
+                    replyBadgeHtml = `
+                        <div class="mb-2.5">
+                            <a href="note.html?nevent=${rootNevent}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-purple-300 bg-purple-950/70 border border-purple-800/50 px-2.5 py-1 rounded-lg hover:bg-purple-900/50 transition-colors font-mono shadow-sm">
+                                <span>↩️ Reply (Show Thread)</span>
+                            </a>
+                        </div>
+                    `;
+                }
+
+        const card = `
+              <div data-pubkey="${event.pubkey}" class="card clickable-card" onclick="window.open('${noteLink}', '_blank')" style="margin-bottom: 12px; cursor: pointer;">
+                  ${replyBadgeHtml}
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.85em;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                          <!-- Usiamo event.stopPropagation() per evitare che il click sul profilo apra la nota anziché il profilo -->
+                          <a href="${profileLink}" target="_blank" onclick="event.stopPropagation()" style="color: #bb86fc; text-decoration: none; font-weight: bold;">
+                              👤 ${nickname}
+                          </a>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                          <span style="color: #777; font-size: 0.9em;">${dateStr}</span>
+                      </div>
+                  </div>
+                  <div style="color: #e0e0e0; white-space: pre-wrap; font-size: 0.9em; line-height: 1.4;">${formattedContent}</div>
+              </div>
+          `;
+          grid.innerHTML += card;
+      });
+}        
+                                                                                                                                      
+        function parseNostrContent(content) {
+            let parsed = content.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+                let url = '#';
+                let label = entity.substring(0, 10) + '...';
+                if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+                    label = '👤 ' + label;
+                    url = `profile.html?npub=${entity}`;
+                } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+                    label = '💬 ' + label;
+                    url = `note.html?nevent=${entity}`;                
+                } else if (entity.startsWith('naddr')) {
+                    label = '📚 ' + label;
+                    url = `modfile.html?naddr=${entity}`;
+                }
+                return `<a href="${url}" target="_blank" style="color: #d8b4fe; background-color: #2e1065; border: 1px solid #581c87; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; display: inline-block; font-family: monospace; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${label}</a>`;
+            });
+    
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    parsed = parsed.replace(urlRegex, (url) => {
+        let cleanUrl = url.replace(/[.,!?)]$/, '');
+        let trailing = url.slice(cleanUrl.length);
+        if (cleanUrl.includes('njump.to') || cleanUrl.includes('njump.me')) return url;
+        let lower = cleanUrl.toLowerCase();
+        
+        let typeBadge = "🔗 Link";
+        let badgeStyle = "background: #27272a; color: #d4d4d8; border-color: #3f3f46;"; 
+        
+        if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
+            typeBadge = "🖼️ Foto";
+            badgeStyle = "background: #083344; color: #a5f3fc; border-color: #164e63;"; 
+        } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
+            typeBadge = "🎬 Video";
+            badgeStyle = "background: #2e1065; color: #d8b4fe; border-color: #581c87;"; 
+        }
+        
+        let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
+        if (displayUrl.length > 35) displayUrl = displayUrl.substring(0, 32) + '...';
+        
+        return `<a href="${cleanUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; margin: 2px 0; border-radius: 4px; font-size: 0.75em; border: 1px solid; ${badgeStyle} font-family: monospace; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><span style="opacity: 0.8;">${typeBadge}</span> <span>${displayUrl}</span></a>` + trailing;
+    });
+    
+    return parsed;
+}
+
+        initSmartFeed();
+
+    async function fetchNip11(relayUrl) {
+        const nip11Box = document.getElementById('nip11Info');
+        nip11Box.innerHTML = '<div style="font-size: 0.8em; color: #888;">Caricamento info relay...</div>';
+        const httpUrl = relayUrl.replace('wss://', 'https://').replace('ws://', 'http://');
+
+        try {
+            const response = await fetch(httpUrl, {
+            headers: { 'Accept': 'application/nostr+json' }
+            });
+
+            if (!response.ok) throw new Error('Impossibile recuperare NIP-11');
+            const data = await response.json();
+
+            nip11Box.innerHTML = `
+                <div style="font-size: 0.85em; line-height: 1.4;">
+                    <strong style="color: #4CAF50;">${data.name || relayUrl}</strong><br>
+                    <span style="color: #ccc; font-size: 0.8em;">${data.description || 'No description avaible.'}</span><br>
+                    <div style="margin-top: 4px; font-size: 0.75em; color: #8ab4f8;">
+                        ${data.software ? `Software: ${data.software}` : ''} 
+                        ${data.version ? `v${data.version}` : ''}
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error(error);
+            nip11Box.innerHTML = `
+                <div style="font-size: 0.8em; color: #ff6b6b;">
+                    <strong>${relayUrl}</strong><br>
+                    <span>Info NIP-11 not avaible (CORS or offline).</span>
+                </div>
+            `;
+        }
+    }
+
+const MAX_USERS = 50;
+const activeUsers = new Set();
+
+function handleIncomingEvent(event) {
+    const pubkey = event.pubkey;
+
+    if (!activeUsers.has(pubkey)) {
+        if (activeUsers.size >= MAX_USERS) {
+            return; 
+        }
+        activeUsers.add(pubkey);
+        updateUserInterface();
+    }
+}
+
+function updateUserInterface() {
+    const userCountSpan = document.getElementById('userCount');
+    const userCountSidebarSpan = document.getElementById('userCountSidebar');
+    const activeUsersList = document.getElementById('activeUsersList');
+
+    if (userCountSpan) userCountSpan.textContent = activeUsers.size;
+    if (userCountSidebarSpan) userCountSidebarSpan.textContent = activeUsers.size;
+    activeUsersList.innerHTML = '';
+
+    if (activeUsers.size === 0) {
+        activeUsersList.innerHTML = '<div style="font-size: 0.75em; color: #666; font-style: italic; padding: 4px;">No events...</div>';
+        return;
+    }
+
+    activeUsersList.style.cssText = `
+        display: grid;
+        grid-template-rows: repeat(2, auto);
+        grid-auto-flow: column;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: #444 #222;
+        max-height: 100px;
+    `;
+
+    activeUsers.forEach(pubkey => {
+        let npub = pubkey;
+        try {
+            if (window.NostrTools && window.NostrTools.nip19) {
+                npub = window.NostrTools.nip19.npubEncode(pubkey);
+            }
+        } catch (e) {}
+
+        const shortNpub = `${npub.substring(0, 9)}...`;
+        const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(pubkey) : null;
+        const displayName = profile ? (profile.name || profile.display_name || shortNpub) : shortNpub;
+        const avatarUrl = profile && profile.picture ? profile.picture : null;
+        const userItem = document.createElement('a');
+        userItem.href = `profile.html?npub=${npub}`;
+        
+        userItem.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            font-size: 0.75em;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #ccc;
+            white-space: nowrap;
+            transition: all 0.2s;
+            max-width: 140px;
+        `;
+        
+        let avatarHtml = '';
+        if (avatarUrl) {
+            avatarHtml = `<img src="${avatarUrl}" style="width: 14px; height: 14px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" onerror="this.style.display='none'">`;
+        } else {
+            avatarHtml = `<span style="height: 6px; width: 6px; background-color: #4CAF50; border-radius: 50%; flex-shrink: 0;"></span>`;
+        }
+
+        userItem.innerHTML = `
+            ${avatarHtml}
+            <span style="overflow: hidden; text-overflow: ellipsis; font-family: monospace;">${displayName}</span>
+        `;
+
+        userItem.onmouseover = () => {
+            userItem.style.background = '#2a2a2a';
+            userItem.style.color = '#fff';
+            userItem.style.borderColor = '#444';
+        };
+        userItem.onmouseout = () => {
+            userItem.style.background = '#222';
+            userItem.style.color = '#ccc';
+            userItem.style.borderColor = '#333';
+        };
+
+        userItem.title = `Open profile: ${profile && profile.name ? profile.name : npub}`;
+        activeUsersList.appendChild(userItem);
+    });
+
+    if (activeUsers.size >= 50) {
+        const limitNote = document.createElement('div');
+        limitNote.style.cssText = 'font-size: 0.7em; color: #777; align-self: center; padding: 0 4px; font-style: italic; white-space: nowrap;';
+        limitNote.textContent = '(Max 50)';
+        activeUsersList.appendChild(limitNote);
+    }
+}    
+
+    </script>
+</body>
+</html>

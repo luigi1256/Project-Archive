@@ -1,0 +1,274 @@
+/* style.css - Ottimizzato per Desktop e Mobile */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: monospace;
+  background: #121212;
+  color: #e0e0e0;
+  margin: 0;
+  padding: 10px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+h2, h3, h4 { color: #8ab4f8; }
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: #181818;
+  border-bottom: 1px solid #333;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.app-header button, 
+.app-header select {
+  width: auto !important;
+  margin: 0 !important;
+}
+
+/* MAIN LAYOUT */
+.app-container {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.card {
+  background: #1e1e1e;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  overflow-y: auto;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.right-sidebar, .right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+input, textarea, select, button {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+button {
+  background: #bb86fc;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+}
+button:hover { background: #9965f4; }
+button:disabled { background: #555; color: #888; cursor: not-allowed; }
+button.primary { background: #3b82f6; color: #fff; }
+button.primary:hover { background: #2563eb; }
+button.publish { background: #00ff66; color: #000; }
+button.publish:hover { background: #00cc55; }
+
+pre {
+  background: #000;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  color: #00ff66;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: 0.85em;
+  max-height: 150px;
+}
+
+.hidden { display: none !important; }
+
+.kind-badge {
+  background: #252535;
+  color: #bb86fc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  margin-bottom: 12px;
+  border: 1px solid #3d3b5a;
+}
+
+.app-container.three-col {
+  min-height: 0;
+  overflow: hidden;
+  align-items: stretch;
+}
+
+/* --- OTTIMIZZAZIONE MOBILE / SCHERMI RIDOTTI --- */
+@media (max-width: 900px) {
+  body {
+    height: auto;
+    overflow: auto;
+  }
+
+  .app-container, 
+  .app-container.three-col {
+    flex-direction: column !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .left-panel, 
+  .right-sidebar, 
+  .right-panel,
+  .card, 
+  .canvas-area {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+
+  .app-header nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Layout Desktop a 3 colonne con CSS Grid */
+@media (min-width: 901px) {
+  .app-container {
+    display: grid;
+    /* 👈 MODIFICA QUI IL PRIMO VALORE: es. 220px o 240px per stringere la sinistra */
+    grid-template-columns: 240px 1fr 320px; 
+    gap: 12px;
+    padding: 12px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+    .top-layout-container {
+        flex-direction: column !important;
+    }
+}
+
+/* --- Indicatori delle Fasi --- */
+.step-indicator {
+  display: flex;
+  gap: 10px;
+  font-size: 0.8em;
+  color: #777;
+  margin-bottom: 4px;
+}
+.step-indicator span.active {
+  color: #bb86fc;
+  font-weight: bold;
+}
+
+/* --- Storico Chat / Messaggi --- */
+.chat-message {
+  font-size: 0.8em;
+  color: #ccc;
+  padding: 4px 0;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+/* --- Gestione Chiusura Sidebar (Opzionale) --- */
+@media (min-width: 901px) {
+  #main-container.sidebar-left-closed {
+    grid-template-columns: 0px 1fr 320px !important;
+    overflow: hidden;
+  }
+  #main-container.sidebar-right-closed {
+    grid-template-columns: 240px 1fr 0px !important;
+    overflow: hidden;
+  }
+}
+
+#qr-box {                   
+    margin: 15px auto;      
+    display: none;          
+    background: white;      
+    padding: 10px;          
+    border-radius: 8px;     
+}                           
+#qrcode {                   
+    display: flex;          
+    justify-content: center;
+    margin-top: 10px;       
+}                    
+
+/* --- LAYOUT SEZIONE RELAY & UTENTI --- */
+/* --- LAYOUT RELAY & UTENTI A DUE BLOCCHI --- */
+.relay-two-columns {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
+/* Riempimento altezza per il box NIP-11 */
+#nip11Info {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* Griglia Utenti Attivi: 3 righe fisse, le colonne crescono con scroll orizzontale */
+#activeUsersList {
+    display: grid;
+    grid-template-rows: repeat(3, auto);
+    grid-auto-flow: column;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: #444 #222;
+    max-height: 120px; /* Evita che si espanda troppo in verticale */
+}
+
+/* Ottimizzazione specifica per MOBILE */
+@media (max-width: 768px) {
+    .relay-two-columns {
+        flex-direction: column !important; /* Su mobile i due blocchi si impilano in verticale */
+    }
+
+    #nip11Info {
+        height: auto;
+    }
+
+    #activeUsersList {
+        max-height: 130px;
+    }
+}
+
+#tabsSection.card {
+    padding: 6px !important;
+}
+
+#tabsSection button {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 6px 10px !important;
+}

@@ -17,10 +17,9 @@
                 ← Torna indietro
             </a>
             
-            
             <div class="flex gap-2">
-                <input type="text" id="search-npub-input" placeholder="Cerca npub o inserisci..." class="bg-zinc-900 border border-zinc-800 text-xs px-3 py-1.5 text-zinc-200 font-mono focus:outline-none focus:border-purple-600 w-full sm:w-64">
-                <button onclick="handleQuickSearch()" class="bg-zinc-900 border border-zinc-800 text-xs text-purple-400 px-3 py-1.5 font-mono hover:bg-zinc-800 transition-colors">Vai</button>
+                <input type="text" id="search-npub-input" placeholder="Cerca npub o inserisci..." class="bg-zinc-900 border border-zinc-800 text-xs px-3 py-1.5 text-zinc-200 font-mono focus:outline-none focus:border-purple-600 w-full sm:w-64" onkeydown="if(event.key === 'Enter') handleQuickSearch()">
+                <button onclick="handleQuickSearch()" class="bg-zinc-900 border border-zinc-800 text-xs text-purple-400 px-3 py-1.5 font-mono hover:bg-zinc-800 transition-colors cursor-pointer">Vai</button>
             </div>
         </div>
 
@@ -258,7 +257,10 @@
                     renderRelayList(relayEvent, container);
                 } 
                 else if (tabName === 'discover') {
-                    renderDiscover(container);
+                    let events = await globalPool.querySync(defaultRelays, { kinds: [30002,10012], authors: [currentPubkey],limit: 20 });
+                    let listDiscovery = events.find(e => e.kind === 10012);
+                    let relayFeeds = events.filter(e => e.kind === 30002);
+                    renderRelayDiscoveryTab(listDiscovery,relayFeeds,container);
                 }
             } catch (e) {
                 console.error(e);
@@ -477,10 +479,11 @@
             }
             let relays = relayEvent.tags.filter(t => t[0] === 'r').map(t => ({ url: t[1], mode: t[2] || 'read/write' }));
             container.innerHTML = relays.map(r => `
-                <div class="bg-zinc-900 border border-zinc-800 p-4 flex justify-between items-center">
-                    <span class="text-sm font-mono text-blue-300">${escapeHtml(r.url)}</span>
-                    <span class="text-xs text-zinc-500 bg-zinc-800 px-2 py-0.5">${r.mode}</span>
-                </div>
+            <div class="bg-zinc-900 border border-zinc-800 p-4 flex justify-between items-center">
+                <span class="text-sm font-mono text-blue-300 truncate min-w-0 flex-1 mr-3">${escapeHtml(r.url)}</span>
+                <span class="text-xs text-zinc-500 bg-zinc-800 px-2 py-0.5 shrink-0">${r.mode}</span>
+            </div>
+
             `).join('');
         }
 
@@ -496,6 +499,105 @@
             `;
         }
 
+        function renderRelayDiscoveryTab(listDiscovery, relayFeeds, container) {
+    if (!listDiscovery && (!relayFeeds || relayFeeds.length === 0)) {
+        container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">Nessuna informazione o set relay trovato.</div>`;
+        return;
+    }
+
+    let htmlContent = '';
+
+    // 1. Evento 10012 con pulsante per aprire il singolo relay
+    if (listDiscovery && listDiscovery.tags) {
+        let directRelays = listDiscovery.tags.filter(t => t[0] === 'relay');
+        
+        if (directRelays.length > 0) {
+            htmlContent += `
+                <div class="mb-6">
+                    <h3 class="text-xs font-mono uppercase text-zinc-400 mb-2 px-1">Relay Preferiti (10012)</h3>
+                    <div class="space-y-2">
+                        ${directRelays.map(t => `
+                            <div class="bg-zinc-900 border border-zinc-800 p-3 flex justify-between items-center">
+                                <span class="text-sm font-mono text-blue-300 truncate min-w-0 flex-1 mr-3">${escapeHtml(t[1])}</span>
+                                <button onclick="openSingleRelay('${escapeHtml(t[1])}')" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-1 rounded transition-colors shrink-0">
+                                    Apri
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // 2. Set 30002 (Feed) con i rispettivi relay interni
+    if (relayFeeds && relayFeeds.length > 0) {
+        htmlContent += `
+            <div>
+                <h3 class="text-xs font-mono uppercase text-zinc-400 mb-2 px-1">Set Relay / Feed (30002)</h3>
+                <div class="space-y-4">
+                    ${relayFeeds.map(feed => {
+                        let titleTag = feed.tags.find(t => t[0] === 'title');
+                        let dTag = feed.tags.find(t => t[0] === 'd');
+                        let setName = titleTag ? titleTag[1] : (dTag ? dTag[1] : 'Set senza nome');
+                        let dValue = dTag ? dTag[1] : '';
+
+                        let feedRelays = feed.tags.filter(t => t[0] === 'relay');
+
+                        return `
+                            <div class="bg-zinc-900/80 border border-zinc-800 p-4 rounded-lg">
+                                <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
+                                    <div>
+                                        <h4 class="text-sm font-bold text-zinc-200">${escapeHtml(setName)}</h4>
+                                        <span class="text-[10px] text-zinc-500 font-mono">d: ${escapeHtml(dValue)}</span>
+                                    </div>
+                                    <button onclick="openRelayFeed('${feed.pubkey}', 30002, '${dValue}')" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded transition-colors shrink-0">
+                                        Feed
+                                    </button>
+                                </div>
+                                <div class="space-y-2">
+                                    ${feedRelays.map(r => `
+                                        <div class="bg-zinc-950 border border-zinc-800/50 p-2.5 flex justify-between items-center">
+                                            <span class="text-xs font-mono text-blue-300 truncate min-w-0 flex-1 mr-3">${escapeHtml(r[1])}</span>
+                                            <button onclick="openSingleRelay('${escapeHtml(r[1])}')" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded transition-colors shrink-0">
+                                                Apri
+                                            </button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    container.innerHTML = htmlContent || `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">Nessun dettaglio relay trovato negli eventi.</div>`;
+}
+
+    function openRelayFeed(param1, kind, identifier) {
+    
+        if (kind === 30002 && identifier) {
+            try {
+                let naddr = NostrTools.nip19.naddrEncode({
+                    pubkey: param1,
+                    kind: 30002,
+                    identifier: identifier
+                });
+                window.location.href = `relay-feed.html?naddr=${naddr}`;
+            } catch (e) {
+                console.error("Errore naddrEncode:", e);
+                alert("Impossibile generare l'naddr per questo set.");
+            }
+        } 
+
+        else if (param1) {
+            window.location.href = `relay-feed.html?relay=${encodeURIComponent(param1)}`;
+        }
+    }
+
+
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -503,8 +605,9 @@
 
         initProfile();
         window.switchTab = switchTab;
-        window.handleQuickSearch= handleQuickSearch
-        window.copyNpub=copyNpub
+        window.handleQuickSearch= handleQuickSearch;
+        window.copyNpub=copyNpub;
+        window.openRelayFeed=openRelayFeed;
         window.openZapModal = openZapModal;
         window.sendLike = async (targetId, targetAuthorPubkey) => {
         await sendLike(defaultRelays, targetId, targetAuthorPubkey);
