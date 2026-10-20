@@ -15,8 +15,6 @@
 
     <main class="max-w-3xl mx-auto px-3 sm:px-4 pb-24">
         <div id="loading" class="text-center text-gray-400 text-base sm:text-lg py-12">Caricamento nota e thread...</div>
-
-        <!-- Nota Principale -->
         <div id="mainNoteContainer" class="hidden mb-6 sm:mb-8">
             <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 sm:mb-3">Nota Principale</h3>
             <div id="mainNoteCard" class="bg-gray-800 border-2 border-purple-500/50 p-4 sm:p-6 rounded-2xl shadow-xl"></div>
@@ -309,7 +307,7 @@
             let profilePageLink = '#';
             try {
                 npub = nip19.npubEncode(event.pubkey);
-                profileLink = `profile.social?npub=${npub}`;
+                profileLink = `profile-social.html?npub=${npub}`;
                 profilePageLink = `profile.html?npub=${npub}`;
             } catch(e) {}
         
@@ -500,7 +498,6 @@
             }
             return null;
         }
-
 
         initThread();
     </script>
