@@ -137,7 +137,6 @@
                     return;
                 }
 
-                // 1. Scarica la nota principale
                 const mainEvents = await pool.querySync(queryRelays, { ids: [targetId] });
                 if (mainEvents.length === 0) {
                     document.getElementById('loading').innerText = "Nota principale non trovata sui relay.";
@@ -228,17 +227,13 @@
                 const threadedReplies = flattenTree(targetId, 1);
                 quoteEvents.sort((a, b) => b.created_at - a.created_at);
 
-                // --- 3. PRELOAD DEI PROFILI (INSERITO QUI) ---
                 const allPubkeys = [];
                 allThreadEventsMap.forEach(ev => allPubkeys.push(ev.pubkey));
                 quoteEvents.forEach(ev => allPubkeys.push(ev.pubkey));
                 await preloadProfiles(allPubkeys);
-                // -------------------------------------------
-
-                // Renderizza la nota principale
+                
                 renderNoteCard('mainNoteCard', mainEvent, true, 0);
 
-                // Renderizza le risposte strutturate
                 const repliesListDiv = document.getElementById('repliesList');
                 repliesListDiv.innerHTML = '';
                 if (threadedReplies.length === 0) {
@@ -251,7 +246,6 @@
                     });
                 }
 
-                // Renderizza le citazioni / menzioni
                 const quotesListDiv = document.getElementById('quotesList');
                 quotesListDiv.innerHTML = '';
                 if (quoteEvents.length === 0) {
@@ -315,7 +309,7 @@
             let profilePageLink = '#';
             try {
                 npub = nip19.npubEncode(event.pubkey);
-                profileLink = `https://coracle.social/people/${npub}`;
+                profileLink = `profile.social?npub=${npub}`;
                 profilePageLink = `profile.html?npub=${npub}`;
             } catch(e) {}
         
@@ -326,7 +320,7 @@
                 ? `<img src="${picture}" class="w-5 h-5 rounded-full object-cover shrink-0" onerror="this.onerror=null; this.parentNode.replaceWith(document.createTextNode('👤'));">`
                 : `<span class="text-xs">👤</span>`;
         
-            const formattedContent = parseContent(event.content);
+            const formattedContent = parseContent(event.content, event.tags);
             const dateStr = new Date(event.created_at * 1000).toLocaleString();
     
             let replyBadgeHtml = '';
@@ -410,7 +404,7 @@
                             <span class="truncate max-w-[160px]">${name}</span>
                             <span class="text-[10px] text-gray-500 font-mono">(${npub ? `${npub.substring(0, 6)}...` : ''})</span>
                         </a>
-                        <a href="${profileLink}" target="_blank" class="text-[10px] text-gray-500 hover:underline shrink-0">(Coracle)</a>
+                        <a href="${profileLink}" target="_blank" class="text-[10px] text-gray-500 hover:underline shrink-0">(Social)</a>
                     </div>
                     <div class="flex items-center gap-1.5 flex-wrap justify-start sm:justify-end">
                         ${!isMain ? replyBadgeHtml : ''}
@@ -423,7 +417,7 @@
             `;
         }
 
-        function parseContent(text) {
+        function parseContent(text, tags = []) {
             let parsed = text.replace(/nostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[a-z0-9]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
                 let url = '#';
                 let label = entity.substring(0, 8) + '...';
@@ -442,22 +436,71 @@
 
             parsed = parsed.replace(/https?:\/\/[^\s]+/g, (url) => {
                 let clean = url.replace(/[.,!?)]$/, '');
-                
                 if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
-                    return `<br><img src="${clean}" class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg object-cover border border-gray-700" loading="lazy"><br>`;
-                }
+                let details = getMediaDetailsFromTags(clean, tags);
+                let dims = details ? details.dims : null;
+                let fallbackUrl = details ? details.fallbackUrl : null;
+                    
+                let style = dims 
+                    ? `width: 100%; height: auto; aspect-ratio: ${dims.w} / ${dims.h};` 
+                    : `width: 100%; height: auto;`;
+                let onerrorAttr = fallbackUrl 
+                    ? `onerror="this.onerror=null; this.src='${fallbackUrl}';"` 
+                    : '';
+
+                return `<img src="${clean}" ${onerrorAttr} style="${style}" class="my-2 rounded-lg object-cover border border-gray-700">`;
+            }    
+            
                 if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
-                    return `<br><video controls class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg"><source src="${clean}"></video><br>`;
-                }
+                let details = getMediaDetailsFromTags(clean, tags);
+                let dims = details ? details.dims : null;
+                let fallbackUrl = details ? details.fallbackUrl : null;
+
+                let style = dims 
+                    ? `width: 100%; height: auto; aspect-ratio: ${dims.w} / ${dims.h};` 
+                    : `width: 100%; height: auto;`;
+                let videoFallbackScript = fallbackUrl 
+                    ? `onerror="this.onerror=null; this.querySelector('source').src='${fallbackUrl}'; this.load();"` 
+                    : '';
+                return `<video controls ${videoFallbackScript} style="${style}" class="my-2 rounded-lg border border-gray-700 bg-black"><source src="${clean}"></video>`;
+            }
+                
                 if (/\.(mp3|ogg|wav)(\?.*)?$/i.test(clean)) {
                     return `<br><audio controls class="mt-2 w-full"><source src="${clean}"></audio><br>`;
                 }
-
                 return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${url}</a>`;
             });
 
             return parsed;
         }
+
+
+        function getMediaDetailsFromTags(targetUrl, tags) {
+            if (!Array.isArray(tags)) return null;
+
+            for (let tag of tags) {
+                if (tag[0] === 'imeta') {
+                    let hasUrl = tag.some(item => item.startsWith('url ') && item.includes(targetUrl));
+                    if (hasUrl) {
+                        let dims = null;
+                        let fallbackUrl = null;
+                    
+                        for (let item of tag) {
+                            if (item.startsWith('dim ')) {
+                                let [w, h] = item.replace('dim ', '').split('x').map(Number);
+                                if (!isNaN(w) && !isNaN(h)) dims = { w, h };
+                            }
+                            if (item.startsWith('fallback ')) {
+                                fallbackUrl = item.replace('fallback ', '');
+                            }
+                        }
+                        return { dims, fallbackUrl };
+                    }
+                }
+            }
+            return null;
+        }
+
 
         initThread();
     </script>
