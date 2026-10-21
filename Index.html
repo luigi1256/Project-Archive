@@ -1,269 +1,200 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Nostrools</title>
-  <style>
-
-    :root {
-        --bg-main: #0f172a;
-        --bg-card: #1e293b;
-        --bg-hover: #334155;
-        --text-main: #f8fafc;
-        --text-muted: #94a3b8;
-        --accent: #a855f7;
-        --font: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    body {
-        background-color: var(--bg-main);
-        color: var(--text-main);
-        font-family: var(--font);
-        padding: 40px 15px;
-        margin: 0;
-    }
-
-    .testo {
-        font-family: var(--font);
-        color: var(--text-main);
-        background-color: var(--bg-card);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    button.testo:hover {
-        background-color: var(--bg-hover);
-        border-color: var(--accent);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
-    }
-
-    .header-buttons {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        gap: 20px;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
-    }
-
-    .header-buttons > button.testo {
-        width: 220px;
-        height: 100px;
-    }
-
-    .btn-gradient {
-        background: linear-gradient(135deg, #6b21a8, var(--accent)) !important;
-        border: none;
-    }
-
-    .header-buttons a {
-        color: white;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-    }
-
-
-    .social-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .social-group .social-label {
-        background: none;
-        border: none;
-        cursor: default;
-        color: var(--text-muted);
-        font-size: 1.2rem;
-        font-weight: 700;
-        text-align: center;
-    }
-
-    .social-buttons {
-        display: flex;
-        flex-direction: row;
-        gap: 10px;
-    }
-
-    .social-buttons button.testo {
-        width: 56px;
-        height: 56px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-    }
-
-    .social-group a {
-        color: var(--text-main);
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-    }
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive / Home</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+                                                             
+    :root {                                                              
+         --bg-main: #0f172a;                                              
+         --bg-card: #1e293b;                                              
+         --bg-hover: #334155;                                             
+         --text-main: #f8fafc;                                            
+         --text-muted: #94a3b8;                                           
+         --accent: #a855f7;                                               
+         --font: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+     }                                                                    
     
-    .social-letter {
-        font-size: 1.6rem;
-        font-weight: 800;
-        font-style: italic;
-        letter-spacing: 0;
-    }
-
-    .anno-selector {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-
-    .anno-selector label.testo {
-        background: none;
-        border: none;
-        color: var(--text-muted);
-        font-size: 1.4rem;
-        margin-right: 14px;
-    }
-
-    .anno-selector select.testo {
-        background-color: var(--bg-card);
-        border: 2px solid var(--bg-hover);
-        border-radius: 10px;
-        padding: 12px 18px !important;
-        font-size: 1.4rem;
-        font-weight: 700;
-        width: 200px;
-        outline: none;
-        cursor: pointer;
-    }
-
-    .anno-selector select.testo:focus {
-        border-color: var(--accent);
-    }
-
-
-    h1.testo {
-        background: none;
-        border: none;
-        font-size: 2rem;
-        font-weight: 800;
-        margin-top: 10px;
-        margin-bottom: 25px;
-        color: var(--text-main);
-    }
-
-    @media (max-width: 600px) {
-        .header-buttons {
-            flex-direction: column;
-            align-items: center;
-        }
-        .header-buttons > button.testo {
-            width: 90% !important;
-        }
-        div[style*="grid-template-columns"] {
-            grid-template-columns: repeat(2, 1fr) !important;
-        }
-        .mesi-grid button.testo {
-            height: 110px !important;
-        }
-    }
-
-</style>
+    .testo {                                                             
+         font-family: var(--font);                                        
+         color: var(--text-main);                                         
+         background-color: var(--bg-card);                                
+         border: 1px solid rgba(255, 255, 255, 0.05);                     
+         border-radius: 12px;                                             
+         font-size: 0.95rem;                                              
+         font-weight: 600;                                                
+         cursor: pointer;                                                 
+         transition: all 0.2s ease;                                       
+     }                                                                    
+    
+    button.testo:hover {                                                 
+         background-color: var(--bg-hover);                               
+         border-color: var(--accent);                                     
+         transform: translateY(-2px);                                     
+         box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);                 
+    }                                                                    
+ </style>                                                                 
+    
 </head>
-<body>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans flex items-center justify-center p-3 sm:p-4">
+    
+    <div class="w-full max-w-5xl my-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        
+    <div class="lg:col-span-6 flex flex-col justify-between min-h-[calc(100vh-2rem)] lg:min-h-0 py-2 lg:py-0">
+
+        <div class="text-center mb-8">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-purple-400 mb-2">Project-lost Archive</h1>
+            <h2 class="text-gray-400 text-sm sm:text-base font-medium">
+                Explore the network’s content, resources, and historical archives.
+            </h2>
+        </div>
+
+        <div class="flex flex-col gap-6 mb-8">
+            <a href="resource_hub.html" class="flex items-center justify-between p-3.5 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                <span class="flex items-center gap-3">
+                    <span class="text-xl">📚</span> 
+                    <span>Esplora le Risorse</span>
+                </span>
+                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
+            </a>
+
+            <a href="#archivio-mesi" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                <span class="flex items-center gap-3">
+                    <span class="text-xl">🗓️</span> 
+                    <span>Archivio per Mese</span>
+                </span>
+                <span class="text-gray-400 group-hover:text-purple-400 transition">↓</span>
+            </a>
+
+            <a href="https://formstr.app/f/naddr1qvzqqqr4mqpzqgfcew29une34vg0vm5ccwr7gpj5nzcmfx7dwc5ndl58lp3khj2xqyg8wumn8ghj7mn0wd68ytnddakj7qqx09vh25mxfs0msp0p#nkeys1qqrhv6t9wa9k27gpgq6xvvp4xgcr2dm9v5mxxepj8y6nyvpjx9nxge33vcuxxctzvgenwdmpxajkvcfhv5ckxwp5v9jnsdtxxeskgvnzxc6nzenyxcekxcehlfkgrf" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                <span class="flex items-center gap-3">
+                    <span class="text-xl">✉️</span> 
+                    <span>Feedback Form</span>
+                </span>
+                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
+            </a>
+
+            <a href="profile.html?npub=npub1ty3ftnetpxnlj42lgwkmwdxta69gfm5f9mfljvmwdgymvsf6pkuswhxq4p" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                <span class="flex items-center gap-3">
+                    <span class="text-xl">💡 Profile Page</span>                                                                                                         
+
+                </span>
+                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
+            </a>
+            <a href="https://mastodon.uno/@il_Lost_" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                <span class="flex items-center gap-3">                                         
+                    <span class="text-xl">💡 Profile Page Mastodon</span>                               
+                </span>                                                                        
+                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>    
+            </a>
+
+        </div>
+    
+</div>  
 
 
-<div class="header-buttons">
+<div class="lg:col-span-6 lg:pt-[100px]">
+    <div id="archivio-mesi" class="bg-gray-800/40 border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl">
+        
+        <div class="flex items-center justify-between gap-3 mb-5 border-b border-gray-700/60 pb-3">
+            <h2 class="text-xl font-bold text-white m-0 flex items-center gap-2">
+                <span>📁</span> Lista dei mesi
+            </h2>
+            
+            <div class="flex items-center gap-2">
+                <label for="select-anno" class="text-sm font-medium text-gray-400">Anno:</label>
+                <select id="select-anno" onchange="aggiornaAnno()" class="bg-gray-800 text-white border border-gray-700 rounded-xl px-3 py-1.5 font-medium focus:outline-none focus:border-purple-500 transition cursor-pointer text-sm">
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
+                    <option value="2027">2027</option>
+                </select>
+            </div>
+        </div>
 
-  <button class="testo btn-gradient">
-    <a href="resource_hub.html" target="_blank">Nostr Resource Hub</a>
-  </button>
+        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-3">
+            
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('Jan')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">01</span>
+                <span class="text-sm font-semibold">Jan</span>
+            </button>
 
- 
-  <button class="testo">
-    <a href="https://formstr.app/f/naddr1qvzqqqr4mqpzqmu4jjxdtnzzpkhrau3f66c3yy5f7jlszhcgjmvyzsrr3q9u9qzvqythwumn8ghj7mn0wd68ytnnw3skkete9ehx2ap0qyt8wumn8ghj7ur4wfcxcetjv4kxz7fwvdhk6tcpr4mhxue69uhkummnw3ez6vp39eukz6mfdphkumn99e3k7mf0qythwumn8ghj7un9d3shjtnswf5k6ctv9ehx2ap0qyxhwumn8ghj7mn0wvhxcmmvqyw8wumn8ghj7mn0wd68ytfsxyh8jcttd95x7mnwv5hxxmmdqyv8wumn8ghj7un9d3shjtnndehhyapwwdhkx6tpdsq3zamnwvaz7tmwdaehgu3jxyhxxmmdqqrygvt389cx2z3prf7?viewKey=64ec295c73a9836a77da455ea65b912968cd66d6bea5f9e7089481f17598359b" target="_blank">Feedback Form</a>
-  </button>
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('February')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">02</span>
+                <span class="text-sm font-semibold">Feb</span>
+            </button>
 
- 
-  <div class="social-group">
-    <div class="testo social-label" style="background:none; border:none; cursor:default;">Social: </div>
-    <div class="social-buttons">
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('March')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">03</span>
+                <span class="text-sm font-semibold">Mar</span>
+            </button>
 
-      
-      <button class="testo" title="Nostr">
-        <a href="profile.html?npub=npub1ty3ftnetpxnlj42lgwkmwdxta69gfm5f9mfljvmwdgymvsf6pkuswhxq4p" target="_blank">
-          <span class="social-letter" style="color:#a855f7;">N</span>
-        </a>
-      </button>
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('April')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">04</span>
+                <span class="text-sm font-semibold">Apr</span>
+            </button>
 
-      
-      <button class="testo" title="Mastodon">
-        <a href="https://mastodon.uno/@il_Lost_" target="_blank">
-          <span class="social-letter" style="color:#8b8cf8;">M</span>
-        </a>
-      </button>
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('May')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">05</span>
+                <span class="text-sm font-semibold">May</span>
+            </button>
 
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('June')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">06</span>
+                <span class="text-sm font-semibold">Jun</span>
+            </button>
+
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('July')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">07</span>
+                <span class="text-sm font-semibold">Jul</span>
+            </button>
+
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('August')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">08</span>
+                <span class="text-sm font-semibold">Aug</span>
+            </button>
+
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('September')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">09</span>
+                <span class="text-sm font-semibold">Sep</span>
+            </button>
+
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('October')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">10</span>
+                <span class="text-sm font-semibold">Oct</span>
+            </button>
+
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('November')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">11</span>
+                <span class="text-sm font-semibold">Nov</span>
+            </button>
+
+            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('December')">
+                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">12</span>
+                <span class="text-sm font-semibold">Dec</span>
+            </button>
+
+        </div>
 
     </div>
-  </div>
-
 </div>
 
-<div style="max-width: 800px; margin: 0 auto; padding: 0 15px; margin-bottom: 40px;">
-  <div style="display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
-    <h1 class="testo" style="margin: 0;">List of folders</h1>
-    <label for="select-anno" class="testo" style="padding: 12px 16px; font-size: 1.4rem;">Select Year:</label>
-    <select id="select-anno" class="testo" style="padding: 12px 16px; font-size: 1.4rem; width: 200px;" onchange="aggiornaAnno()">
-      <option value="2025">2025</option>
-      <option value="2026" selected>2026</option>
-      <option value="2027">2027</option>
-    </select>
-  </div>
+</body>                                                                                                                                
+    <script>                                                                                                                                                                                  
+        let annoSelezionato = "2026";                                                                                           
+                                                                                                                                                                                                   
+        function aggiornaAnno() {                                                                                               
+            const select = document.getElementById("select-anno");                                                              
+            annoSelezionato = select.value;                                                                                     
+        }                                                                                                                       
+                                                                                                                                                                                                     
+        function apriFileMese(mese) {                                                                                           
+            const percorsoDestinazione = annoSelezionato + "/" + mese + "/index.html";                                          
+            window.location.href = percorsoDestinazione;                                                                        
+        }                                                                                                                       
+    </script>                                                                                                                       
 
-  <div class="mesi-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('Jan')">Jan</button>
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('February')">February</button>
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('March')">March</button>
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('April')">April</button>
-
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('May')">May</button>
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('June')">June</button>
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('July')">July</button>
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('August')">August</button>
-
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('September')">September</button>
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('October')">October</button>
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('November')">November</button>
-    <button class="testo tablinks" style="width: 100%; height: 100px;" onclick="apriFileMese('December')">December</button>
-  </div>
-</div>
-
-<script>
-    // Anno iniziale di default (per la navigazione dei mesi)
-    let annoSelezionato = "2026";
-
-    // Intercetta il cambio della tendina dell'anno
-    function aggiornaAnno() {
-        const select = document.getElementById("select-anno");
-        annoSelezionato = select.value;
-    }
-
-    // Reindirizza al file locale del mese selezionato
-    function apriFileMese(mese) {
-        const percorsoDestinazione = annoSelezionato + "/" + mese + "/index.html";
-        window.location.href = percorsoDestinazione;
-    }
-</script>
-
+    </div>
 </body>
 </html>

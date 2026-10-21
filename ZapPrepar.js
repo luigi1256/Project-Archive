@@ -36,7 +36,6 @@ export async function openZapModal(targetAuthorPubkey, targetEventId)  {
             
             <div id="qr-container" style="margin-top: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;"></div>
 
-            <!-- Sezione Mobile: Link Wallet, Invoice e Copia -->
             <div id="mobile-payment-section" style="display: none; margin-top: 10px; text-align: center;">
                 <a id="wallet-link" href="#" style="display: block; background: #bb86fc; color: #121212; text-decoration: none; padding: 8px; border-radius: 4px; font-weight: bold; margin-bottom: 8px; font-size: 13px;">Paga con il Wallet ⚡</a>
                 <p id="invoice-text" style="font-size: 10px; color: #888; word-break: break-all; background: #121212; padding: 6px; border-radius: 4px; max-height: 50px; overflow-y: auto; text-align: left; margin-bottom: 6px; font-family: monospace;"></p>
@@ -97,7 +96,6 @@ export async function openZapModal(targetAuthorPubkey, targetEventId)  {
         selectedAmount = parseInt(e.target.value) || 0;
     });
 
-    // 3. AVVIO IN BACKGROUND: Risolve il profilo e l'endpoint LNURL
     (async () => {
         try {
             currentZapData = await prepareZapTarget(defaultRelays, targetAuthorPubkey);
@@ -122,7 +120,7 @@ export async function openZapModal(targetAuthorPubkey, targetEventId)  {
 
     
     const iPaidBtn = modal.querySelector('.i-paid-btn');
-let savedVerifyUrl = null;
+    let savedVerifyUrl = null;
 
 sendBtn.addEventListener('click', async () => {
     if (!currentZapData || selectedAmount <= 0) return;

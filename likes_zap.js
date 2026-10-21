@@ -83,42 +83,30 @@ export async function prepareZapTarget(generalRelays, targetAuthorPubkey) {
 
     let profileData = null;
 
-    // 1. Prova a prenderlo dalla cache
     if (typeof getProfileFromCache === 'function') {
         profileData = getProfileFromCache(targetAuthorPubkey);
     }
-
-    // 2. Se non c'è in cache, lo scarica dai relay
     if (!profileData) {
         const profileEvent = await pool.get(generalRelays, { kinds: [0], authors: [targetAuthorPubkey] });
         if (!profileEvent) {
             throw new Error("Profilo dell'autore non trovato sui relay.");
         }
-        // Qui facciamo il parse perché arriva dall'evento Nostr grezzo
         profileData = JSON.parse(profileEvent.content);
         
-        // (Opzionale) Se vuoi salvarlo in cache per la prossima volta:
-        // if (typeof saveProfileToCache === 'function') {
-        //     saveProfileToCache(targetAuthorPubkey, profileData);
-        // }
     }
 
-    // 3. Ora profileData è pronto in entrambi i casi!
-    const lud16 = profileData.lud16 || profileData.lud06;
+    const lud16 = profileData.lud16;
     if (!lud16) {
         throw new Error("L'autore non ha configurato un indirizzo Lightning (lud16).");
     }
 
     const [name, domain] = lud16.split('@');
     const lnurlpUrl = `https://${domain}/.well-known/lnurlp/${name}`;
-
     const res = await fetch(lnurlpUrl);
     const lnurlData = await res.json();
-
     if (lnurlData.status === 'ERROR') {
         throw new Error(`Errore LNURL: ${lnurlData.reason}`);
     }
-
     return {
         lud16,
         callback: lnurlData.callback,
