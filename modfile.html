@@ -90,7 +90,6 @@
                 const neventParam = urlParams.get('nevent');
                 const idParam = urlParams.get('id');
 
-                // Relay configurabili via ?relays=wss://...,wss://...
                 const customRelays = (urlParams.get('relays') || '')
                     .split(',')
                     .map(r => r.trim())
@@ -110,8 +109,6 @@
 
                         updateRelayStats(queryRelays.length, queryRelays);
 
-                        // Prendiamo più eventi e teniamo il più recente (i replaceable
-                        // non garantiscono l'ordine di arrivo dai relay)
                         const events = await pool.querySync(queryRelays, {
                             authors: [pubkey],
                             kinds: [kind],
@@ -121,7 +118,6 @@
                         events.sort((a, b) => b.created_at - a.created_at);
                         if (events.length > 0) targetEvent = events[0];
 
-                        // Profilo autore (kind 0), non blocca il rendering in caso di fallimento
                         loadAuthorProfile(pubkey, queryRelays);
                     }
                 } else if (neventParam) {
@@ -151,7 +147,6 @@
                     return;
                 }
 
-                // Caso generico: JSON grezzo
                 document.getElementById('feedTitle').innerText = `Oggetto Grezzo (Kind ${targetEvent.kind})`;
                 document.getElementById('statusText').innerText = "Visualizzazione della struttura JSON dell'evento.";
 
@@ -186,7 +181,6 @@
                 const meta = JSON.parse(profileEvents[0].content || '{}');
                 const name = meta.display_name || meta.name || npub.substring(0, 12) + '...';
 
-                // Inserisce la byline sotto lo status, senza bloccare nulla
                 const statusEl = document.getElementById('statusText');
                 const byline = document.createElement('div');
                 byline.className = 'mt-2 text-sm text-gray-500';
@@ -204,73 +198,63 @@
                               .replace(/"/g, "&quot;")
                               .replace(/'/g, "&#039;");
         }
-
-        function parseNostrContent(rawContent) {
-            // PRIMA escape del testo, POI trasformazioni sui placeholder — così
-            // niente di ciò che arriva dall'evento può generare HTML arbitrario
-            let safe = escapeHtml(rawContent);
-
-            safe = safe.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
-                let url = '#';
-                let label = escapeHtml(entity.substring(0, 10) + '...');
-                if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
-                    label = '👤 ' + label;
-                    url = `profile.html?npub=${entity}`;
-                } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
-                    label = '💬 ' + label;
-                    url = `note.html?nevent=${entity}`;
-                } else if (entity.startsWith('naddr')) {
-                    label = '📚 ' + label;
-                    url = `modfile.html?naddr=${entity}`;
-                }
-                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
-            });
-
-            // Regex URL: scarta punteggiatura finale ma conserva ) interne
-            const urlRegex = /(https?:\/\/[^\s<>"]+[^\s<>"),.;:!?])/g;
-            safe = safe.replace(urlRegex, (rawUrl) => {
-                let cleanUrl = rawUrl;
-                // Solo http/https, nessun carattere di quoting pericoloso nell'href
-                if (!/^https?:\/\//i.test(cleanUrl) || /["'<>()]/.test(cleanUrl.replace(/[()]/g, m => ''))) {
-                    return rawUrl;
-                }
-
-                let lower = cleanUrl.toLowerCase();
-                let typeBadge = "🔗 Link";
-                let badgeClass = "bg-blue-950 text-blue-300 border-blue-800";
-
-                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
-                    typeBadge = "🖼️ Foto";
-                    badgeClass = "bg-emerald-950 text-emerald-300 border-emerald-800";
-                } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
-                    typeBadge = "🎬 Video";
-                    badgeClass = "bg-amber-950 text-amber-300 border-amber-800";
-                }
-
-                let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
-                if (displayUrl.length > 35) {
-                    displayUrl = displayUrl.substring(0, 32) + '...';
-                }
-
-                return `<a href="${escapeHtml(cleanUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2 py-0.5 my-1 rounded text-xs border ${badgeClass} hover:underline font-medium"><span class="opacity-80">${typeBadge}</span> <span>${escapeHtml(displayUrl)}</span></a>`;
-            });
-
-            return safe;
-        }
-
-        function sanitizeMarkdown(md) {
-          // Escapa i triple backtick prima di farli processare da marked
-          const safeMd = md.replace(/```/g, '&#96;&#96;&#96;');
-
-          const rawHtml = marked.parse(safeMd, { breaks: true });
-          return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
-        }
+                                                                                            
         initSmartFeed();
 
         function extractTagValue(event, tagName) {
             const tag = event.tags.find(t => t[0] === tagName);
             return tag ? tag[1] : null;
         }
+                        
+        function parseNostrEventContent(content, tags = []) {
+    let md = content;
+
+    md = md.replace(/#\[(\d+)\]/g, (match, indexStr) => {
+        const index = parseInt(indexStr, 10);
+        const tag = tags[index];
+        if (!tag) return match; 
+
+        const [tagName, value] = tag;
+
+        if (tagName === 'p') {
+            const displayName = tag[3] || (value.substring(0, 8) + '...');
+            return `[👤 ${displayName}](profile.html?pubkey=${value})`;
+        } 
+        else if (tagName === 'e') {
+            return `[💬 Nota ${value.substring(0, 6)}...](note.html?id=${value})`;
+        }
+        else if (tagName === 'a') {
+            return `[📚 Articolo/Mod](modfile.html?naddr=${value})`;
+        }
+
+        return match;
+    });
+
+    md = md.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+        let label = entity.substring(0, 10) + '...';
+        let url = '#';
+        if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+            label = '👤 ' + label;
+            url = `profile.html?npub=${entity}`;
+        } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+            label = '💬 ' + label;
+            url = `note.html?nevent=${entity}`;
+        } else if (entity.startsWith('naddr')) {
+            label = '📚 ' + label;
+            url = `modfile.html?naddr=${entity}`;
+        }
+        return `[${label}](${url})`;
+    });
+
+    let safeMd = md.replace(/```/g, '&#96;&#96;&#96;');
+    const rawHtml = marked.parse(safeMd, { breaks: true });
+
+    return DOMPurify.sanitize(rawHtml, { 
+        USE_PROFILES: { html: true },
+        ADD_ATTR: ['target', 'rel', 'class']
+    });
+}    
+
 
         function renderArticleContent(event) {
             const title = escapeHtml(extractTagValue(event, 'title') || 'Senza Titolo');
@@ -278,7 +262,6 @@
             const summary = extractTagValue(event, 'summary');
             const publishedAt = new Date(event.created_at * 1000).toLocaleDateString();
 
-            // Valida l'immagine: solo http(s), fallback al body senza immagine
             let imgTag = '';
             if (image) {
                 try {
@@ -289,8 +272,8 @@
                 } catch { /* URL invalido: ignora l'immagine */ }
             }
 
-            // Kind 30023 è markdown: parsing + sanitizzazione (gestisce anche ![](url))
-            const formattedBody = sanitizeMarkdown(event.content || '');
+            const formattedBody = parseNostrEventContent(event.content,event.tag || '');
+           
 
             return `
                 <article class="bg-gray-800 border border-gray-700 p-6 md:p-10 rounded-2xl shadow-xl space-y-6">
