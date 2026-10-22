@@ -1,0 +1,337 @@
+/* ==========================================================================
+   BAITA THEME - Forest & Warm Timber Interface
+   ========================================================================== */
+
+:root {
+  --baita-bg: #121a16;
+  --baita-card-bg: rgba(26, 41, 33, 0.9);
+  --baita-card-border: #233e30;
+  --baita-sidebar-bg: linear-gradient(180deg, #15241c 0%, #0d1712 100%);
+  
+  --baita-text: #e2e8f0;
+  --baita-text-muted: #80a390;
+  --baita-heading: #6ee7b7;
+
+  --baita-accent-green: #10b981;
+  --baita-accent-green-hover: #059669;
+  --baita-accent-amber: #d97706;
+  --baita-accent-purple: #c084fc;
+
+  --baita-book-spine-1: #1e3a2b;
+  --baita-book-spine-2: #14281e;
+}
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--baita-bg);
+  color: var(--baita-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  display: flex;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--baita-heading);
+  font-family: monospace;
+  margin-top: 0;
+}
+
+/* ==========================================================================
+   1. SCAFFALE & SIDEBAR (#shelf)
+   ========================================================================== */
+
+#shelf {
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: var(--baita-sidebar-bg);
+  padding: 80px 15px 20px 15px;
+  box-shadow: inset -6px 0 15px rgba(0, 0, 0, 0.5);
+  border-right: 2px solid var(--baita-card-border);
+  overflow-y: auto;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+}
+
+#shelf.collapsed {
+  transform: translateX(-100%);
+}
+
+#shelf h2 {
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--baita-text-muted);
+  border-bottom: 1px solid var(--baita-card-border);
+  padding-bottom: 6px;
+}
+
+.book {
+  background: linear-gradient(90deg, var(--baita-book-spine-1), var(--baita-book-spine-2));
+  color: var(--baita-text);
+  padding: 8px 10px;
+  margin: 6px 0;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  border-left: 3px solid var(--baita-accent-amber);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+}
+
+.book:hover {
+  transform: translateX(4px);
+  border-left-color: var(--baita-accent-green);
+  background: linear-gradient(90deg, #254634, #193225);
+}
+
+#toggleShelf {
+  position: fixed;
+  left: 18px;
+  top: 18px;
+  background: var(--baita-accent-green);
+  color: #042f2e;
+  font-weight: bold;
+  font-family: monospace;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 60;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transition: all 0.2s ease;
+}
+
+#toggleShelf:hover {
+  background: var(--baita-accent-green-hover);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   2. MAIN CONTENT & SEARCH AREA
+   ========================================================================== */
+
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: var(--baita-bg);
+  margin-left: 260px;
+  min-height: 100vh;
+  width: calc(100% - 260px);
+  padding-top: 20px;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+#shelf.collapsed + #main {
+  margin-left: 0;
+  width: 100%;
+}
+
+#searchArea {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 0 15px;
+}
+
+#searchContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 550px;
+}
+
+#searchBar {
+  flex: 1;
+  font-size: 14px;
+  font-family: monospace;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--baita-card-border);
+  outline: none;
+  background: rgba(10, 18, 14, 0.8);
+  color: var(--baita-text);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+  transition: border-color 0.2s ease;
+}
+
+#searchBar:focus {
+  border-color: var(--baita-accent-green);
+}
+
+#searchButton {
+  background: var(--baita-accent-green);
+  border: none;
+  color: #042f2e;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+#searchButton:hover {
+  background: var(--baita-accent-green-hover);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   3. CARTELLETTA & EDITORI (#library / .card)
+   ========================================================================== */
+
+#library, .card {
+  background: var(--baita-card-bg);
+  color: var(--baita-text);
+  border-radius: 8px;
+  border: 1px solid var(--baita-card-border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+#library {
+  width: 90%;
+  max-width: 850px;
+  flex: 1;
+  max-height: calc(100vh - 120px);
+  margin: 20px auto;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--baita-card-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--baita-accent-green);
+}
+
+input, textarea, select {
+  background: rgba(10, 18, 14, 0.8);
+  border: 1px solid var(--baita-card-border);
+  color: var(--baita-text);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: monospace;
+}
+
+button {
+  background: var(--baita-accent-green);
+  color: #042f2e;
+  border-radius: 4px;
+  border: none;
+  padding: 8px 12px;
+  font-weight: bold;
+  font-family: monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background: var(--baita-accent-green-hover);
+  color: #ffffff;
+}
+
+button.publish {
+  background: var(--baita-accent-amber);
+  color: #ffffff;
+}
+button.publish:hover {
+  background: #b45309;
+}
+
+pre {
+  background: #0a120e;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--baita-card-border);
+  color: var(--baita-heading);
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: monospace;
+  font-size: 0.85em;
+}
+
+a {
+  color: var(--baita-accent-purple);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  #shelf {
+    transform: translateX(-100%);
+  }
+  #shelf.collapsed {
+    transform: translateX(0);
+  }
+  #main {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+.search-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 30px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  font-family: monospace;
+  font-size: 11px;
+  color: #34d399; 
+  background-color: rgba(2, 44, 34, 0.8); 
+  border: 1px solid rgba(6, 95, 70, 0.8); 
+  border-radius: 0.375rem; 
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-loading.hidden {
+  display: none !important;
+}
+
+#library, .card, #results > div {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.whitespace-pre-wrap, pre, code {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+
+#results img, #results video {
+  max-width: 100% !important;
+  height: auto !important;
+}

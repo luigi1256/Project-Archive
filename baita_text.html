@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>La Baita</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="theme_baita.css">
+</head>
+<body>
+
+<button id="toggleShelf" onclick="toggleShelf()">📚 Shelf</button>
+
+<aside id="shelf">
+    <h2>My saved</h2>
+    <div id="books" style="margin-top: 15px;"></div>
+</aside>
+
+<div id="main">
+  <div id="searchArea">
+    <div id="searchContainer">
+      <input
+        id="searchBar"
+        type="text"
+        placeholder="search in silence…"
+      >
+      <button id="searchButton">🔍</button>
+    </div>
+  </div>
+
+
+<div id="library" class="hidden" >
+    
+    <div class="flex justify-between items-center mb-4 border-b border-[#064e3b] pb-2">
+
+      <div id="loading" class="search-loading hidden">
+        ⏳ Search...
+      </div>
+
+      <span id="libraryTitle" class="text-xs font-mono text-emerald-400 opacity-80"></span>
+      <button onclick="closeLibrary()" class="text-xs font-mono text-emerald-400 hover:text-emerald-200 px-2 py-1 rounded bg-emerald-950/60 border border-emerald-800/60 transition-colors">
+        ✖ Close folder
+      </button>
+    </div>
+
+    <div id="results" class="space-y-4"></div>
+  </div>
+
+<script src="baita_core.js"></script>
+<script type="module">
+import {nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'  
+const searchBar = document.getElementById("searchBar");
+const searchButton = document.getElementById("searchButton");
+const library = document.getElementById("library");
+const resultsDiv = document.getElementById("results");
+const loadingDiv = document.getElementById("loading");
+const libraryTitle = document.getElementById("libraryTitle");
+
+
+function executeTextSearch(term) {
+  if (!term) return;
+  let cleanTerm = term.replace(/^nostr:/i, "").trim();
+  if (cleanTerm.startsWith("npub1") || cleanTerm.startsWith("nprofile1")) {
+    window.location.href = `profile.html?npub=${encodeURIComponent(cleanTerm)}`;
+    return;
+  }
+  if (cleanTerm.startsWith("note1") || cleanTerm.startsWith("nevent1")) {
+    window.location.href = `note.html?nevent=${encodeURIComponent(cleanTerm)}`;
+    return;
+  }
+  if (cleanTerm.startsWith("naddr1")) {
+    window.location.href = `modfile.html?naddr=${encodeURIComponent(cleanTerm)}`;
+    return;
+  }
+
+  if (library) library.style.display = "block";
+  if (libraryTitle) libraryTitle.textContent = `📚 Folder: "${term}"`;
+
+  let books = JSON.parse(localStorage.getItem("nostr_shelf")) || {};
+  if (!books[term]) {
+    books[term] = { label: `🔍 ${term}`, type: 'text' };
+    localStorage.setItem("nostr_shelf", JSON.stringify(books));
+    if (typeof renderShelf === 'function') renderShelf();
+  }
+
+  const newUrl = `${window.location.pathname}?q=${encodeURIComponent(term)}`;
+  window.history.pushState({path: newUrl}, '', newUrl);
+
+  fetchNostrSearch(term);
+  
+  if (searchBar) searchBar.value = "";
+}
+
+window.closeLibrary = function() {
+  if (library) library.style.display = "none";
+  const cleanUrl = window.location.pathname;
+  window.history.pushState({path: cleanUrl}, '', cleanUrl);
+}
+
+const dismissedNotes =getDismissedNotes();
+
+function getDismissedNotes() {
+  return new Set(JSON.parse(localStorage.getItem("baita_dismissed") || "[]"));
+}
+
+
+window.dismissNote = function(eventId) { 
+  let dismissed = JSON.parse(localStorage.getItem("baita_dismissed") || "[]");
+  
+  if (!dismissed.includes(eventId)) {
+    dismissed.push(eventId);
+    if (dismissed.length > 50) dismissed.shift();
+    localStorage.setItem("baita_dismissed", JSON.stringify(dismissed));
+  }
+
+  const card = document.getElementById(`note-${eventId}`);
+  if (card) card.remove();
+}
+
+
+function renderNoteCard(ev) {
+  if (typeof loadingDiv !== 'undefined' && loadingDiv) {
+    loadingDiv.classList.add("hidden");
+  }
+  
+  const card = document.createElement("div");
+  card.id = `note-${ev.id}`;
+  card.className = "p-4 mb-3 bg-[#0f2318] border border-[#064e3b] rounded-lg text-emerald-100 text-sm shadow-sm relative group";
+  
+  const formattedContent = typeof parseContent === 'function' ? parseContent(ev.content) : ev.content;
+  let nevent = nip19.neventEncode({ id: ev.id });
+  let noteLink = `note.html?nevent=${nevent}`;      
+
+  card.innerHTML = `
+    <div class="flex justify-between items-center mb-2 text-xs opacity-60 font-mono">
+      <span>Pubkey: ${ev.pubkey.substring(0, 8)}...</span>
+      <div class="flex items-center gap-3">
+        <a href="${noteLink}" class="hover:underline text-emerald-400">Open note ↗</a>
+        <button type="button" onclick="dismissNote('${ev.id}')" title="Nascondi questa nota" class="text-emerald-400/50 hover:text-red-400 bg-transparent border-none p-0 cursor-pointer text-xs transition-colors">
+          ✕
+        </button>
+      </div>
+    </div>
+    <!-- overflow-wrap e break-words prevengono l'allargamento orizzontale -->
+    <div class="whitespace-pre-wrap leading-relaxed break-words overflow-hidden">${formattedContent}</div>
+  `;
+  
+  const resultsDiv = document.getElementById("results") || document.getElementById("resultsDiv"); // Assicurati che punti al contenitore corretto
+  if (resultsDiv) {
+    resultsDiv.appendChild(card);
+  }
+}
+
+
+function fetchNostrSearch(query) {
+  if (loadingDiv) {
+    loadingDiv.textContent = `⏳ search in silence…`;
+    loadingDiv.classList.remove("hidden");
+  }
+  if (resultsDiv) resultsDiv.innerHTML = "";
+  
+  const searchRelays = [
+      "wss://search.nos.today",
+      "wss://nostr.azzamo.net"
+  ];
+
+  let seenEventIds = new Set();
+  let activeConnections = searchRelays.length;
+
+  const isHashtagSearch = query.startsWith("#");
+  const cleanTagValue = isHashtagSearch ? query.substring(1).toLowerCase().trim() : query.trim();
+
+  searchRelays.forEach(relayUrl => {
+    const ws = new WebSocket(relayUrl);
+
+    ws.onopen = () => {
+      let filter = { kinds: [1], limit: 30 };
+
+      if (isHashtagSearch) {
+        filter["#t"] = [cleanTagValue];
+      } else {
+        filter["search"] = cleanTagValue;
+      }
+
+      ws.send(JSON.stringify(["REQ", "baita_search", filter]));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data[0] === "EVENT") {
+          const ev = data[2];
+          if (!seenEventIds.has(ev.id) && !dismissedNotes.has(ev.id)) {
+            seenEventIds.add(ev.id);
+            renderNoteCard(ev);
+          }
+          
+        } else if (data[0] === "EOSE") {
+          ws.close();
+        }
+      } catch (err) {
+        console.error("Error parsing", relayUrl, err);
+      }
+    };
+
+    ws.onerror = () => checkFinished();
+    ws.onclose = () => checkFinished();
+  });
+
+  function checkFinished() {
+    activeConnections--;
+    if (activeConnections <= 0) {
+      if (loadingDiv) loadingDiv.classList.add("hidden");
+      if (resultsDiv && resultsDiv.children.length === 0) {
+        loadingDiv.textContent = isHashtagSearch 
+          ? `No notes found with the hashtag #${cleanTagValue}.` 
+          : `No results found for "${cleanTagValue}".`;
+        loadingDiv.classList.remove("hidden");
+      }
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const queryParam = urlParams.get('q'); 
+  console.log(queryParam)
+  if (queryParam) {
+    executeTextSearch(queryParam);
+  }
+
+  if (searchButton) {
+    searchButton.onclick = () => {
+      const term = searchBar.value.trim();
+      if (term) executeTextSearch(term);
+    };
+  }
+
+  if (searchBar) {
+    searchBar.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const term = searchBar.value.trim();
+        if (term) executeTextSearch(term);
+      }
+    });
+  }
+});
+</script>
+
+</body>
+</html>

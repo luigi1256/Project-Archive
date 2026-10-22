@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baita - Search</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="theme_baita.css">
+</head>
+<body class="min-h-screen font-sans antialiased">
+
+<div id="sidebarOverlay" onclick="toggleShelf()" class="fixed inset-0 bg-black/60 z-40 transition-opacity opacity-0 pointer-events-none md:hidden"></div>
+
+<button id="toggleShelf" onclick="toggleShelf()">📚 Shelf</button>
+
+<aside id="shelf">
+    <div class="flex items-center justify-between mb-2">
+        <h2>My saved</h2>
+        <button onclick="toggleShelf()" class="text-emerald-300 hover:text-white text-xs px-2 py-1 md:hidden">✕</button>
+    </div>
+    <div id="books" class="space-y-1"></div>
+</aside>
+
+<div id="main">
+  <div id="searchArea">
+    <div id="searchContainer">
+      <input
+        id="searchBar"
+        type="text"
+        placeholder="search in the silence…"
+      >
+      <button id="searchButton">🔍</button>
+    </div>
+  </div>
+
+  <div id="library">
+  </div>
+</div>
+
+<script src="baita_core.js"></script>
+<script>
+
+const searchBar = document.getElementById("searchBar");
+const searchButton = document.getElementById("searchButton");
+
+if (searchButton) {
+  searchButton.onclick = performSearch;
+}
+
+searchBar.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") performSearch();
+});
+
+</script>
+
+</body>
+</html>

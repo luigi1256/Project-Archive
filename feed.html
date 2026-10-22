@@ -3,40 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nostr Smart Feed - Rich Content</title>
+    <title>Notes from authors </title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
     <header class="max-w-5xl mx-auto pt-16 pb-8 px-4 text-center">
         <h1 class="text-4xl md:text-5xl font-extrabold text-purple-400 mb-4" id="feedTitle">
-            Smart Author Feed
+            Notes from authors
         </h1>
         <p class="text-gray-400 text-lg max-w-2xl mx-auto" id="statusText">
-            Lettura dei parametri e analisi della lista in corso...
+            Reading parameters and analyzing the list...
         </p>
     </header>
 
     <section class="max-w-5xl mx-auto px-4 mb-6">
         <div class="bg-gray-800 p-4 rounded-xl flex flex-col md:flex-row justify-between items-center shadow-lg gap-4">
             <div id="relayStats" class="text-sm text-gray-300 overflow-hidden break-all">
-                <!-- Top Relay calcolati -->
             </div>
-            <a href="resource_hub.html" class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition text-sm">← Torna alle Risorse</a>
+            <a href="resource_hub.html" class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition text-sm">← Back to resource</a>
         </div>
     </section>
 
-    <!-- Barra Stile Instagram per gli Autori -->
     <section class="max-w-5xl mx-auto px-4 mb-6 hidden" id="authorsBarSection">
         <div class="bg-gray-800 border border-gray-700 p-4 rounded-xl shadow-lg">
-            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Autori in Evidenza</h3>
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Featured Authors</h3>
             <div id="authorsBarContainer" class="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600">
-                <!-- Popolato da updatequadro() -->
             </div>
         </div>
     </section>
 
-    <!-- Selettore Schede (Tabs) - Ora gestito dinamicamente -->
     <section class="max-w-5xl mx-auto px-4 mb-6 hidden" id="tabsSection">
         <div class="flex border-b border-gray-700" id="tabsContainer">
             <button id="tabRichBtn" onclick="switchTab('rich')" class="px-5 py-3 font-semibold text-sm border-b-2 border-purple-400 text-purple-400 focus:outline-none transition cursor-pointer">
@@ -49,12 +45,10 @@
     </section>
 
     <main class="max-w-5xl mx-auto px-4 pb-24">
-        <div id="loading" class="text-center text-gray-400 text-lg py-12">Caricamento in corso...</div>
+        <div id="loading" class="text-center text-gray-400 text-lg py-12">Loading...</div>
         
-        <!-- Griglia Contenuti Ricchi -->
         <div id="feedGridRich" class="space-y-6"></div>
         
-        <!-- Griglia Note Standard -->
         <div id="feedGridText" class="space-y-6 hidden"></div>
     </main>
 
@@ -126,12 +120,12 @@
                 }
 
                 if (!targetEvent) {
-                    document.getElementById('loading').innerText = "Nessun evento o lista valida specificata nell'URL.";
+                    document.getElementById('loading').innerText = "No valid events or lists specified in the URL.";
                     return;
                 }
 
-                document.getElementById('feedTitle').innerText = `Smart Feed da ${targetEvent.kind === 10003 ? 'Bookmarks' : 'Lista Curata'}`;
-                document.getElementById('statusText').innerText = "Estrazione degli autori dalla lista...";
+                document.getElementById('feedTitle').innerText = `Smart Feed from ${targetEvent.kind === 10003 ? 'Bookmarks' : 'Curated List'}`;
+                document.getElementById('statusText').innerText = "Extracting authors from the list...";
 
                 const authorSet = new Set();
                 const eventIdsToFetch = [];
@@ -155,11 +149,11 @@
 
                 const authors = Array.from(authorSet);
                 if (authors.length === 0) {
-                    document.getElementById('loading').innerText = "Nessun autore trovato all'interno di questa risorsa.";
+                    document.getElementById('loading').innerText = "No authors found within this resource.";
                     return;
                 }
 
-                document.getElementById('statusText').innerText = `Analisi dei relay (NIP-65) per ${authors.length} autori...`;
+                document.getElementById('statusText').innerText = `Analysis (NIP-65) for ${authors.length} authors...`;
 
                 const relayListEvents = await pool.querySync(INITIAL_RELAYS, {
                     authors: authors,
@@ -216,9 +210,9 @@
                 globalSelectedRelays = selectedRelays;
 
                 const statsDiv = document.getElementById('relayStats');
-                statsDiv.innerHTML = `<span class="font-semibold text-purple-400">Top ${selectedRelays.length} Relay Dinamici:</span> <span class="text-gray-400">${selectedRelays.join(', ')}</span>`;
+                statsDiv.innerHTML = `<span class="font-semibold text-purple-400">Top ${selectedRelays.length} From:</span> <span class="text-gray-400">${selectedRelays.join(', ')}</span>`;
 
-                document.getElementById('statusText').innerText = "Scaricamento del feed in corso...";
+                document.getElementById('statusText').innerText = "Downloading notes in progress...";
 
                 const feedEvents = await pool.querySync(selectedRelays, {
                     authors: authors,
@@ -262,17 +256,17 @@
                     document.getElementById('feedGridRich').classList.add('hidden');
                 }
 
-                renderFeedSection('feedGridRich', globalRichEvents, 'Nessun contenuto ricco trovato per questi autori.');
-                renderFeedSection('feedGridText', globalTextEvents, 'Nessuna nota standard trovata per questi autori.');
+                renderFeedSection('feedGridRich', globalRichEvents, 'No link content found for these authors.');
+                renderFeedSection('feedGridText', globalTextEvents, 'No standard notes found for these authors.');
                 await updatequadro(sortedFeed);
 
-                document.getElementById('statusText').innerText = `Feed caricato con successo (${sortedFeed.length} eventi totali).`;
+                document.getElementById('statusText').innerText = `Notes successfully uploaded (${sortedFeed.length} total events).`;
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('authorsBarSection').classList.remove('hidden');
 
             } catch (err) {
                 console.warn(err);
-                document.getElementById('loading').innerText = "Errore durante la generazione dello smart feed.";
+                document.getElementById('loading').innerText = "Error during the process.";
             }
         }
 
@@ -323,7 +317,7 @@
                         } catch (e) {}
                     });
                 } catch (e) {
-                    console.warn("Errore recupero Kind 0:", e);
+                    console.warn("Recovery error, Kind 0 Metadata profile:", e);
                 }
             }
 
@@ -485,7 +479,7 @@
         let badgeClass = "bg-blue-950 text-blue-300 border-blue-800";  
         
         if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
-            typeBadge = "🖼️ Foto";
+            typeBadge = "🖼️ Photo";
             badgeClass = "bg-cyan-950 text-cyan-300 border-cyan-800"; 
         } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
             typeBadge = "🎬 Video";
