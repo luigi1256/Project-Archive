@@ -4,7 +4,7 @@ import QRCode from 'https://esm.sh/qrcode';
                                             
 export async function sendLike(generalRelays, target, targetAuthorPubkey) {
     if (!window.nostr) {
-        alert("Estensione NIP-07 non trovata (installa Alby o Nos2x).");
+        alert("NIP-07 extension not found (install Alby or Nos2x).");
         return;
     }
     
@@ -34,18 +34,18 @@ export async function sendLike(generalRelays, target, targetAuthorPubkey) {
         const signedEvent = await window.nostr.signEvent(unsignedEvent);
         await publishSignedToRelays(generalRelays, signedEvent);
         
-        alert("Like inviato con successo! 💙");
+        alert("Like sent successfully! 💙");
 
     } catch (err) {
-        console.error("Errore durante l'invio del like:", err);
-        alert(err.message || "Operazione annullata o errore di firma.");
+        console.error("Error while sending the like:", err);
+        alert(err.message || "Operation cancelled or signature error.");
     }
 }
 
 
 async function publishSignedToRelays(generalRelays, signedEvent) {
     if (!generalRelays || generalRelays.length === 0) {
-        throw new Error("Nessun relay fornito.");
+        throw new Error("No relay provided.");
     }
 
     const pool = new SimplePool();
@@ -64,13 +64,13 @@ async function publishSignedToRelays(generalRelays, signedEvent) {
             relayResults[relayUrl] = 'success';
             successCount++;
         } else {
-            relayResults[relayUrl] = res.reason?.message || 'errore sconosciuto';
+            relayResults[relayUrl] = res.reason?.message || 'unknown error';
             failedRelays.push(`${relayUrl}: ${relayResults[relayUrl]}`);
         }
     });
     
     if (successCount === 0) {
-        throw new Error(`Nessun relay ha accettato l'evento. Falliti: ${failedRelays.join(', ')}`);
+        throw new Error(`No relay accepted the event. Failed: ${failedRelays.join(', ')}`);
     }
     
     return relayResults;
@@ -89,7 +89,7 @@ export async function prepareZapTarget(generalRelays, targetAuthorPubkey) {
     if (!profileData) {
         const profileEvent = await pool.get(generalRelays, { kinds: [0], authors: [targetAuthorPubkey] });
         if (!profileEvent) {
-            throw new Error("Profilo dell'autore non trovato sui relay.");
+            throw new Error("Author profile not found on the relays.");
         }
         profileData = JSON.parse(profileEvent.content);
         
@@ -97,7 +97,7 @@ export async function prepareZapTarget(generalRelays, targetAuthorPubkey) {
 
     const lud16 = profileData.lud16;
     if (!lud16) {
-        throw new Error("L'autore non ha configurato un indirizzo Lightning (lud16).");
+        throw new Error("The author has not configured a Lightning address (lud16).");
     }
 
     const [name, domain] = lud16.split('@');
@@ -121,22 +121,20 @@ export async function sendZapPrepared(generalRelays, target, targetAuthorPubkey,
     }
 
     if (!qrContainerElement) {
-        console.error("ERRORE: qrContainerElement è null o non trovato!");
+        console.error("ERROR: qrContainerElement is null or not found!");
         return;
     }
 
     const millisats = amountSats * 1000;
 
     if (millisats < zapTargetData.minSendable || millisats > zapTargetData.maxSendable) {
-        alert(`Importo non valido. Minimo: ${zapTargetData.minSendable / 1000} sats, Massimo: ${zapTargetData.maxSendable / 1000} sats.`);
+        alert(`Invalid amount. Minimum: ${zapTargetData.minSendable / 1000} sats, Max: ${zapTargetData.maxSendable / 1000} sats.`);
         return;
     }
 
     try {
         let userPubkey;
         let signedZapRequest;
-
-        // 1. NIP-07 o Fallback Burner Key (Anonimo)
         if (window.nostr) {
             userPubkey = await window.nostr.getPublicKey();
 
@@ -160,7 +158,7 @@ export async function sendZapPrepared(generalRelays, target, targetAuthorPubkey,
 
             signedZapRequest = await window.nostr.signEvent(zapRequest);
         } else {
-            console.warn("Nessuna estensione NIP-07. Uso una chiave temporanea...");
+            console.warn("No NIP-07 extension. Using a temporary key...");
             
             const burnerSecretKey = generateSecretKey();
             userPubkey = getPublicKey(burnerSecretKey);
@@ -186,25 +184,22 @@ export async function sendZapPrepared(generalRelays, target, targetAuthorPubkey,
             signedZapRequest = finalizeEvent(zapRequest, burnerSecretKey);
         }
 
-        // 2. Pubblica la richiesta sui relay in background
         publishSignedToRelays(generalRelays, signedZapRequest).catch(err => {
-            console.warn("Avviso pubblicazione richiesta zap:", err);
+            console.warn("Notice regarding publication of a ZAP request:", err);
         });
 
-        // 3. Richiedi la fattura BOLT11
         const callbackUrl = `${zapTargetData.callback}?amount=${millisats}&nostr=${encodeURIComponent(JSON.stringify(signedZapRequest))}`;
         const invoiceRes = await fetch(callbackUrl);
         const invoiceData = await invoiceRes.json();
 
         if (invoiceData.status === 'ERROR') {
-            throw new Error(`Errore invoice: ${invoiceData.reason}`);
+            throw new Error(`Error invoice: ${invoiceData.reason}`);
         }
 
         const bolt11 = invoiceData.pr;
         const verifyUrl = invoiceData.verify || null;
 
-        // 4. GENERAZIONE QR CODE (qui mancava!)
-        qrContainerElement.innerHTML = ''; // Pulisci eventuali QR precedenti
+        qrContainerElement.innerHTML = ''; 
         const canvas = document.createElement('canvas');
         qrContainerElement.appendChild(canvas);
 
@@ -214,17 +209,16 @@ export async function sendZapPrepared(generalRelays, target, targetAuthorPubkey,
             color: { dark: '#000000', light: '#ffffff' }
         }, (error) => {
             if (error) {
-                console.error("Errore generazione QR:", error);
-                qrContainerElement.innerHTML = `<p style="color:red; font-size:12px;">Errore generazione QR</p>`;
+                console.error("QR generation error:", error);
+                qrContainerElement.innerHTML = `<p style="color:red; font-size:12px;">QR generation error</p>`;
             }
         });
 
-        // Restituisce i dati necessari alla modale per il bottone "Ho pagato"
         return { bolt11, verifyUrl };
 
     } catch (err) {
-        console.error("Errore durante l'invio dello zap:", err);
-        alert(err.message || "Errore imprevisto durante lo zap.");
+        console.error("Error while sending the zap:", err);
+        alert(err.message || "Unexpected error during the zap.");
     }
 }
 

@@ -6,20 +6,20 @@ const defaultRelays = [
     'wss://relay.primal.net'     
 ];                           
 
-// Aggiungiamo window. davanti per renderla accessibile dall'HTML onclick
+
 export async function openZapModal(targetAuthorPubkey, targetEventId)  {
-    // 1. Crea la modale dinamicamente al momento del click (stile Focus Mode)
+    
     const modal = document.createElement('div');
     modal.className = 'zap-modal-overlay';
     
     modal.innerHTML = `
         <div class="zap-content" style="background: #1e1e1e; color: #fff; padding: 16px; border-radius: 8px; width: 320px; max-width: 90vw; font-family: sans-serif; box-shadow: 0 4px 20px rgba(0,0,0,0.5); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span style="font-weight: bold; color: #bb86fc; font-size: 14px;">⚡ Invia uno Zap</span>
+                <span style="font-weight: bold; color: #bb86fc; font-size: 14px;">⚡ Send a Zap</span>
                 <button class="close-modal" style="background: #333; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">✕</button>
             </div>
             
-            <div id="zap-status" style="font-size: 12px; color: #888; margin-bottom: 10px;">Verifica profilo autore...</div>
+            <div id="zap-status" style="font-size: 12px; color: #888; margin-bottom: 10px;">Verify author profile...</div>
 
             <div class="zap-amounts" style="display: flex; gap: 6px; margin-bottom: 10px;">
                 <button class="zap-btn" data-amount="21" style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #bb86fc; padding:6px; border-radius:4px; cursor:pointer; font-size: 12px;">21</button>
@@ -28,21 +28,21 @@ export async function openZapModal(targetAuthorPubkey, targetEventId)  {
             </div>
 
             <div style="margin-bottom: 10px;">
-                <label style="font-size: 11px; color: #aaa; display: block; margin-bottom: 3px;">Sats personalizzati:</label>
+                <label style="font-size: 11px; color: #aaa; display: block; margin-bottom: 3px;">Custom amounts</label>
                 <input type="number" class="custom-zap-amount" value="21" style="width:100%; box-sizing:border-box; background:#121212; border:1px solid #333; color:#fff; padding:6px; border-radius:4px; font-size: 13px;">
             </div>
 
-            <button class="send-zap-btn" disabled style="width:100%; background:#bb86fc; color:#121212; border:none; padding:8px; border-radius:4px; font-weight:bold; cursor:not-allowed; opacity: 0.6; font-size: 13px;">Conferma e Invia</button>
+            <button class="send-zap-btn" disabled style="width:100%; background:#bb86fc; color:#121212; border:none; padding:8px; border-radius:4px; font-weight:bold; cursor:not-allowed; opacity: 0.6; font-size: 13px;">Confirm and Send</button>
             
             <div id="qr-container" style="margin-top: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;"></div>
 
             <div id="mobile-payment-section" style="display: none; margin-top: 10px; text-align: center;">
-                <a id="wallet-link" href="#" style="display: block; background: #bb86fc; color: #121212; text-decoration: none; padding: 8px; border-radius: 4px; font-weight: bold; margin-bottom: 8px; font-size: 13px;">Paga con il Wallet ⚡</a>
+                <a id="wallet-link" href="#" style="display: block; background: #bb86fc; color: #121212; text-decoration: none; padding: 8px; border-radius: 4px; font-weight: bold; margin-bottom: 8px; font-size: 13px;">Pay with the Wallet ⚡</a>
                 <p id="invoice-text" style="font-size: 10px; color: #888; word-break: break-all; background: #121212; padding: 6px; border-radius: 4px; max-height: 50px; overflow-y: auto; text-align: left; margin-bottom: 6px; font-family: monospace;"></p>
-                <button id="copy-invoice-btn" style="width: 100%; background: #333; color: #fff; border: 1px solid #444; padding: 5px; border-radius: 4px; font-size: 11px; cursor: pointer;">Copia Invoice</button>
+                <button id="copy-invoice-btn" style="width: 100%; background: #333; color: #fff; border: 1px solid #444; padding: 5px; border-radius: 4px; font-size: 11px; cursor: pointer;">Copy Invoice</button>
             </div>
 
-            <button class="i-paid-btn" style="display: none; width: 100%; margin-top: 10px; background: #2a2a2a; color: #bb86fc; border: 1px solid #bb86fc; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">Ho pagato ⚡</button>
+            <button class="i-paid-btn" style="display: none; width: 100%; margin-top: 10px; background: #2a2a2a; color: #bb86fc; border: 1px solid #bb86fc; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">I paid ⚡</button>
         </div>
     `;
      
@@ -63,10 +63,9 @@ export async function openZapModal(targetAuthorPubkey, targetEventId)  {
     let currentInvoice = null;
 
     if (!statusEl || !sendBtn || !customInput || !qrContainer) {
-    console.error("Errore: Qualche elemento della modale non è stato trovato nel DOM!", { statusEl, sendBtn, customInput, qrContainer });
+    console.error("Error: Some elements of the modal were not found in the DOM!", { statusEl, sendBtn, customInput, qrContainer });
 }
 
-    // 2. Gestione dei pulsanti rapidi e input
     modal.querySelectorAll('.zap-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             modal.querySelectorAll('.zap-btn').forEach(b => {
@@ -84,9 +83,9 @@ export async function openZapModal(targetAuthorPubkey, targetEventId)  {
     copyBtn.addEventListener('click', () => {                     
         if (!currentInvoice) return;                              
         navigator.clipboard.writeText(currentInvoice).then(() => {
-            copyBtn.innerText = "Copiato! ✓";                    
+            copyBtn.innerText = "Copied! ✓";                    
             setTimeout(() => {                                    
-                copyBtn.innerText = "Copia Invoice";              
+                copyBtn.innerText = "Copy Invoice";              
             }, 2000);                                             
         });                                                       
     });                                                           
@@ -99,13 +98,13 @@ export async function openZapModal(targetAuthorPubkey, targetEventId)  {
     (async () => {
         try {
             currentZapData = await prepareZapTarget(defaultRelays, targetAuthorPubkey);
-            statusEl.innerText = `Pronto a zappare ${currentZapData.lud16}!`;
+            statusEl.innerText = `Ready to zap ${currentZapData.lud16}!`;
             sendBtn.disabled = false;
             sendBtn.style.cursor = 'pointer';
             sendBtn.style.opacity = '1';
         } catch (err) {
-            console.error("Errore preparazione zap:", err);
-            statusEl.innerText = err.message || "L'autore non supporta gli Zap.";
+            console.error("Zap preparation error:", err);
+            statusEl.innerText = err.message || "The author does not support Zaps.";
         }
     })();
 
@@ -126,7 +125,7 @@ sendBtn.addEventListener('click', async () => {
     if (!currentZapData || selectedAmount <= 0) return;
 
     sendBtn.disabled = true;
-    statusEl.innerText = "Generazione fattura...";
+    statusEl.innerText = "Invoice generation...";
 
     try {
         const targetEvent = { id: targetEventId }; 
@@ -151,19 +150,19 @@ sendBtn.addEventListener('click', async () => {
             savedVerifyUrl = result.verifyUrl;
         }
 
-        statusEl.innerText = "Scansiona il QR e poi clicca su 'Ho pagato'";
+        statusEl.innerText = "Scan the QR code and then click 'I have paid'";
         iPaidBtn.style.display = 'block'; 
 
     } catch (err) {
         console.error("Errore invio:", err);
-        statusEl.innerText = "Errore durante la creazione dello zap.";
+        statusEl.innerText = "Error while creating the zap.";
         sendBtn.disabled = false;
     }
     });
 
     iPaidBtn.addEventListener('click', async () => {
     iPaidBtn.disabled = true;
-    iPaidBtn.innerText = "Verifica in corso...";
+    iPaidBtn.innerText = "Verification in progress...";
 
     
     if (savedVerifyUrl) {
@@ -172,34 +171,25 @@ sendBtn.addEventListener('click', async () => {
             const data = await res.json();
 
             if (data.settled === true) {
-                statusEl.innerText = "Pagamento verificato con successo! ⚡";
-                iPaidBtn.innerText = "Completato!";
+                statusEl.innerText = "Payment successfully verified! ⚡";
+                iPaidBtn.innerText = "Completed!";
                 setTimeout(() => modal.remove(), 2000);
                 return;
             } else {
-                statusEl.innerText = "Il pagamento non risulta ancora confermato. Riprova tra un attimo.";
+                statusEl.innerText = "The payment has not yet been confirmed. Please try again in a moment.";
                 iPaidBtn.disabled = false;
-                iPaidBtn.innerText = "Ho pagato ⚡";
+                iPaidBtn.innerText = "I paid ⚡";
                 return;
             }
         } catch (e) {
-            console.warn("Errore durante il fetch del verify:", e);
+            console.warn("Error while fetching the verification:", e);
         }
     }
 
-    statusEl.innerText = "Pagamento eseguito! Grazie per lo zap ⚡";
-    iPaidBtn.innerText = "Fatto";
+    statusEl.innerText = "Payment completed! Thanks for the zap! ⚡";
+    iPaidBtn.innerText = "Done!";
     setTimeout(() => {
         modal.remove();
     }, 1500);
 });
 }
-
-
-
-
-
-
-
-
-

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +9,12 @@
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
     <header class="max-w-3xl mx-auto pt-12 pb-6 px-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-purple-400">Nostr Profilo (Kind 0)</h1>
-        <a href="resource_hub.html" class="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium hover:bg-gray-600 transition">← Torna Indietro</a>
+        <h1 class="text-2xl font-bold text-purple-400">Profile (Kind 0)</h1>
+        <a href="resource_hub.html" class="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium hover:bg-gray-600 transition">← Back to resource</a>
     </header>
 
     <main class="max-w-3xl mx-auto px-4 pb-24">
-        <div id="loading" class="text-center text-gray-400 text-lg py-12">Caricamento profilo in corso...</div>
+        <div id="loading" class="text-center text-gray-400 text-lg py-12">Loading profile...</div>
 
         <div id="profileContainer" class="hidden bg-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl">
             <div id="profileBanner" class="h-40 bg-gray-700 bg-cover bg-center"></div>
@@ -22,12 +22,12 @@
                 
                 <div class="flex justify-between items-end -mt-16 mb-4">
                     <img id="profilePicture" src="https://via.placeholder.com/150" alt="Avatar" class="w-32 h-32 rounded-full border-4 border-gray-800 bg-gray-900 object-cover shadow-lg">
-                    <a id="externalProfile" href="#" target="_blank" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg transition shadow">Apri Profilo</a>
+                    <a id="externalProfile" href="#" target="_blank" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg transition shadow">Open Profile</a>
                 </div>
 
-                <h2 id="profileName" class="text-3xl font-extrabold text-white">Nome Utente</h2>
+                <h2 id="profileName" class="text-3xl font-extrabold text-white">Username</h2>
                 <p id="profileDisplayName" class="text-purple-400 text-sm mb-4">@display_name</p>                                                                               
-                <p id="profileAbout" class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words min-w-0">Bio utente...</p>
+                <p id="profileAbout" class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words min-w-0">Bio user...</p>
                
                 <div class="space-y-3 text-xs font-mono bg-gray-900 p-4 rounded-xl border border-gray-800">
                     <div>
@@ -39,7 +39,7 @@
                         <span id="profileHex" class="text-gray-400 break-all select-all">...</span>
                     </div>
                     <div id="profileWebsiteContainer" class="hidden">
-                        <span class="text-gray-500 block mb-1">Sito Web:</span>
+                        <span class="text-gray-500 block mb-1">Website:</span>
                         <a id="profileWebsite" href="#" target="_blank" class="text-blue-400 hover:underline break-all">...</a>
                     </div>
                 </div>
@@ -76,12 +76,12 @@
                     try {
                         const decoded = nip19.decode(entity);
                         if (decoded.type === 'npub') {
-                            // hexKey = decoded.data; // Rimosso se non globale o gestito altrove
+                           
                         } else if (decoded.type === 'nprofile') {
-                            // hexKey = decoded.data.pubkey;
+                            
                         }
                     } catch (e) {
-                        console.warn("Errore nel decode di npub/nprofile:", e);
+                        console.warn("Error in the npub/profile decoder:", e);
                     }
                     
                     const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(entity) : null;
@@ -131,7 +131,7 @@
                 let queryRelays = [...INITIAL_RELAYS];
 
                 if (!rawParam) {
-                    document.getElementById('loading').innerText = "Nessun parametro valido specificato nell'URL.";
+                    document.getElementById('loading').innerText = "No valid parameters specified in the URL.";
                     return;
                 }
 
@@ -150,7 +150,7 @@
                 }
 
                 if (!targetPubkey) {
-                    document.getElementById('loading').innerText = "Impossibile estrarre una chiave pubblica valida.";
+                    document.getElementById('loading').innerText = "Unable to extract a valid public key.";
                     return;
                 }
 
@@ -165,15 +165,15 @@
                     try {
                         profileData = JSON.parse(events[0].content);
                     } catch (e) {
-                        console.error("Errore nel parsing del JSON del Kind 0", e);
+                        console.error("Error parsing JSON for Kind 0", e);
                     }
                 }
 
                 const npub = nip19.npubEncode(targetPubkey);
                 const aboutbio = profileData.about;
-                const bioParsed = aboutbio ? parseContent(aboutbio) : 'Nessuna bio disponibile.';
+                const bioParsed = aboutbio ? parseContent(aboutbio) : 'No bio available.';
                 
-                document.getElementById('profileName').innerText = profileData.name || profileData.username || 'Sconosciuto';
+                document.getElementById('profileName').innerText = profileData.name || profileData.username || 'Unknown user';
                 document.getElementById('profileDisplayName').innerText = profileData.display_name ? `@${profileData.display_name}` : `@${npub.substring(0, 10)}...`;
                 document.getElementById('profileAbout').innerHTML = bioParsed;
                 document.getElementById('profileNpub').innerText = npub;
@@ -204,7 +204,7 @@
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('loading').innerText = "Errore durante il caricamento del profilo.";
+                document.getElementById('loading').innerText = "Error while loading the profile.";
             }
         }
 

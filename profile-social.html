@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Sharp Style</title>
+    <title>Profile Sharp </title>
     
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
@@ -14,12 +14,12 @@
         
         <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mb-6">
             <a href="index.html" class="inline-flex items-center justify-center gap-2 text-xs text-purple-400 bg-purple-950/60 border border-purple-800/60 px-3 py-1.5 hover:underline font-mono">
-                ← Torna indietro
+                ← Back to resource
             </a>
             
             <div class="flex gap-2">
-                <input type="text" id="search-npub-input" placeholder="Cerca npub o inserisci..." class="bg-zinc-900 border border-zinc-800 text-xs px-3 py-1.5 text-zinc-200 font-mono focus:outline-none focus:border-purple-600 w-full sm:w-64" onkeydown="if(event.key === 'Enter') handleQuickSearch()">
-                <button onclick="handleQuickSearch()" class="bg-zinc-900 border border-zinc-800 text-xs text-purple-400 px-3 py-1.5 font-mono hover:bg-zinc-800 transition-colors cursor-pointer">Vai</button>
+                <input type="text" id="search-npub-input" placeholder="search by npub or name..." class="bg-zinc-900 border border-zinc-800 text-xs px-3 py-1.5 text-zinc-200 font-mono focus:outline-none focus:border-purple-600 w-full sm:w-64" onkeydown="if(event.key === 'Enter') handleQuickSearch()">
+                <button onclick="handleQuickSearch()" class="bg-zinc-900 border border-zinc-800 text-xs text-purple-400 px-3 py-1.5 font-mono hover:bg-zinc-800 transition-colors cursor-pointer">Go!</button>
             </div>
         </div>
 
@@ -36,9 +36,9 @@
         <div class="flex border-b border-zinc-800 mb-6 overflow-x-auto">
             <button onclick="switchTab('notes')" id="tab-notes" class="tab-btn px-4 py-2.5 text-xs font-mono text-zinc-400 hover:text-zinc-200 border-b-2 border-transparent transition-colors">💬 Note</button>
             <button onclick="switchTab('likes')" id="tab-likes" class="tab-btn px-4 py-2.5 text-xs font-mono text-zinc-400 hover:text-zinc-200 border-b-2 border-transparent transition-colors">❤️ Likes</button>
-            <button onclick="switchTab('collections')" id="tab-collections" class="tab-btn px-4 py-2.5 text-xs font-mono text-zinc-400 hover:text-zinc-200 border-b-2 border-transparent transition-colors">📚 Collezioni</button>
+            <button onclick="switchTab('collections')" id="tab-collections" class="tab-btn px-4 py-2.5 text-xs font-mono text-zinc-400 hover:text-zinc-200 border-b-2 border-transparent transition-colors">📚 Collections</button>
             <button onclick="switchTab('relays')" id="tab-relays" class="tab-btn px-4 py-2.5 text-xs font-mono text-zinc-400 hover:text-zinc-200 border-b-2 border-transparent transition-colors">📡 Relay List</button>
-            <button onclick="switchTab('discover')" id="tab-discover" class="tab-btn px-4 py-2.5 text-xs font-mono text-zinc-400 hover:text-zinc-200 border-b-2 border-transparent transition-colors">🌐 Discover</button>
+            <button onclick="switchTab('discover')" id="tab-discover" class="tab-btn px-4 py-2.5 text-xs font-mono text-zinc-400 hover:text-zinc-200 border-b-2 border-transparent transition-colors">🌐 Relay Discover</button>
         </div>
 
         <div id="content-container" class="space-y-4">
@@ -113,12 +113,10 @@
         async function initProfile() {
             const npubParam = getQueryParam('npub');
             if (!npubParam) {
-                document.getElementById('profile-container').innerHTML = `<p class="text-red-400">Nessun npub specificato nell'URL.</p>`;
+                document.getElementById('profile-container').innerHTML = `<p class="text-red-400">No npub specified in the URL.</p>`;
                 return;
             }
-
             cachedNpub = npubParam; 
-
             try {
                 if (npubParam.startsWith('npub')) {
                     currentPubkey = NostrTools.nip19.decode(npubParam).data;
@@ -141,13 +139,13 @@
                 profileuserdata=profileData
                 switchTab('notes');
             } catch (err) {
-                console.error("Errore caricamento profilo:", err);
+                console.error("Error loading profile:", err);
             }
         }
         
         function renderProfileHeader(profile, npub) {
             const name = profile.display_name || profile.name || npub.substring(0, 12) + '...';
-            const about = profile.about ? parseContent(profile.about) : 'Nessuna bio disponibile.';
+            const about = profile.about ? parseContent(profile.about) : 'No bio available.';
             const picture = profile.picture || 'https://www.gravatar.com/avatar/?d=mp';
             const banner = profile.banner ? `style="background-image: url('${profile.banner}')"` : '';
 
@@ -159,7 +157,7 @@
                         <h1 class="text-xl font-bold truncate">${escapeHtml(name)}</h1>
                         <div class="flex items-center gap-2 mb-3">
                             <p class="text-xs font-mono text-zinc-500 truncate">npub: ${npub}</p>
-                            <button onclick="copyNpub()" class="text-[10px] font-mono bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 px-2 py-0.5 transition-colors cursor-pointer" id="copy-btn">Copia</button>
+                            <button onclick="copyNpub()" class="text-[10px] font-mono bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 px-2 py-0.5 transition-colors cursor-pointer" id="copy-btn">Copy</button>
                         </div>
                         <div class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words min-w-0">${about}</div>
                     </div>
@@ -172,10 +170,10 @@
             navigator.clipboard.writeText(cachedNpub).then(() => {
                 const btn = document.getElementById('copy-btn');
                 if(btn) {
-                    btn.innerText = 'Copiato!';
+                    btn.innerText = 'Copied!';
                     btn.classList.add('text-purple-400', 'border-purple-800');
                     setTimeout(() => {
-                        btn.innerText = 'Copia';
+                        btn.innerText = 'Copy';
                         btn.classList.remove('text-purple-400', 'border-purple-800');
                     }, 2000);
                 }
@@ -209,7 +207,7 @@
                     }
                 }
             } catch (e) {
-                console.error("Errore nella lettura dell'indice di ricerca:", e);
+                console.error("Error reading the search index:", e);
             }
             if (foundHexKey) {
                 let targetParam = foundHexKey;
@@ -235,7 +233,7 @@
             }
 
             const container = document.getElementById('content-container');
-            container.innerHTML = `<div class="text-zinc-500 text-sm text-center py-8 font-mono">Caricamento ${tabName}...</div>`;
+            container.innerHTML = `<div class="text-zinc-500 text-sm text-center py-8 font-mono">Loading ${tabName}...</div>`;
 
             if (!currentPubkey) return;
 
@@ -266,7 +264,7 @@
                 }
             } catch (e) {
                 console.error(e);
-                container.innerHTML = `<p class="text-red-400 text-sm text-center py-4 font-mono">Errore nel caricamento dei dati.</p>`;
+                container.innerHTML = `<p class="text-red-400 text-sm text-center py-4 font-mono">Error loading data.</p>`;
             }
         }
                         
@@ -284,12 +282,12 @@
 
         function renderNotesList(notes, container) {
             if (!notes || notes.length === 0) {
-                container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">Nessuna nota trovata.</div>`;
+                container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">No notes found.</div>`;
                 return;
             }
         
             container.innerHTML = notes.map(note => {
-                const date = new Date(note.created_at * 1000).toLocaleDateString('it-IT', { 
+                const date = new Date(note.created_at * 1000).toLocaleDateString('en-GB', { 
                     day: 'numeric', 
                     month: 'short', 
                     year: 'numeric', 
@@ -297,7 +295,7 @@
                     minute: '2-digit' 
                 });
             
-                let replyHtml = `<span class="text-[11px] font-mono text-zinc-500">Nota</span>`;
+                let replyHtml = `<span class="text-[11px] font-mono text-zinc-500">Note</span>`;
                 if (note.tags) {
                     const eTag = note.tags.find(t => t[0] === 'e');
                     const pTag = note.tags.find(t => t[0] === 'p');
@@ -375,7 +373,7 @@
                                     <button onclick="sendLike('${note.id}', '${note.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
                                 </div>
                                 <div class="flex items-center gap-1">    
-                                    <a href="note.html?nevent=${nevent}" class="text-xs font-mono text-purple-400 bg-purple-950/60 border border-purple-800/60 px-3 py-1 hover:underline">Apri →</a>
+                                    <a href="note.html?nevent=${nevent}" class="text-xs font-mono text-purple-400 bg-purple-950/60 border border-purple-800/60 px-3 py-1 hover:underline">Open →</a>
                                 </div>
                             </div>
                         
@@ -393,7 +391,7 @@
                 return;
             }
             container.innerHTML = likes.map(like => {
-                const date = new Date(like.created_at * 1000).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+                const date = new Date(like.created_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
                 let targetId = null;
                 let relayUrl = null;
                 let isKind1 = false;
@@ -421,7 +419,7 @@
                 if (nevent) {
                     return `
                         <a href="note.html?nevent=${nevent}" class="bg-zinc-900 border border-zinc-800 p-4 flex justify-between items-center hover:border-zinc-700 transition-colors block group">
-                            <span class="text-sm text-zinc-300">Ha messo "Mi piace" (${like.content || '❤️'}) a un post</span>
+                            <span class="text-sm text-zinc-300">Clicked "Like" (${like.content || '❤️'}) to a post</span>
                             <div class="flex items-center gap-3">
                                 <span class="text-xs text-zinc-500 font-mono">${date}</span>
                                 <span class="text-xs text-zinc-400 group-hover:text-zinc-200 underline">Apri</span>
@@ -431,7 +429,7 @@
                 } else {
                     return `
                         <div class="bg-zinc-900 border border-zinc-800 p-4 flex justify-between items-center opacity-75">
-                            <span class="text-sm text-zinc-300">Ha messo "Mi piace" (${like.content || '❤️'}) a un post</span>
+                            <span class="text-sm text-zinc-300">Clicked "Like" (${like.content || '❤️'}) to a post</span>
                             <span class="text-xs text-zinc-500 font-mono">${date}</span>
                         </div>
                     `;
@@ -441,7 +439,7 @@
 
         function renderCollections(bookmarkEvent, container) {
             if (!bookmarkEvent) {
-                container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">Nessun segnalibro trovato.</div>`;
+                container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">No bookmarks found.</div>`;
                 return;
             }
         
@@ -453,7 +451,7 @@
                 });
             } catch(e) {}
         
-            const date = new Date(bookmarkEvent.created_at * 1000).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
+            const date = new Date(bookmarkEvent.created_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
             const kindLabel = bookmarkEvent.kind === 10003 ? 'Bookmarks (Kind 10003)' : `Parameterized List (Kind ${bookmarkEvent.kind})`;
             const totalItems = bookmarkEvent.tags ? bookmarkEvent.tags.length : 0;
         
@@ -462,13 +460,13 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <span class="text-xs font-mono text-purple-400 bg-purple-950/60 border border-purple-800/60 px-2 py-0.5">${kindLabel}</span>
-                            <p class="text-xs text-zinc-500 font-mono mt-2">Aggiornato il: ${date} | Contiene ${totalItems} elementi</p>
+                            <p class="text-xs text-zinc-500 font-mono mt-2">Updated on: ${date} | Contains ${totalItems} items</p>
                         </div>
                     </div>
                     <div class="flex justify-between items-center pt-2 border-t border-zinc-800">
                         <span class="text-xs text-zinc-400 font-mono truncate max-w-xs">ID: ${bookmarkEvent.id}</span>
                         <a href="feed.html?nevent=${nevent}" class="text-xs text-purple-400 bg-purple-950/60 border border-purple-800/60 px-3 py-1.5 hover:underline font-mono">
-                            Apri la lista in Feed →
+                            Open the list in Feed →
                         </a>
                     </div>
                 </div>
@@ -477,7 +475,7 @@
 
         function renderRelayList(relayEvent, container) {
             if (!relayEvent || !relayEvent.tags) {
-                container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">Nessuna lista relay pubblica trovata.</div>`;
+                container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">No public relay list found.</div>`;
                 return;
             }
             let relays = relayEvent.tags.filter(t => t[0] === 'r').map(t => ({ url: t[1], mode: t[2] || 'read/write' }));
@@ -494,9 +492,9 @@
             container.innerHTML = `
                 <div class="bg-zinc-900 border border-zinc-800 p-6 text-center">
                     <h3 class="font-bold text-base mb-2 text-zinc-200 font-mono">Relay Discover & Network</h3>
-                    <p class="text-xs text-zinc-400 mb-4">Questa sezione mostra i relay raccomandati e i nodi scoperti attraverso l'attività recente dell'utente.</p>
+                    <p class="text-xs text-zinc-400 mb-4">This section shows recommended relays and nodes discovered through recent user activity.</p>
                     <div class="text-xs font-mono text-purple-400 bg-purple-950/40 border border-purple-800/40 p-3 inline-block">
-                        Stato rete: Connessione attiva ai relay pubblici principali.
+                        Network status: Active connection to the main public relays.
                     </div>
                 </div>
             `;
@@ -504,26 +502,25 @@
 
         function renderRelayDiscoveryTab(listDiscovery, relayFeeds, container) {
     if (!listDiscovery && (!relayFeeds || relayFeeds.length === 0)) {
-        container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">Nessuna informazione o set relay trovato.</div>`;
+        container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">No information or relay set found.</div>`;
         return;
     }
 
     let htmlContent = '';
 
-    // 1. Evento 10012 con pulsante per aprire il singolo relay
     if (listDiscovery && listDiscovery.tags) {
         let directRelays = listDiscovery.tags.filter(t => t[0] === 'relay');
         
         if (directRelays.length > 0) {
             htmlContent += `
                 <div class="mb-6">
-                    <h3 class="text-xs font-mono uppercase text-zinc-400 mb-2 px-1">Relay Preferiti (10012)</h3>
+                    <h3 class="text-xs font-mono uppercase text-zinc-400 mb-2 px-1">Favorite Relays (10012)</h3>
                     <div class="space-y-2">
                         ${directRelays.map(t => `
                             <div class="bg-zinc-900 border border-zinc-800 p-3 flex justify-between items-center">
                                 <span class="text-sm font-mono text-blue-300 truncate min-w-0 flex-1 mr-3">${escapeHtml(t[1])}</span>
                                 <button onclick="openRelayFeed('${escapeHtml(t[1])}')" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-1 rounded transition-colors shrink-0">
-                                    Apri
+                                    Open
                                 </button>
                             </div>
                         `).join('')}
@@ -533,7 +530,6 @@
         }
     }
 
-    // 2. Set 30002 (Feed) con i rispettivi relay interni
     if (relayFeeds && relayFeeds.length > 0) {
         htmlContent += `
             <div>
@@ -542,7 +538,7 @@
                     ${relayFeeds.map(feed => {
                         let titleTag = feed.tags.find(t => t[0] === 'title');
                         let dTag = feed.tags.find(t => t[0] === 'd');
-                        let setName = titleTag ? titleTag[1] : (dTag ? dTag[1] : 'Set senza nome');
+                        let setName = titleTag ? titleTag[1] : (dTag ? dTag[1] : 'Unnamed set');
                         let dValue = dTag ? dTag[1] : '';
 
                         let feedRelays = feed.tags.filter(t => t[0] === 'relay');
@@ -563,7 +559,7 @@
                                         <div class="bg-zinc-950 border border-zinc-800/50 p-2.5 flex justify-between items-center">
                                             <span class="text-xs font-mono text-blue-300 truncate min-w-0 flex-1 mr-3">${escapeHtml(r[1])}</span>
                                             <button onclick="openRelayFeed('${escapeHtml(r[1])}')" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded transition-colors shrink-0">
-                                                Apri
+                                                Open
                                             </button>
                                         </div>
                                     `).join('')}
@@ -576,7 +572,7 @@
         `;
     }
 
-    container.innerHTML = htmlContent || `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">Nessun dettaglio relay trovato negli eventi.</div>`;
+    container.innerHTML = htmlContent || `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">No relay details found in the events.</div>`;
 }
 
     function openRelayFeed(param1, kind, identifier) {
@@ -594,8 +590,8 @@
                 });
                 window.location.href = `relay-feed.html?naddr=${naddr}`;
             } catch (e) {
-                console.error("Errore naddrEncode:", e);
-                alert("Impossibile generare l'naddr per questo set.");
+                console.error("Error naddrEncode:", e);
+                alert("Unable to generate the naddr for this set.");
             }
         } 
         
