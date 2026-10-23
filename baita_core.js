@@ -11,7 +11,7 @@ function renderShelf() {
   const keys = Object.keys(books);
 
   if (keys.length === 0) {
-    booksDiv.innerHTML = `<div class="text-xs text-emerald-400/50 italic p-2">Nessun elemento nello scaffale.</div>`;
+    booksDiv.innerHTML = `<div class="text-xs text-emerald-400/50 italic p-2">No items on the shelf.</div>`;
     return;
   }
 
@@ -31,7 +31,7 @@ function renderShelf() {
     const btn = document.createElement("button");
     btn.className = "text-emerald-200 hover:text-red-400 font-mono text-xs px-1.5 py-0.5 rounded transition-colors opacity-70 group-hover:opacity-100 cursor-pointer";
     btn.textContent = "✕";
-    btn.title = "Rimuovi dallo scaffale";
+    btn.title = "Remove from shelf";
     btn.onclick = (e) => removeBook(e, term);
 
     div.appendChild(span);
@@ -126,7 +126,7 @@ function parseContent(text) {
     let trailing = url.slice(clean.length);
     
     if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
-      return `<br><a href="${clean}" target="_blank" title="Clicca per ingrandire"><img src="${clean}" class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg object-cover border border-emerald-900/60 hover:border-emerald-500 transition-all" loading="lazy"></a><br>${trailing}`;
+      return `<br><a href="${clean}" target="_blank" title="Click to enlarge"><img src="${clean}" class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg object-cover border border-emerald-900/60 hover:border-emerald-500 transition-all" loading="lazy"></a><br>${trailing}`;
     }
     
     if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
@@ -183,4 +183,10 @@ function toggleShelf() {
 
 document.addEventListener("DOMContentLoaded", () => {
   renderShelf();
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth < 900) {
+    document.getElementById('shelf').classList.add('collapsed');
+  }
 });

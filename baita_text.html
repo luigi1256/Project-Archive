@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>La Baita</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <link rel="stylesheet" href="theme_baita.css">
 </head>
@@ -140,11 +141,10 @@ function renderNoteCard(ev) {
         </button>
       </div>
     </div>
-    <!-- overflow-wrap e break-words prevengono l'allargamento orizzontale -->
     <div class="whitespace-pre-wrap leading-relaxed break-words overflow-hidden">${formattedContent}</div>
   `;
   
-  const resultsDiv = document.getElementById("results") || document.getElementById("resultsDiv"); // Assicurati che punti al contenitore corretto
+  const resultsDiv = document.getElementById("results") || document.getElementById("resultsDiv"); 
   if (resultsDiv) {
     resultsDiv.appendChild(card);
   }
