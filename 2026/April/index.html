@@ -1,147 +1,107 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8">                                                
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style_26.css">                        
     <title>April 2026</title>
     
-    <style>
-        
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
 
-        
-        .dark-button {
-            width: 100%;
-            max-width: 800px; 
-            margin: 0 auto;
-        }
-
-       
-        .grid-1 {
-            display: flex;
-            flex-direction: column;
-            gap: 15px; 
-            width: 100%;
-            font-size: 20px;
-        }
-
-        
-        .grid-1 div {
-            text-align: left; 
-            padding-left: 10px; 
-        }
-        .testo{
-        font-size: 25px;
-        }
-    </style>
 </head>
 <body>
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 30px; border-bottom: 1px solid #333;">
     
-    <a href="../March/index.html" class="testo" style="text-decoration: none; padding: 10px;">← March</a>
+    <a href="../March/index.html" class="testo" id="prev-month" style="text-decoration: none; padding: 10px;">← March</a>
     
     <a href="../../Index.html" class="testo" style="text-decoration: none; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
         Main Menu
     </a>
     
-    <a href="../May/index.html" class="testo" style="text-decoration: none; padding: 10px;">May →</a>
+    <a href="../May/index.html" class="testo" id="next-month" style="text-decoration: none; padding: 10px;">May →</a>
     
 </div>
-<div class="dark-button" class="testo">
-						<div class="grid-1">
-						
+<div class="container" style="width: 100%; max-width: 900px;">
+    <div class="link-grid">		
 
-<div> Zap.cooking
-Marketplace and Cooking Community and
-other AI features
+<div class="link-card"> 
+<a href="https://substr.network/"> substr newtork website</a> Substr, Better community spaces for the open web.
 
-</div><div> Substr, Better community spaces for the open web.
-<a href="https://substr.network/"> substr newtork website</a>
-
-</div><div> Weird Again landing page by Derek
-<a href="https://weirdagain.com/"> weird again website</a>
+</div><div class="link-card"> 
+<a href="https://weirdagain.com/"> weird again website</a> Weird Again landing page by Derek
 
 
-</div><div>  Relayrelax.vercel.app
-If you wanna check it out, breath
-Choose your rhythm
-<a href="https://relayrelax.vercel.app/"> relayrelax website</a>
+</div><div class="link-card">  
+<a href="https://relayrelax.vercel.app/"> relayrelax website</a> Relayrelax.vercel.app If you wanna check it out, breath
+                                                                                       Choose your rhythm               
+</div><div class="link-card">  
+<a href="https://flarenos.pages.dev/"> flarenos</a> Flarenos by Ser Sleepy ephemeral stories
 
-</div><div>  Flarenos by Ser Sleepy
-<a href="https://flarenos.pages.dev/"> flarenos</a> ephemeral stories
+</div><div class="link-card">  
+<a href="https://nostr.nisshiee.org/"> nostr nisshiee website</a> Nostr Canvas
 
-</div><div>  Nostr Canvas
-<a href="https://nostr.nisshiee.org/"> nostr nisshiee website</a>
-
-</div><div>  Nostr Boutique, launch and manage your sovereign storefront with open identity and portable infrastructure.
-
-<a href="https://nostr.boutique/"> nostr boutique website</a>
-
-
-</div><div> <b>Zapstore migration NIP</b>
-</div><div> Update to latest Zapstore 1.0.0+ if you haven't yet. Developers use zsp 0.4.4+ for publishing ideally. 
+</div><div class="link-card"> 
+<a href="https://nostr.boutique/"> nostr boutique website</a>  Nostr Boutique, launch and manage your sovereign storefront with open identity and portable infrastructure.
+</div>
+    </div>
+	    
+<p><b>Zapstore migration NIP
+Update to latest Zapstore 1.0.0+ if you haven't yet. Developers use zsp 0.4.4+ for publishing ideally. 
 At the very minimum zsp 0.3.4. 
 (If possible, developers also link your keystore! zsp identity --link-key) 
 We're a small team and can't afford a smoother transition. 
-We're doing our best but those who don't update by April 21st DEADLINE will be left out.
-</div><div>  Gitplaza now has a proper website in, also
+We're doing our best but those who don't update by April 21st DEADLINE will be left out.</b></p>
 
-- Show git statuses created by repo owner, repo maintainers and issue author in issue comment section
+<div class="link-grid">	
+<div class="link-card">  <p>Gitplaza now has a proper website in, also
+Show git statuses created by repo owner, repo maintainers and issue author in issue comment section</p>
 <a href="https://gitplaza.net/"> Gitplaza net website</a>
 
 
-</div><div>  Flora extension share your videos
-Record your screen, share anywhere. Stored on Blossom, publish to Nostr.
+</div><div class="link-card"> <p> Flora extension share your videos
+Record your screen, share anywhere. Stored on Blossom, publish to Nostr.</p>
 
 <a href="https://github.com/shawnyeager/flora-extension"> flora-extension github</a>
 
-</div><div>  Topaz a nostr relay for android
-<a href="https://github.com/fiatjaf/topaz"> topaz github</a>
+</div><div class="link-card">  
+<a href="https://github.com/fiatjaf/topaz"> topaz github</a> Topaz a nostr relay for android
 
-</div><div>  Website for #Nostr applications, wallets reviews
-<a href="https://nod.city/"> nod city</a>
+</div><div class="link-card">  
+<a href="https://nod.city/"> nod city</a> Website for #Nostr applications, wallets reviews
 
-</div><div>  Multi-post to Bluesky/Nostr.
-A quick post tool for posting.
-<a href="https://mdrv.shino3.net/"> multi-post</a>
+</div><div class="link-card">  
+<a href="https://mdrv.shino3.net/"> multi-post</a> Multi-post to Bluesky/Nostr. A quick post tool for posting.
 
-</div><div>  Find the PFPigs - Analyze avatar file sizes from your Nostr follow list
-<a href="https://5jsjq2jytkqh7mc1l5ylux3bsmzhkxpbq82ocsv8v74sir3b6wpfpigs.nsite.lol/"> pfp pigs</a>
+</div><div class="link-card"> 
+<a href="https://5jsjq2jytkqh7mc1l5ylux3bsmzhkxpbq82ocsv8v74sir3b6wpfpigs.nsite.lol/"> pfp pigs</a>  Find the PFPigs - Analyze avatar file sizes from your Nostr follow list
 
 
-</div><div>  Basspistol a fork of jumble for music communities
-<a href="https://git.basspistol.org/hq/Bpistle"> basspistol git page</a>
+</div><div class="link-card">  
+<a href="https://git.basspistol.org/hq/Bpistle"> basspistol git page</a> Basspistol a fork of jumble for music communities
 
-</div><div>  Paste a YouTube, TikTok, or any video URL. We'll download it and re-host it on Blossom
-<a href="https://youblossom.shakespeare.wtf/"> youblossom</a>
+</div><div class="link-card">  
+<a href="https://youblossom.shakespeare.wtf/"> youblossom</a> Paste a YouTube, TikTok, or any video URL. We'll download it and re-host it on Blossom
 
-</div><div>  Jumble Ouro is a fork of Jumble where what gets built is decided entirely by community votes, and the rest to the AI
-<a href="https://github.com/CodyTseng/jumble-ouro"> jumble-ouro github pages</a>
+</div><div class="link-card">  
+<a href="https://github.com/CodyTseng/jumble-ouro"> jumble-ouro github pages</a> Jumble Ouro is a fork of Jumble where what gets built is decided entirely by community votes, and the rest to the AI
 
-</div><div>  The first decentralized email protocol powered by Nostr. Own your identity, your keys, and your inbox. No central authority. No gatekeepers.
-<a href="https://nostrmail.org/"> nostrmail</a>
+</div><div class="link-card">  
+<a href="https://nostrmail.org/"> nostrmail</a> The first decentralized email protocol powered by Nostr. Own your identity, your keys, and your inbox. No central authority. No gatekeepers.
 
-</div><div>  Corkboards.me becomes a desktop app
+</div><div class="link-card">  <p>Corkboards.me becomes a desktop app</p>
 
-</div><div>  Browser Extension for Nostr
-<a href="https://nostr-wot.com/"> nostr-wot</a>
+</div><div class="link-card">  
+<a href="https://nostr-wot.com/"> nostr-wot</a> <p>Browser Extension for Nostr</p>
 
-</div><div> Chonkr: HLS on blossom
-<a href="https://github.com/hardran3/Chonkr-web"> Chonkr github page</a>
+</div><div class="link-card">
+<a href="https://github.com/hardran3/Chonkr-web"> Chonkr github page</a> Chonkr: HLS on blossom
 
-</div><div>  FIPS CDN over FIPS
+</div><div class="link-card">  <p>FIPS CDN over FIPS </p>
 
-</div><div>  Unlock nsite, enter the password to unlock the site and open it.
-<a href="https://0ygl461f4ecz5thkn8eksa36nepjpij86s83ti8yzokopd3ag5test.nsite.lol/"> Unlock nsite</a>
+</div><div class="link-card">  
+<a href="https://0ygl461f4ecz5thkn8eksa36nepjpij86s83ti8yzokopd3ag5test.nsite.lol/"> Unlock nsite</a> Unlock nsite, enter the password to unlock the site and open it.
 					
 </div></div></div>
-				
-			  
+
+<script src="../arrow.js"></script>
+</body>
+</html>	  

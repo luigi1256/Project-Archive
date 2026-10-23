@@ -1,111 +1,82 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8">                                                
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style_26.css">                        
     <title>May 2026</title>
-    
-    <style>
-        
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
 
-        
-        .dark-button {
-            width: 100%;
-            max-width: 800px; 
-            margin: 0 auto;
-        }
-
-       
-        .grid-1 {
-            display: flex;
-            flex-direction: column;
-            gap: 15px; 
-            width: 100%;
-            font-size: 20px;
-        }
-
-        
-        .grid-1 div {
-            text-align: left; 
-            padding-left: 10px; 
-        }
-        .testo{
-         font-size: 25px;   
-        }
-        
-        
-    </style>
 </head>
 <body>
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 30px; border-bottom: 1px solid #333;">
     
-    <a href="../April/index.html" class="testo" style="text-decoration: none; padding: 10px;">← April</a>
+    <a href="../April/index.html" class="testo" id="prev-month" style="text-decoration: none; padding: 10px;">← April</a>
     
     <a href="../../Index.html" class="testo" style="text-decoration: none; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
         Main Menu
     </a>
     
-    <a href="../June/index.html" class="testo" style="text-decoration: none; padding: 10px;">June →</a>
+    <a href="../June/index.html" class="testo" id="next-month" style="text-decoration: none; padding: 10px;">June →</a>
     
 </div>
-<div class="dark-button" class="testo">
-						<div class="grid-1">
-						 
+<div class="container" style="width: 100%; max-width: 900px;"> 
+        <h2>Chat app, crowdfunding, passkey, blog</h2>        
+        <div class="link-grid">                                            						 
+        <div class="link-card">
+            <a href="https://denchat.top/"> Denchat website</a> is a decentralized, encrypted group chat. One identity, no censorship, permissionless.
+        </div><div class="link-card">
+        <a href="https://www.grantless.org/"> Grantless website  </a>  is an open protocol that allows any team or individual to participate in a permissionless, pleb-funded grant ecosystem
+        </div><div class="link-card"><a href="https://github.com/schjonhaug/nostr-passkey-poc"> github repo</a> Nostr Passkey Proof of Concept for deriving deterministic Nostr identity secrets from synced passkey PRF output
+        </div><div class="link-card"><a href="https://blog.imwald.eu/"> Imwald website</a> Imwald blog
+        </div></div>
+        <h2> Tools, client, ranking, chat app (2), passkey</h2>
+        <div class="link-grid">    
+        <div class="link-card"> nostr utilities <a href="https://npub1cmmswlckn82se7f2jeftl6ll4szlc6zzh8hrjyyfm9vm3t2afr7svqlr6f.nsite.lol/"> nostr keep webiste</a> 
+        </div><div class="link-card"> the district.online a client with the pixel art <a href="https://thedistrict.online/"> website</a>
+        </div><div class="link-card"> open ranking protocol <a href="https://github.com/Open-Ranking/protocol"> github repo</a>
+        </div><div class="link-card"> <b>Cordn</b> is a protocol for private group messaging, and this web app is a fully functional client.
+        <a href="https://cordn.net/"> cordn website</a>
+        </div><div class="link-card"> nosskey-iframe <a href="https://www.npmjs.com/package/nosskey-iframe"> package nosskey</a>
+        </div><div class="link-card"> coop-mobile <a href="https://git.reya.su/reya/coop-mobile"> git repo</a>
+        </div></div>    
 
-<h2>Chat app, crowdfunding, passkey, blog</h2>
-<div><b>Denchat</b>, decentralized, encrypted group chat. One identity, no censorship, permissionless.
-<a href="https://denchat.top/"> website</a>
-</div><div><b>Grantless</b>  is an open protocol that allows any team or individual to participate in a permissionless, pleb-funded grant ecosystem
-<a href="https://www.grantless.org/"> website</a>
-</div><div>nostr-passkey-poc <a href="https://github.com/schjonhaug/nostr-passkey-poc"> github repo</a>
-</div><div> Imwald blog <a href="https://blog.imwald.eu/"> Imwald website</a>
+        <h2> Torrent, monero, archive, workshop, search, longform relay</h2>
+        <div class="link-grid">    
+        <div class="link-card"> <b>Kindxer</b> for torrent <a href="https://codeberg.org/Enkisu/kindxer"> codeberg repo</a>
+        </div><div class="link-card"> Mostard app, nostr client <a href="https://github.com/roguehashrate/moStard"> github repo</a>
+        </div><div class="link-card"> Chronicle (archive) <a href="https://github.com/MattsTryingAgain/chronicle"> github repo</a>
+        </div><div class="link-card"> Bitchat workshop 20 Slides by <a href="https://derekross.me/guides/bitchat-wlc-workshop"> Derek Ross website</a>
+        </div><div class="link-card"> <b>Nostrlens</b>, search text inside images on Nostr using OCR.
+        <a href="https://github.com/OGSleepy/nostrlens"> github repo</a>
+        </div><div class="link-card"> Essayist is a relay for longform writing with small fee <a href="https://decentnewsroom.com/essayist"> decentnewsroom website</a>
+        </div></div>
 
-<h2> Tools, client, ranking, chat app (2), passkey</h2>
-</div><div> nostr utilities <a href="https://npub1cmmswlckn82se7f2jeftl6ll4szlc6zzh8hrjyyfm9vm3t2afr7svqlr6f.nsite.lol/"> nostr keep webiste</a> 
-</div><div> the district.online a client with the pixel art <a href="https://thedistrict.online/"> website</a>
-</div><div> open ranking protocol <a href="https://github.com/Open-Ranking/protocol"> github repo</a>
-</div><div> <b>Cordn</b> is a protocol for private group messaging, and this web app is a fully functional client.
-<a href="https://cordn.net/"> cordn website</a>
-</div><div> nosskey-iframe <a href="https://www.npmjs.com/package/nosskey-iframe"> package nosskey</a>
-</div><div> coop-mobile <a href="https://git.reya.su/reya/coop-mobile"> git repo</a>
 
-<h2> Torrent, monero, archive, workshop, search, longform relay</h2>
-</div><div> <b>Kindxer</b> for torrent <a href="https://codeberg.org/Enkisu/kindxer"> codeberg repo</a>
-</div><div> Mostard app, nostr client <a href="https://github.com/roguehashrate/moStard"> github repo</a>
-</div><div> Chronicle (archive) <a href="https://github.com/MattsTryingAgain/chronicle"> github repo</a>
-</div><div> Bitchat workshop 20 Slides by <a href="https://derekross.me/guides/bitchat-wlc-workshop"> Derek Ross website</a>
-</div><div> <b>Nostrlens</b>, search text inside images on Nostr using OCR.
-<a href="https://github.com/OGSleepy/nostrlens"> github repo</a>
-</div><div> Essayist is a relay for longform writing with small fee <a href="https://decentnewsroom.com/essayist"> decentnewsroom website</a>
+        <h2> Bot chat, Dev environment, blossom, ephemeral chat, health record, video, AI assisted </h2>
+        <div class="link-grid">    
+        <div class="link-card"> marmot-cli, a headless Marmot messaging agent <a href="https://github.com/tkhumush/marmot-cli"> github repo</a>
+        </div><div class="link-card"> nostr-station dev environment <a href="https://github.com/jared-logan/nostr-station"> github repo</a>
+        </div><div class="link-card"> after bloom, blossom server for ephemeral data <a href="https://github.com/damus-io/afterbloom"> github repo</a>
+        </div><div class="link-card"> <b>globe.pictures</b> is a ephemeral chat and status  <a href="https://globe.pictures/"> website</a>
+        </div><div class="link-card"> Poppy is a private period tracker that runs in the browser. <a href="https://codeberg.org/pluja/poppy"> codeberg repo</a>
+        </div><div class="link-card"> vidstr, video platform <a href="https://vidstr.shakespeare.wtf/"> website</a>
+        </div><div class="link-card"> zuka (AI assisted) <a href="https://github.com/zuka-org/zuka-pwa"> github repo</a> 
+        </div></div>
 
-<h2> Bot chat, Dev environment, blossom, ephemeral chat, health record, video, AI assisted </h2>
+        <h2> Search, analytics,client(2), video app, signer, tool, vibe client, road app </h2>
+        <div class="link-grid">    
+        <div class="link-card"> <b>brainstorm</b>, search across millions of profiles <a href="https://brainstorm.nosfabrica.com/"> brainstorm website</a>
+        </div><div class="link-card"> zapstore studio <a href="https://zapstore.dev/studio/insights"> analytics studio website</a>
+        </div><div class="link-card"> nostr-bubbles <a href="https://nostr-tv-bubbles.shakespeare.wtf/"> nostr bubbles or spheres website</a>
+        </div><div class="link-card"> <b>kubo app</b> <a href="https://kubo.watch/"> video app website</a>
+        </div><div class="link-card"> clave signer <a href="https://clave.casa/"> clave website</a>
+        </div><div class="link-card"> nostr compress media <a href="https://nostr-compress.vercel.app/"> compress webiste</a>
+        </div><div class="link-card"> penstroke (proceduaral poetry) <a href="https://penstroke.shakespeare.wtf/"> penstroke website</a>
+        </div><div class="link-card"> roadflare app for IOS <a href="https://roadflare.app/"> roadflare webiste</a>					
+        </div>
+        </div>
+</div>
 
-</div><div> marmot-cli, a headless Marmot messaging agent <a href="https://github.com/tkhumush/marmot-cli"> github repo</a>
-</div><div> nostr-station dev environment <a href="https://github.com/jared-logan/nostr-station"> github repo</a>
-</div><div> after bloom, blossom server for ephemeral data <a href="https://github.com/damus-io/afterbloom"> github repo</a>
-</div><div> <b>globe.pictures</b> is a ephemeral chat and status  <a href="https://globe.pictures/"> website</a>
-</div><div> Poppy is a private period tracker that runs in the browser. <a href="https://codeberg.org/pluja/poppy"> codeberg repo</a>
-</div><div> vidstr, video platform <a href="https://vidstr.shakespeare.wtf/"> website</a>
-</div><div> zuka (AI assisted) <a href="https://github.com/zuka-org/zuka-pwa"> github repo</a> 
-
-<h2> Search, analytics,client(2), video app, signer, tool, vibe client, road app </h2>
-
-</div><div> <b>brainstorm</b>, search across millions of profiles <a href="https://brainstorm.nosfabrica.com/"> brainstorm website</a>
-</div><div> zapstore studio <a href="https://zapstore.dev/studio/insights"> analytics studio website</a>
-</div><div> nostr-bubbles <a href="https://nostr-tv-bubbles.shakespeare.wtf/"> nostr bubbles or spheres website</a>
-</div><div> <b>kubo app</b> <a href="https://kubo.watch/"> video app website</a>
-</div><div> clave signer <a href="https://clave.casa/"> clave website</a>
-</div><div> nostr compress media <a href="https://nostr-compress.vercel.app/"> compress webiste</a>
-</div><div> penstroke (proceduaral poetry) <a href="https://penstroke.shakespeare.wtf/"> penstroke website</a>
-</div><div> roadflare app for IOS <a href="https://roadflare.app/"> roadflare webiste</a>
-					
-</div></div></div>
+<script src="../arrow.js"></script>
+</body>
+</html>

@@ -1,355 +1,316 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8">                                                
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style_26.css">                        
     <title>February 2026</title>
     
-    <style>
-        
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        
-        .dark-button {
-            width: 100%;
-            max-width: 800px; 
-            margin: 0 auto;
-        }
-
-       
-        .grid-1 {
-            display: flex;
-            flex-direction: column;
-            gap: 15px; 
-            width: 100%;
-            font-size: 20px;
-        }
-
-        
-        .grid-1 div {
-            text-align: left; 
-            padding-left: 10px; 
-        }
-
-        .testo{
-            font-size: 25px;
-        }
-        
-        
-    </style>
 </head>
 <body>
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 30px; border-bottom: 1px solid #333;">
     
-    <a href="../Jan/index.html" class="testo" style="text-decoration: none; padding: 10px;">← Jan</a>
+    <a href="../Jan/index.html" class="testo" id="prev-month" style="text-decoration: none; padding: 10px;">← Jan</a>
     
     <a href="../../Index.html" class="testo" style="text-decoration: none; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
         Main Menu
     </a>
     
-    <a href="../March/index.html" class="testo" style="text-decoration: none; padding: 10px;">March →</a>
+    <a href="../March/index.html" class="testo" id="next-month" style="text-decoration: none; padding: 10px;">March →</a>
     
 </div>
-<div class="dark-button" class="testo">
-						<div class="grid-1">
-
-                
-<div>- Custom NIP: Zaptask
-- This NIP defines addressable events for task management and bounty
-coordination on Nostr.
-<a href="https://github.com/shawnyeager/zaptask/blob/master/docs/NOSTR-PROTOCOL.md#appendix-nip-proposal-draft"> Zaptask proposal</a>
-
-</div><div> - chat iris double ratchet
-Single-device encrypted chat that just works
-<a href="https://chat.iris.to/"> chat iris</a>
-
-</div><div> <b>Zapstore env</b>
-</div><div> 
-zsp A fast CLI tool for publishing Android apps to Nostr relays. Used by Zapstore.
-<a href="https://github.com/zapstore/zsp"> zapstore cli</a>
-Share installed apps locally with others via Bluetooth or WiFi #259
-<a href="https://github.com/zapstore/zapstore/issues/259#issue-3795860706"> zapstore issue</a>
-
-
-</div><div> Scriptorium-obsidian
-- An Obsidian plugin for creating, editing, and publishing Nostr document 
-events directly from your vault.
-<a href="https://git.imwald.eu/silberengel/scriptorium-obsidian"> scriptorium-obsidian</a>
-
-</div><div> CVMI: the Army knife of ContextVM 
-<a href="https://github.com/contextvm/cvmi"> cvmi</a>
-
-</div><div> relay pack (kind 30002) Curated Relay Collections
-<a href="https://relay-packs.shakespeare.wtf/"> relay-packs</a>
-
-</div><div> view nostr-git repositories
-<a href="https://nostrgit.xyz/#"> nostr-git</a>
-
-</div><div> reddit in your browser with apikey
-it will need a openrouter api key to run 
-<a href="https://reddit-nostr.shakespeare.wtf/"> reddit-nostr</a>
-
-</div><div> Nostr chess (vibe)
-<a href="https://nostrchess.vercel.app/"> nostrchess</a>
-
-</div><div> reddit for AI agents discuss
-<a href="https://clawstr.com/"> clawstr</a>
-
-</div><div> Shakespeare vibe Traveltelly
-Review, marketplace, stories, trip in one app
-*(Review uses kind 34879, 
-marketplace nip-99,  
-trip  kind 30025)*
-<a href="https://www.traveltelly.com/"> traveltelly</a>
-
-</div><div> Turns a Nostr profile into a fast, fully static blog.
-<a href="https://blog.besoeasy.com/"> blog besoeasy</a>
-
-</div><div> Clawdentials - Your Agents Work. You Earn.
-<a href="https://clawdentials.com/"> clawdentials</a>
-
-
-09/02
-
-
-</div><div> igloo beta version for iOS apps
-<a href="https://jumble.social/notes/nevent1qvzqqqqqqypzpacc6jnl9s907ryjcny7pz7mh0tc3wwa79k0e5a42g5e2hpujpqqqy88wumn8ghj7mn0wvhxcmmv9uq3wamnwvaz7tmjv4kxz7fwwpexjmtpdshxuet59uqzplvqy9k8gq7ew6cjls72uhq9frccl603vjgwe4f9a9fvj0exwl6cw5u2tn"> iOS apps</a>
-
-</div><div> Cyberdeck notedeck but only for frog
-This client has a set of features the main one is to create columns from a
-filter set
-<a href="https://cyberdeck.shakespeare.wtf/"> cyberdeck website</a>
-
-</div><div> Geogram.radio high frequency tech 
-you have mesh network present this is a kind of that structure.
-<a href="https://geogram.radio/"> geogram website</a>
-
-</div><div>Marmot sdk is making progress in typescript which is good
-for most developers
-
-</div><div> Prism is an Android app that highlights (nip-84) from the browser
-I haven't tried it yet but there seems to be an apk available
-<a href="https://github.com/hardran3/Prism"> Prism GitHub page</a>
-
-</div><div> Sirius shared a video nhash, I don't know much about this video seen
-that iris supports it and allows you to watch videos, probably
-a way to encapsulate video and so on blossoms.
-<a href="https://iris.to/nevent1qvzqqqqqqypzq3frhevd89d3kxt2nwxg9vpck6y4evptdq7scff6j4gx3kapltxsqy88wumn8ghj7mn0wvhxcmmv9uqzpvqcdcuwkxpzwxa2dqqqjlxp9y4ult599sqcr7jkauzfmuh69y0reu3hxq"> see the note on iris</a>
-
-</div><div> Someone shared stegstr's npub and I went to read
-the project and can basically share photos.
-I tried using the web app, it seems like a client at first
-stages, I tried to upload a photo but I couldn't 
-complete everything.
-<a href="https://www.stegstr.com/index.html"> stegstr website</a>
-
-</div><div> Hzrd149 updated applesauce for nip-17 with examples
-
-</div><div> Landing page in Danish, with a lot of nostr clients 
-*and some a a little dated*
-<a href=https://nostr.dk/"> nostr dk website</a>
-
-</div><div> Badge client for nip-58
-<a href="https://nostrsigil.com/"> nostr sigil website</a>
-
-
-</div><div>*Back to the future aitheboard (seems momentarily off)*
-
-</div><div> Nostr relay in C
-<a href="https://github.com/Hakkadaikon/libelay"> libelay on GitHub</a>
-
-</div><div> nostr hero quest (phase 2)
-<a href="https://test.pubkey.quest/"> nostr hero website</a>
-
-</div><div> Pod21.com
-"The Decentralized 3D Printing Network"
-<a href="https://pod21.com/"> pod21 website</a>
-
-
-</div><div> Vue-ndk by Sebastix.
-
-Do you remember ndk? Good, the nostr development kit, Sebastix starts a
-mode for vue
-<a href="https://gitworkshop.dev/npub1qe3e5wrvnsgpggtkytxteaqfprz0rgxr8c3l34kk3a9t7e2l3acslezefe/relay.ngit.dev/vue-ndk"> vue-ndk gitworkshop website</a>
-
-
-</div><div> Openclaw nostr
-<a href="https://github.com/nash-the-ai/openclaw-nostr"> openclaw-nostr GitHub page</a>
-
-</div><div> Marketplace for agent skill, powered by zapstore
-< ahref="https://skillpub.net/"> skillpub marketplace</ahref>
-
-
-</div><div> New Client corkboard
-"Build as many corkboard feeds as you like, privately"
-<a href="https://noobstr.me/corkboard/"> corkboard website</a>
-						
-
-18/02
-
-</div><div> Zapcooking community 
-Community powered by zapcooking, garden avaible invite only
-<a href="https://garden.zap.cooking/"> Garden zap cooking website</a>
-
-</div><div> Cyberspace protocol aka ONOSENDAI
-Renewal of cyberspace with a website and a community
-<a href="https://straylight.cafe/"> Straylight cafe website</a>
-
-</div><div> Ribbit by Tekkadan
-Ribbit is a complete Nostr ecosystem — client, protocol library, UI toolkit, and browser extension. All open source. All yours.
-<a href="https://ribbit.network/"> Ribbit network</a>
-
-</div><div> Inkpress magazine (*vibe*)
-Beautiful magazine with vibe 
-<a href="https://inkpress.shakespeare.wtf/"> Inkpress website</a>
-
-</div><div> Foxhole, remember clawstr? (*vibe*)
-Derek vibe an app similar for human
-<a href="https://foxhole.lol/"> Foxhole website</a>
-
-
-</div><div> Yoink
-Daniele build a cool mini app to 
-select human interaction (hopeful) and compare accounts 
-<a href="https://yoink.dtonon.com/"> Yoink website</a>
-
-</div><div> Cove band
-Another music client show app on Nostr is now Cove
-<a href="https://cove.band/"> Cove band website</a>
-
-</div><div> Espi
-See something beautiful? Share its colors with the world.
-"Espy is a way to share colors of the moment to the world. 
-A beautiful day outside, an interesting painting, 
-a color reference that inspires - anything you can see."
-<a href="https://espy.you/"> Espi website</a>
-
-</div><div> Yakitofu by ocknamo
-Yakitofu is a badge client
-<a href="https://ocknamo.github.io/yaki-tofu/"> Yakitofu website</a>
-
-</div><div> Smesh
-fork of cody tseng's jumble, cleaned up and made faster
-<a href="https://smesh.mleku.dev/"> Smesh website</a>
-
-
-</div><div> privdm
-End-to-end encrypted group messaging over Nostr using the Marmot protocol (MLS)
-<a href="https://github.com/dcadenas/marmota"> Chat marmota</a>
-
-</div><div> Nostr-clash
-"Play now with real Nostr data "Nostr-Clash"
-<a href="https://nostr-clash.on-forge.com/"> Nostr-clash website</a>
-
-</div><div> Aitheboard
-It's to make a *universal app* that you can use to read, edit, cache, share, and publish things that you have trouble finding and working with, on the other apps.
-<a href="https://aitherboard.imwald.eu/"> Aithebord website</a>
-
-
-</div><div> Update the mcp server on applesauce build
-<a href="https://applesauce.hzrd149.com/"> Applesauce website</a>
-
-</div><div> Formstr update now you can use blossom to upload
-<a href="https://formstr.app/"> Formstr website</a>
-
-</div><div> ContextVM 
-It has added another custom relay (team) and more projects are available on the page. 
-They launch a biweekly substack newsletter.
-</div><div><a href="https://substack.com/@contextvm"> Substack newsletter link</a>
-<a href="https://github.com/ContextVM/awesome#public-cvm-relays"> ContextVM Awesome | Git Hub page</a>
-
-
-</div><div> Aerith blossom managaer for android
-<a href="https://github.com/hardran3/Aerith"> Aerith Git Hub</a>
-
-</div><div> Git Natual API
-a lightweight git HTTP client for fetching repository data without cloning.
-<a href="https://gitworkshop.dev/fiatjaf.com/git-natural-api"> Gitworkshop.dev website | Fiatjaf project</a>
-
-</div><div> Antiprimal seem offline now
-Antiprimal is a standards-compliant gateway to Primal's cache server
-<a href="https://antiprimal.net/"> Antiprimal website</a>
-
-</div><div> Morganite
-A local blossom cache for android
-<a href="https://github.com/greenart7c3/Morganite"> Morganite Git Hub</a>
-
-</div><div> Amber bulk import 
-Import nsec to Amber via python
-<a href="https://github.com/jooray/amber-bulk-import"> Amber bulk import Github page</a>
-
-
-24-02 <Article>
-
-</div><div> Flotilla private? (article)
-<A HREF="https://flotilla.social/articles/is-flotilla-private"> is flotilla private?</A>
+<div class="container" style="width: 100%; max-width: 900px;">
+    <div class="link-grid">                                             
+    <div class="link-card"> <p>Custom NIP: Zaptask - This NIP defines addressable events for task management and bounty coordination on Nostr.
+          </p><a href="https://github.com/shawnyeager/zaptask/blob/master/docs/NOSTR-PROTOCOL.md#appendix-nip-proposal-draft"> Zaptask proposal</a>
+    </div><div class="link-card"> - chat iris double ratchet
+        ingle-device encrypted chat that just works
+        <a href="https://chat.iris.to/"> chat iris</a>
     
-</div><div> Flotilla moves to Gitea
-<a href="https://gitea.coracle.social/coracle/flotilla"> gitea website</a>
-    
-</div><div> Nostrich love
-comprehensive, beginner friendly Nostr resource with interactive components, quizzes, client simulators and more
-<a href="https://nostrich.love/"> nostrich.love website</a>
+    </div><div class="link-card"> <b>Zapstore env</b>
+    </div><div class="link-card">   zsp A fast CLI tool for publishing Android apps to Nostr relays. Used by Zapstore.
+    </div><div class="link-card">    <a href="https://github.com/zapstore/zsp"> zapstore cli</a>
+    </div><div class="link-card">    Share installed apps locally with others via Bluetooth or WiFi #259
+        <a href="https://github.com/zapstore/zapstore/issues/259#issue-3795860706"> zapstore issue</a>
+    </div><div class="link-card"> Scriptorium-obsidian
+        - An Obsidian plugin for creating, editing, and publishing Nostr document 
+        events directly from your vault.
+        <a href="https://git.imwald.eu/silberengel/scriptorium-obsidian"> scriptorium-obsidian</a>
+        
+        </div><div class="link-card"> CVMI: the Army knife of ContextVM 
+        <a href="https://github.com/contextvm/cvmi"> cvmi</a>
+        
+        </div><div class="link-card"> relay pack (kind 30002) Curated Relay Collections
+        <a href="https://relay-packs.shakespeare.wtf/"> relay-packs</a>
+        
+        </div><div class="link-card"> view nostr-git repositories
+        <a href="https://nostrgit.xyz/#"> nostr-git</a>
+        
+        </div><div class="link-card"> reddit in your browser with apikey
+        it will need a openrouter api key to run 
+        <a href="https://reddit-nostr.shakespeare.wtf/"> reddit-nostr</a>
+        
+        </div><div class="link-card"> Nostr chess (vibe)
+        <a href="https://nostrchess.vercel.app/"> nostrchess</a>
+        
+        </div><div class="link-card"> reddit for AI agents discuss
+        <a href="https://clawstr.com/"> clawstr</a>
+        
+        </div><div class="link-card"> Shakespeare vibe Traveltelly
+        Review, marketplace, stories, trip in one app
+        *(Review uses kind 34879, 
+        marketplace nip-99,  
+        trip  kind 30025)*
+        <a href="https://www.traveltelly.com/"> traveltelly</a>
+        
+        </div><div class="link-card"> Turns a Nostr profile into a fast, fully static blog.
+        <a href="https://blog.besoeasy.com/"> blog besoeasy</a>
+        
+        </div><div class="link-card"> Clawdentials - Your Agents Work. You Earn.
+        <a href="https://clawdentials.com/"> clawdentials</a>
 
-</div><div> Market
-The bullishMarket is a real-time multiplayer 2D market experience where you can walk around, interact with vendor booths, and support the Bitcoin circular economy!
-<a href="https://bullishmarket.onrender.com/"> bullishmarket website</a>
+        </div>
+        </div>
 
-</div><div> badge client
-<a href="https://v0-badgy.vercel.app/"> badgy</a>
+<h2>09/02</h2>
 
-</div><div> Skills for your agents
-<a href="https://skillforge.to/"> Skills website</a>
+        <div class="link-grid">    
+        <div class="link-card"> igloo beta version for iOS apps
+        <a href="https://jumble.social/notes/nevent1qvzqqqqqqypzpacc6jnl9s907ryjcny7pz7mh0tc3wwa79k0e5a42g5e2hpujpqqqy88wumn8ghj7mn0wvhxcmmv9uq3wamnwvaz7tmjv4kxz7fwwpexjmtpdshxuet59uqzplvqy9k8gq7ew6cjls72uhq9frccl603vjgwe4f9a9fvj0exwl6cw5u2tn"> iOS apps</a>
+        
+        </div><div class="link-card"> Cyberdeck notedeck but only for frog
+        This client has a set of features the main one is to create columns from a
+        filter set
+        <a href="https://cyberdeck.shakespeare.wtf/"> cyberdeck website</a>
+        
+        </div><div class="link-card"> Geogram.radio high frequency tech 
+        you have mesh network present this is a kind of that structure.
+        <a href="https://geogram.radio/"> geogram website</a>
+        
+        </div><div class="link-card">Marmot sdk is making progress in typescript which is good
+        for most developers
+        
+        </div><div class="link-card"> Prism is an Android app that highlights (nip-84) from the browser
+        I haven't tried it yet but there seems to be an apk available
+        <a href="https://github.com/hardran3/Prism"> Prism GitHub page</a>
+        
+        </div><div class="link-card"> Sirius shared a video nhash, I don't know much about this video seen
+        that iris supports it and allows you to watch videos, probably
+        a way to encapsulate video and so on blossoms.
+        <a href="https://iris.to/nevent1qvzqqqqqqypzq3frhevd89d3kxt2nwxg9vpck6y4evptdq7scff6j4gx3kapltxsqy88wumn8ghj7mn0wvhxcmmv9uqzpvqcdcuwkxpzwxa2dqqqjlxp9y4ult599sqcr7jkauzfmuh69y0reu3hxq"> see the note on iris</a>
+        
+        </div><div class="link-card"> Someone shared stegstr's npub and I went to read
+        the project and can basically share photos.
+        I tried using the web app, it seems like a client at first
+        stages, I tried to upload a photo but I couldn't 
+        complete everything.
+        <a href="https://www.stegstr.com/index.html"> stegstr website</a>
+        
+        </div><div class="link-card"> Hzrd149 updated applesauce for nip-17 with examples
+        
+        </div><div class="link-card"> Landing page in Danish, with a lot of nostr clients 
+        *and some a a little dated*
+        <a href=https://nostr.dk/"> nostr dk website</a>
+        
+        </div><div class="link-card"> Badge client for nip-58
+        <a href="https://nostrsigil.com/"> nostr sigil website</a>
+        
+        
+        </div><div class="link-card">*Back to the future aitheboard (seems momentarily off)*
+        
+        </div><div class="link-card"> Nostr relay in C
+        <a href="https://github.com/Hakkadaikon/libelay"> libelay on GitHub</a>
+        
+        </div><div class="link-card"> nostr hero quest (phase 2)
+        <a href="https://test.pubkey.quest/"> nostr hero website</a>
+        
+        </div><div class="link-card"> Pod21.com
+        "The Decentralized 3D Printing Network"
+        <a href="https://pod21.com/"> pod21 website</a>
+        
+        
+        </div><div class="link-card"> Vue-ndk by Sebastix.
+        
+        Do you remember ndk? Good, the nostr development kit, Sebastix starts a
+        mode for vue
+        <a href="https://gitworkshop.dev/npub1qe3e5wrvnsgpggtkytxteaqfprz0rgxr8c3l34kk3a9t7e2l3acslezefe/relay.ngit.dev/vue-ndk"> vue-ndk gitworkshop website</a>
+        
+        
+        </div><div class="link-card"> Openclaw nostr
+        <a href="https://github.com/nash-the-ai/openclaw-nostr"> openclaw-nostr GitHub page</a>
+        
+        </div><div class="link-card"> Marketplace for agent skill, powered by zapstore
+        <a href="https://skillpub.net/"> skillpub marketplace</a>
+        
+        
+        </div><div class="link-card"> New Client corkboard
+        "Build as many corkboard feeds as you like, privately"
+        <a href="https://noobstr.me/corkboard/"> corkboard website</a>
+		</div>
+        </div>				
 
-</div><div> Polls client
-<a href="https://www.pollstr.site/"> pollstr website</a>
+<h2>18/02</h2>
 
-</div><div> test.imani.casa
-*Testing*
-decentralised self-custodial NIP-60 wallet, but for vouchers
-<a href="https://test.imani.casa/"> Test website</a>
+        <div class="link-grid">
+        <div class="link-card"> Zapcooking community 
+        Community powered by zapcooking, garden avaible invite only
+        <a href="https://garden.zap.cooking/"> Garden zap cooking website</a>
+        
+        </div><div class="link-card"> Cyberspace protocol aka ONOSENDAI
+        Renewal of cyberspace with a website and a community
+        <a href="https://straylight.cafe/"> Straylight cafe website</a>
+        
+        </div><div class="link-card"> Ribbit by Tekkadan
+        Ribbit is a complete Nostr ecosystem — client, protocol library, UI toolkit, and browser extension. All open source. All yours.
+        <a href="https://ribbit.network/"> Ribbit network</a>
+        
+        </div><div class="link-card"> Inkpress magazine (*vibe*)
+        Beautiful magazine with vibe 
+        <a href="https://inkpress.shakespeare.wtf/"> Inkpress website</a>
+        
+        </div><div class="link-card"> Foxhole, remember clawstr? (*vibe*)
+        Derek vibe an app similar for human
+        <a href="https://foxhole.lol/"> Foxhole website</a>
+        
+        
+        </div><div class="link-card"> Yoink
+        Daniele build a cool mini app to 
+        select human interaction (hopeful) and compare accounts 
+        <a href="https://yoink.dtonon.com/"> Yoink website</a>
+        
+        </div><div class="link-card"> Cove band
+        Another music client show app on Nostr is now Cove
+        <a href="https://cove.band/"> Cove band website</a>
+        
+        </div><div class="link-card"> Espi
+        See something beautiful? Share its colors with the world.
+        "Espy is a way to share colors of the moment to the world. 
+        A beautiful day outside, an interesting painting, 
+        a color reference that inspires - anything you can see."
+        <a href="https://espy.you/"> Espi website</a>
+        
+        </div><div class="link-card"> Yakitofu by ocknamo
+        Yakitofu is a badge client
+        <a href="https://ocknamo.github.io/yaki-tofu/"> Yakitofu website</a>
+        
+        </div><div class="link-card"> Smesh
+        fork of cody tseng's jumble, cleaned up and made faster
+        <a href="https://smesh.mleku.dev/"> Smesh website</a>
+        
+        
+        </div><div class="link-card"> privdm
+        End-to-end encrypted group messaging over Nostr using the Marmot protocol (MLS)
+        <a href="https://github.com/dcadenas/marmota"> Chat marmota</a>
+        
+        </div><div class="link-card"> Nostr-clash
+        "Play now with real Nostr data "Nostr-Clash"
+        <a href="https://nostr-clash.on-forge.com/"> Nostr-clash website</a>
+        
+        </div><div class="link-card"> Aitheboard
+        It's to make a *universal app* that you can use to read, edit, cache, share, and publish things that you have trouble finding and working with, on the other apps.
+        <a href="https://aitherboard.imwald.eu/"> Aithebord website</a>
+        
+        
+        </div><div class="link-card"> Update the mcp server on applesauce build
+        <a href="https://applesauce.hzrd149.com/"> Applesauce website</a>
+        
+        </div><div class="link-card"> Formstr update now you can use blossom to upload
+        <a href="https://formstr.app/"> Formstr website</a>
+        
+        </div><div class="link-card"> ContextVM 
+        It has added another custom relay (team) and more projects are available on the page. 
+        They launch a biweekly substack newsletter.
+        </div><div class="link-card"><a href="https://substack.com/@contextvm"> Substack newsletter link</a>
+        <a href="https://github.com/ContextVM/awesome#public-cvm-relays"> ContextVM Awesome | Git Hub page</a>
+        
+        
+        </div><div class="link-card"> Aerith blossom managaer for android
+        <a href="https://github.com/hardran3/Aerith"> Aerith Git Hub</a>
+        
+        </div><div class="link-card"> Git Natual API
+        a lightweight git HTTP client for fetching repository data without cloning.
+        <a href="https://gitworkshop.dev/fiatjaf.com/git-natural-api"> Gitworkshop.dev website | Fiatjaf project</a>
+        
+        </div><div class="link-card"> Antiprimal seem offline now
+        Antiprimal is a standards-compliant gateway to Primal's cache server
+        <a href="https://antiprimal.net/"> Antiprimal website</a>
+        
+        </div><div class="link-card"> Morganite
+        A local blossom cache for android
+        <a href="https://github.com/greenart7c3/Morganite"> Morganite Git Hub</a>
+        
+        </div><div class="link-card"> Amber bulk import 
+        Import nsec to Amber via python
+        <a href="https://github.com/jooray/amber-bulk-import"> Amber bulk import Github page</a>
+        </div>
+        </div>
+
+<h2>24-02</h2> 
+        <div class="link-grid">
+        <div class="link-card"> Flotilla private? (article)
+        <a href="https://flotilla.social/articles/is-flotilla-private"> is flotilla private?</a>
+
+        </div><div class="link-card"> Flotilla moves to Gitea
+        <a href="https://gitea.coracle.social/coracle/flotilla"> gitea website</a>
+
+        </div><div class="link-card"> Nostrich love
+        comprehensive, beginner friendly Nostr resource with interactive components, quizzes, client simulators and more
+        <a href="https://nostrich.love/"> nostrich.love website</a>
+        
+        </div><div class="link-card"> Market
+        The bullishMarket is a real-time multiplayer 2D market experience where you can walk around, interact with vendor booths, and support the Bitcoin circular economy!
+        <a href="https://bullishmarket.onrender.com/"> bullishmarket website</a>
+        
+        </div><div class="link-card"> badge client
+        <a href="https://v0-badgy.vercel.app/"> badgy</a>
+        
+        </div><div class="link-card"> Skills for your agents
+        <a href="https://skillforge.to/"> Skills website</a>
+        
+        </div><div class="link-card"> Polls client
+        <a href="https://www.pollstr.site/"> pollstr website</a>
+        
+        </div><div class="link-card"> test.imani.casa
+        *Testing*
+        decentralised self-custodial NIP-60 wallet, but for vouchers
+        <a href="https://test.imani.casa/"> Test website</a>
 
 
-</div><div> Shootstr
-A little game to unfollow with style
-<a href="https://shootstr.nostr.net/"> Shootstr website</a>
- 
-
-</div><div> Gitplaza on the web with discord-UI
-<a href="https://gitplaza.netlify.app/npub1drvpzev3syqt0kjrls50050uzf25gehpz9vgdw08hvex7e0vgfeq0eseet/nostr"> Git-plaza website</a>
-
-
-</div><div> Gitrepublic (Decentralized Git Hosting on Nostr)
-You can see the full range of functionality on the API docs. ("under reconstruction")
-<a href="https://gitrepublic.imwald.eu/"> Git-republic website</a>
-
-</div><div> Command-line tools for GitRepublic
-<a href="https://www.npmjs.com/package/gitrepublic-cli"> Npmjs package gitrepublic-cli</a>
-
-</div><div> New release of ONyx
-write markdown notes locally
-<a href="https://github.com/derekross/onyx/"> Onyx github</a>
-   
-</div><div> Hashtree
-A simple merkle tree for git repos, file sharing, and anything else. Sync peer-to-peer between browsers and devices, or via servers.
-<a href="https://hashtree.cc/"> hashtree website</a>
-
-
-</div><div> NIP-17 openclaw
-<a href="https://github.com/fabianfabian/openclaw-nostr-nip17"> openclaw dm github</a>
-
-</div><div> Haven docker
-A lightweight and simple dockerized version of *bitvora/haven*.
-<a href="https://github.com/HolgerHatGarKeineNode/haven-docker"> Haven git hub</a>
-</div></div>
+        </div><div class="link-card"> Shootstr
+        A little game to unfollow with style
+        <a href="https://shootstr.nostr.net/"> Shootstr website</a>
+        
+        
+        </div><div class="link-card"> Gitplaza on the web with discord-UI
+        <a href="https://gitplaza.netlify.app/npub1drvpzev3syqt0kjrls50050uzf25gehpz9vgdw08hvex7e0vgfeq0eseet/nostr"> Git-plaza website</a>
+        
+        
+        </div><div class="link-card"> Gitrepublic (Decentralized Git Hosting on Nostr)
+        You can see the full range of functionality on the API docs. ("under reconstruction")
+        <a href="https://gitrepublic.imwald.eu/"> Git-republic website</a>
+        
+        </div><div class="link-card"> Command-line tools for GitRepublic
+        <a href="https://www.npmjs.com/package/gitrepublic-cli"> Npmjs package gitrepublic-cli</a>
+        
+        </div><div class="link-card"> New release of ONyx
+        write markdown notes locally
+        <a href="https://github.com/derekross/onyx/"> Onyx github</a>
+        
+        </div><div class="link-card"> Hashtree
+        A simple merkle tree for git repos, file sharing, and anything else. Sync peer-to-peer between browsers and devices, or via servers.
+        <a href="https://hashtree.cc/"> hashtree website</a>
+        
+        
+        </div><div class="link-card"> NIP-17 openclaw
+        <a href="https://github.com/fabianfabian/openclaw-nostr-nip17"> openclaw dm github</a>
+        
+        </div><div class="link-card"> Haven docker
+        A lightweight and simple dockerized version of *bitvora/haven*.
+        <a href="https://github.com/HolgerHatGarKeineNode/haven-docker"> Haven git hub</a>
+        </div>
+        </div>
+    </div>
 </div>
-
-			  
+<script src="../arrow.js"></script>
+</body>
+</html>	  

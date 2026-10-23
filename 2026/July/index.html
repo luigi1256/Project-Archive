@@ -1,150 +1,105 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8">                                                
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style_26.css">                        
     <title>July 2026</title>
-    
-    <style>
-        
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        
-        .dark-button {
-            width: 100%;
-            max-width: 800px; 
-            margin: 0 auto;
-        }
-
-       .grid-1 {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; 
-    width: 100%;
-    font-size: 20px;
-}
-
-        
-        .grid-1 div {
-            text-align: left; 
-            padding-left: 10px; 
-        }
-        .testo{
-font-size: 25px;   
-}
-        
         
     </style>
 </head>
 <body>
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 30px; border-bottom: 1px solid #333;">
     
-    <a href="../June/index.html" class="testo" style="text-decoration: none; padding: 10px;">← June</a>
+    <a href="../June/index.html" class="testo" id="prev-month" style="text-decoration: none; padding: 10px;">← June</a>
     
     <a href="../../Index.html" class="testo" style="text-decoration: none; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
         Main Menu
     </a>
     
-    <a href="../August/index.html" class="testo" style="text-decoration: none; padding: 10px;">August →</a>
+    <a href="../August/index.html" class="testo" id="next-month" style="text-decoration: none; padding: 10px;">August →</a>
     
 </div>
-<div class="dark-button" class="testo">
-						<div class="grid-1">
-                                        <div>
+<div class="container" style="width: 100%; max-width: 900px;">
+    <div class="link-grid">                                   
+                <div class="link-card">
                     <a href="https://npub1lcv24y25nxt62y0aulwfy5p3t2ug0vy6mlmkxyw438lf28huk9hqu43920.nsite.lol/"> nostree.me</a> nsite Linktree
                 </div>            
-				<div>
+				<div class="link-card">
                     <a href="https://cabana.fyi/"> Cabana </a> vibe-coding rooms
                 </div>		
-                <div>
+                <div class="link-card">
                     <a href="https://github.com/zig-nostr/nostr"> zig-nostr</a> library
                 </div>
-
-
-                <div>
+                <div class="link-card">
                     <a href="https://github.com/coracle-social/n8n-nodes-nostr"> An n8n community node package for the Nostr protocol</a>
                 </div>
-                <div>
+                <div class="link-card">
                     <a href="https://pubkey.quest/"> Your Nostr Identity Becomes a D&D Adventure</a>
-                </div>
-				<div></div>		
-                <div>
+                </div>	
+                <div class="link-card">
                     <a href="https://soapbox.pub/blog/building-an-armada-voyage-to-encrypted-communities"> Article</a> Building an Armada: Our Voyage to Encrypted Communities on
                 </div>
-                <div>
+                <div class="link-card">
                     <a href="https://gitlab.fbo.network/nostr/sistr/custr"> CustID</a> is a mobile identity vault built on Nostr and the SISTR protocol.
                 </div>
-                <div>
+                <div class="link-card">
                     <a href="https://github.com/higedamc/hakari"> Hakari</a> is a privacy-first (app) weight and body-composition logger.
                 </div>
-				<div>
+				<div class="link-card">
                     <a href="https://github.com/ChadFarrow/stablekraft-app"> StableKraft</a> is a Podcasting 2.0 music and podcast aggregator. 
                 </div>	
 
 
-                <div>
+                <div class="link-card">
                     <a href="https://github.com/higedamc/shuki"> Jason Shuki</a> A Jason's pass-like password manager, but your backup lives on Nostr.
                 
                 </div>
-                <div></div>
-				<div>
+				<div class="link-card">
                     <a href="https://napplet.run/"> Napplet</a> Composable Nostr apps,not monoliths.
                 </a>
                 </div>		
 
 
-                <div>
+                <div class="link-card">
                     <a href="https://github.com/coracle-social/nvid"> Nvid</a> A POC for video streaming over nostr
                 </a>
                 </div>
-                <div>
+                <div class="link-card">
                     <a href="https://gitworkshop.dev/npub1tu8hw9ealehxe08m6xdxaltfrlvka8tle2vvc8z53dem2f6ranmsyt9vf3/relay.damus.io/fips-tollgate">
                         TollGate-compatible</a> paid access for a FIPS gateway (mesh-only, Cashu, MVP).
                 </div>
-				<div>
+				<div class="link-card">
                     <a href="https://npub.online/fips-log-3d/"> FIPS</a> log 3d, node map</a>
                 </div>		
-				<div>
+				<div class="link-card">
                     <a href="https://github.com/Letdown2491/hanami"> Hanami</a> A self-hosted Blossom server with a UI on top
-                </div>		
-				<div></div>		
-                <div>
+                </div>				
+                <div class="link-card">
                     <a href="https://sonarprivacy.xyz/"> Sonar</a> bringing MSN trill back but better
                 </div>
-				<div>
+				<div class="link-card">
                     <a href="https://bridge.armada.buzz/"> Armada bridge</a> mirror a channel from your Discord server into your Armada community, and back.
                 </div>
-                <div>
+                <div class="link-card">
                     <a href="https://onlyboosts.social/"> onlyboosts</a> Podcasting 2.0 Boosts on Nostr: Feeds, Rankings and Discoverability
                 </div>		
-                <div>
+                <div class="link-card">
                     <a href="https://nostrarchives.com/analytics/clients">
                         Client Usage</a> Nostr clients ranked by usage. Click any client to see its top users.
                 </div>
-                <div>
+                <div class="link-card">
                     <a href="https://code.relay.tools/forks/buzz"> Buzz</a> fork code, a workspace where humans and agents 
                     build together, on a relay you own.
                 </div>
-                <div></div>
-                <div>
+                <div class="link-card">
                     <a href="https://gitworkshop.dev/fiatjaf.com/hallway"> Hallway</a> is a Nostr client template that can be customized for specific communities and use cases.
                     <br>Pyramyd relays <a href="https://closedpyramid.netlify.app/"> closedpyramid</a>
                     <br>Spatia arcana relays<a href="https://sparc-noasis.netlify.app/"> spatia-arcana</a>
                 </div>
 
-
-
-
 				</div></div>        
-                            
-
-				
-			  
+                      
+<script src="../arrow.js"></script>
+</body>
+</html>                	  

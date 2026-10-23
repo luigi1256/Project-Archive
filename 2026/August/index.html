@@ -1,114 +1,73 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
+    
+    <meta charset="UTF-8">                                                
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style_26.css">                        
     <title>August 2026</title>
     
-    <style>
-        
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        
-        .dark-button {
-            width: 100%;
-            max-width: 800px; 
-            margin: 0 auto;
-        }
-
-       .grid-1 {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; 
-    width: 100%;
-    font-size: 20px;
-}
-
-        
-        .grid-1 div {
-            text-align: left; 
-            padding-left: 10px; 
-        }
-
-        .testo{
-        font-size: 25px;   
-        }
-        
-        
-    </style>
 </head>
 <body>
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 30px; border-bottom: 1px solid #333;">
     
-    <a href="../July/index.html" class="testo" style="text-decoration: none; padding: 10px;">← July</a>
+    <a href="../July/index.html" class="testo" id="prev-month" style="text-decoration: none; padding: 10px;">← July</a>
     
     <a href="../../Index.html" class="testo" style="text-decoration: none; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
         Main Menu
     </a>
     
-    <a href="../September/index.html" class="testo" style="text-decoration: none; padding: 10px;">September →</a>
+    <a href="../September/index.html" id="next-month" class="testo" style="text-decoration: none; padding: 10px;">September →</a>
     
 </div>
-<div class="dark-button" class="testo">
-						<div class="grid-1">
-        
+<div class="container" style="width: 100%; max-width: 900px;">         
+    <div class="link-grid">                                                    
 
-                    <div><a href="https://sandstr.app/"> Sandstr</a> Try Nostr clients without installing anything</div>        
-                    <div><a href="https://zapstore.dev/apps/naddr1qq88s7t69ekxzmmr9eehgctndqq3samnwvaz7tmjv4kxz7fw0fshqum5daex2tnyv4mqygqutleu4txcgtqpmj50x7prrvtxzagk6g2d5aw8464ma8s7l6wq7cpsgqqq0c9s9lfdd3"> Stash</a> saves web pages and text highlights to nostr (App)</div>
-                    <div><a href="https://trbouma.github.io/grove/"> Grove</a> A lean Python Blossom server for opaque, content-addressed blobs.</div>
-                    <div><a href="https://github.com/r0d8lsh0p/ephemeral-relay"> Ephemeral Relay</a> A khatru nostr relay for temporary events — age-based retention, kind allowlist, NIP-40 + NIP-70</div>
-                    <div><a href="https://feeds.relay.tools/"> Feeds Relay Tools</a> A personal relay that spiders every note from everyone you follow or a community relay with groups</div>
-                    <div><a href="https://snowcait.github.io/nostr-json-generator"> Nostr json generator</a> Profile Json</div>
-                    <div></div>
-                    <div><a href="https://gitworkshop.dev/henk.tech/ircord"> Concord bridge</a> An IRC server that bridges Concord communities (CORD-01/02) to any proper IRC client.</div>
-                    <div><a href="https://notasshole.vercel.app/"> Notasshole</a> Advanced AI-powered Nostr personality analysis.</div>
-                    <div><a href="https://mailstr.app/"> Mailstr</a> Email locked to your key.</div>
-                    <div><a href="https://getdrive.iris.to/"> Iris Drive</a> Sync files across your devices and encrypted cloud storage with simple sharing.</div>
-                    <div></div>
-                    <div><a href="https://horcruxbackup.com/"> Horcruxbackup</a> Store your secrets with people you trust.</div>
-                    <div><a href="https://dyne.org/communitator/"> Dyne Communitator</a> Put your Nostr community on the right relays.</div>
-                    <div><a href="https://www.livelier.live/"> Livelier live</a> Helps self-hosted live streamers get found the moment they go live – For livelier live streams.</div>
-                    <div><a href="https://trendingnostr.vercel.app/"> Trending Nostr</a> A simple read-only feed of trending Nostr notes.</div>
-                    <div></div>
-                    <div><a href="https://snort.social/agent"> Snort Agent</a> Ask me anything about Nostr or Snort</div>
-                    <div><a href="https://nostrich.org/"> Nostrich</a> Is a new, best-in-class Nostr client for web, iOS, Android & Mac.</div>
-                    <div><a href="https://github.com/TurkeyNostr/infans"> Infans</a> Privacy-first baby tracking app</div>
-                    <div><a href="https://nostr-tank-arena.vercel.app/?room=lobby"> Tank Arena</a> Eight-player deathmatch.</div>
-                    <div></div>
-                    <div><a href="https://gitworkshop.dev/npub1qwkd5wzftcxquuhtkcg0xn9ed7evksluuppf7qdmdh34ywe9uncs5uqfvl/postr"> Postr</a> A tiny Nostr composer for Android. Post. That's all.</div>
-                    <div><a href="https://longnostr.vercel.app/"> Longnostr</a> Publish long-form to Nostr.</div>
-                    <div><a href="https://github.com/purrgrammer/hex"> Hex</a> A transport-agnostic agent for Nostr.</div>
-                    <div><a href="https://github.com/arkin0x/cyberspace"> Cyberspace</a> Cyberspace Protocol, version 2.</div>
-                    <div></div>
-                    <div><a href="https://live.letsfo.com/"> Letsfo</a> Is a self-hosted Nostr livestream frontend built to run on your own domain.</div>
-                    <div><a href="https://napstr.net/"> Napstr</a> Your music again, is bringing music sharing back with modern privacy</div>
-                    <div><a href="https://git.nostrdev.com/stuff/pakstr"> Pakstr</a> Turns any web app into a signed, installable Android APK and publishes it to Zap Store in a single CI step</div>
-                    <div><a href="https://github.com/limina1/tendrl-engine"> Tendrl-engine</a> A local-first reader, writer, and reference manager built on Nostr</div>
-                    <div></div>
-                    <div><a href="https://github.com/hasky00/nostrexplain"> Nostr explain</a> A single-page educational website that provides a comprehensive introduction to Nostr </div>
-                    <div><a href="https://snowcait.github.io/zap-debugger/"> Zap debugger</a> NIP-57 Zap Debugger</div>
-                    <div><a href="https://stritchtunes.shakespeare.wtf/"> Stritchtunes</a> Relay it loud.</div>
-                    <div><a href="https://photostr-pwjc.shakespeare.to/"> Photostr</a> Way to watch photos and discover photographers</div>
-                    <div></div>
-                    <div><a href="https://zapstore.dev/apps/org.cordn.coordinator"> Cordn</a> The coordinator is in the phone!</div>
-                    <div><a href="https://zapstore.dev/apps/com.circumspace.contactstr"> Hessible</a> A privacy-first Android contacts app</div>
-                    <div><a href="https://nostrmash.com/"> Nostrmash</a> Understand what is moving on Nostr—and why it matters.</div>
-                    <div><a href="https://snips.emre.xyz/"> Snips</a> Explore Code Snippets</div>
-                    <div><a href="https://holoboard.space/"> Holoboard</a> A bulletin board</div>
+                    <div class="link-card"><a href="https://sandstr.app/"> Sandstr</a> Try Nostr clients without installing anything</div>        
+                    <div class="link-card"><a href="https://zapstore.dev/apps/naddr1qq88s7t69ekxzmmr9eehgctndqq3samnwvaz7tmjv4kxz7fw0fshqum5daex2tnyv4mqygqutleu4txcgtqpmj50x7prrvtxzagk6g2d5aw8464ma8s7l6wq7cpsgqqq0c9s9lfdd3"> Stash</a> saves web pages and text highlights to nostr (App)</div>
+                    <div class="link-card"><a href="https://trbouma.github.io/grove/"> Grove</a> A lean Python Blossom server for opaque, content-addressed blobs.</div>
+                    <div class="link-card"><a href="https://github.com/r0d8lsh0p/ephemeral-relay"> Ephemeral Relay</a> A khatru nostr relay for temporary events — age-based retention, kind allowlist, NIP-40 + NIP-70</div>
+                    <div class="link-card"><a href="https://feeds.relay.tools/"> Feeds Relay Tools</a> A personal relay that spiders every note from everyone you follow or a community relay with groups</div>
+                    <div class="link-card"><a href="https://snowcait.github.io/nostr-json-generator"> Nostr json generator</a> Profile Json</div>
                     
+                    <div class="link-card"><a href="https://gitworkshop.dev/henk.tech/ircord"> Concord bridge</a> An IRC server that bridges Concord communities (CORD-01/02) to any proper IRC client.</div>
+                    <div class="link-card"><a href="https://notasshole.vercel.app/"> Notasshole</a> Advanced AI-powered Nostr personality analysis.</div>
+                    <div class="link-card"><a href="https://mailstr.app/"> Mailstr</a> Email locked to your key.</div>
+                    <div class="link-card"><a href="https://getdrive.iris.to/"> Iris Drive</a> Sync files across your devices and encrypted cloud storage with simple sharing.</div>
                     
-					
-			  
-    
+                    <div class="link-card"><a href="https://horcruxbackup.com/"> Horcruxbackup</a> Store your secrets with people you trust.</div>
+                    <div class="link-card"><a href="https://dyne.org/communitator/"> Dyne Communitator</a> Put your Nostr community on the right relays.</div>
+                    <div class="link-card"><a href="https://www.livelier.live/"> Livelier live</a> Helps self-hosted live streamers get found the moment they go live – For livelier live streams.</div>
+                    <div class="link-card"><a href="https://trendingnostr.vercel.app/"> Trending Nostr</a> A simple read-only feed of trending Nostr notes.</div>
+                    
+                    <div class="link-card"><a href="https://snort.social/agent"> Snort Agent</a> Ask me anything about Nostr or Snort</div>
+                    <div class="link-card"><a href="https://nostrich.org/"> Nostrich</a> Is a new, best-in-class Nostr client for web, iOS, Android & Mac.</div>
+                    <div class="link-card"><a href="https://github.com/TurkeyNostr/infans"> Infans</a> Privacy-first baby tracking app</div>
+                    <div class="link-card"><a href="https://nostr-tank-arena.vercel.app/?room=lobby"> Tank Arena</a> Eight-player deathmatch.</div>
+                    
+                    <div class="link-card"><a href="https://gitworkshop.dev/npub1qwkd5wzftcxquuhtkcg0xn9ed7evksluuppf7qdmdh34ywe9uncs5uqfvl/postr"> Postr</a> A tiny Nostr composer for Android. Post. That's all.</div>
+                    <div class="link-card"><a href="https://longnostr.vercel.app/"> Longnostr</a> Publish long-form to Nostr.</div>
+                    <div class="link-card"><a href="https://github.com/purrgrammer/hex"> Hex</a> A transport-agnostic agent for Nostr.</div>
+                    <div class="link-card"><a href="https://github.com/arkin0x/cyberspace"> Cyberspace</a> Cyberspace Protocol, version 2.</div>
+                    
+                    <div class="link-card"><a href="https://live.letsfo.com/"> Letsfo</a> Is a self-hosted Nostr livestream frontend built to run on your own domain.</div>
+                    <div class="link-card"><a href="https://napstr.net/"> Napstr</a> Your music again, is bringing music sharing back with modern privacy</div>
+                    <div class="link-card"><a href="https://git.nostrdev.com/stuff/pakstr"> Pakstr</a> Turns any web app into a signed, installable Android APK and publishes it to Zap Store in a single CI step</div>
+                    <div class="link-card"><a href="https://github.com/limina1/tendrl-engine"> Tendrl-engine</a> A local-first reader, writer, and reference manager built on Nostr</div>
+                    
+                    <div class="link-card"><a href="https://github.com/hasky00/nostrexplain"> Nostr explain</a> A single-page educational website that provides a comprehensive introduction to Nostr </div>
+                    <div class="link-card"><a href="https://snowcait.github.io/zap-debugger/"> Zap debugger</a> NIP-57 Zap Debugger</div>
+                    <div class="link-card"><a href="https://stritchtunes.shakespeare.wtf/"> Stritchtunes</a> Relay it loud.</div>
+                    <div class="link-card"><a href="https://photostr-pwjc.shakespeare.to/"> Photostr</a> Way to watch photos and discover photographers</div>
+                    
+                    <div class="link-card"><a href="https://zapstore.dev/apps/org.cordn.coordinator"> Cordn</a> The coordinator is in the phone!</div>
+                    <div class="link-card"><a href="https://zapstore.dev/apps/com.circumspace.contactstr"> Hessible</a> A privacy-first Android contacts app</div>
+                    <div class="link-card"><a href="https://nostrmash.com/"> Nostrmash</a> Understand what is moving on Nostr—and why it matters.</div>
+                    <div class="link-card"><a href="https://snips.emre.xyz/"> Snips</a> Explore Code Snippets</div>
+                    <div class="link-card"><a href="https://holoboard.space/"> Holoboard</a> A bulletin board</div>
     
     </div></div>
 				
-			  
+<script src="../arrow.js"></script>
+</body>
+</html>    	  

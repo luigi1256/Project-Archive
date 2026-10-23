@@ -1,116 +1,76 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8">                                                
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>September 2026</title>
-    
-    <style>
-        
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        
-        .dark-button {
-            width: 100%;
-            max-width: 800px; 
-            margin: 0 auto;
-        }
-
-              .grid-1 {
-            display: flex;
-            flex-direction: column;
-            gap: 15px; 
-            width: 100%;
-            font-size: 20px;
-        }
-
-
-
-        
-        .grid-1 div {
-            text-align: left; 
-            padding-left: 10px; 
-        }
-
-        .testo{
-        font-size: 25px;   
-        }
-        
-        
-    </style>
+    <link rel="stylesheet" href="../style_26.css">
 </head>
 <body>
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 30px; border-bottom: 1px solid #333;">
     
-    <a href="../August/index.html" class="testo" style="text-decoration: none; padding: 10px;">← August</a>
+    <a href="../August/index.html" class="testo" id="prev-month" style="text-decoration: none; padding: 10px;">← August</a>
     
     <a href="../../Index.html" class="testo" style="text-decoration: none; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
         Main Menu
     </a>
     
-    <a href="../October/index.html" class="testo" style="text-decoration: none; padding: 10px;">October →</a>
+    <a href="../October/index.html" class="testo" id="next-month" style="text-decoration: none; padding: 10px;">October →</a>
     
 </div>
-<div class="dark-button" class="testo">
-						<div class="grid-1">
-						
-					
-                    <div><h2>Read</h2>    </div>        
-                    <div><a href="https://kingstr.imwald.eu/"> kingstr: Read the Bible</a> The Bible is the King James Version
-                    </div><div><a href="https://gc-alexandria.imwald.eu/"> Library of Alexandria</a> A calm shelf of publications, reviews, and quotes from the Nostr library.
-                    </div><div><a href="https://gitworkshop.dev/npub1nreadrm474vljnnj42f4766a7fkg8jagrwa5438hdxecrpvr4zjq9pz28m/relay.ngit.dev/nreadr"> Nreader</a> A KOReader plugin to share your highlights on nostr directly from your e reader.
-                    
+<div class="container" style="width: 100%; max-width: 900px;">         
+                                               
+					<h2>Read</h2>     	
+					<div class="link-grid"> 
+                    <div class="link-card"><a href="https://kingstr.imwald.eu/"> kingstr: Read the Bible</a> The Bible is the King James Version
+                    </div><div class="link-card"><a href="https://gc-alexandria.imwald.eu/"> Library of Alexandria</a> A calm shelf of publications, reviews, and quotes from the Nostr library.
+                    </div><div class="link-card"><a href="https://gitworkshop.dev/npub1nreadrm474vljnnj42f4766a7fkg8jagrwa5438hdxecrpvr4zjq9pz28m/relay.ngit.dev/nreadr"> Nreader</a> A KOReader plugin to share your highlights on nostr directly from your e reader.
+                    </div></div>
                     <h2>Utility & library</h2>
-                    </div><div><a href="https://oslim.dev/nostr-mill"> Nostr-mill: components</a> A lightweight, drop-in Web Component for Nostr account access
-                    </div><div><a href="https://github.com/zig-nostr/deed"> zig-nostr</a> Deed: the nostr command line: keys, signing
-                    </div><div><a href="https://github.com/zig-nostr/plaza"> Plaza nostr client</a> A fast, local-first Nostr client, built natively in Zig
-                    </div><div><a href="https://www.glyphbyte.dev/app/"> Glyphbyte</a> Draw you npub
-                    </div><div><a href="https://github.com/jooray/nsite-clay"> Nsite-Clay</a> A self-editable website. One HTML file that edits and republishes itself, hosted on Nostr.
-                    </div><div><a href="https://github.com/imattau/blossom_ynh">Blossom Server for YunoHost</a>
-                    </div><div>
+                    <div class="link-grid"> 
+                    <div class="link-card"><a href="https://oslim.dev/nostr-mill"> Nostr-mill: components</a> A lightweight, drop-in Web Component for Nostr account access
+                    </div><div class="link-card"><a href="https://github.com/zig-nostr/deed"> zig-nostr</a> Deed: the nostr command line: keys, signing
+                    </div><div class="link-card"><a href="https://github.com/zig-nostr/plaza"> Plaza nostr client</a> A fast, local-first Nostr client, built natively in Zig
+                    </div><div class="link-card"><a href="https://www.glyphbyte.dev/app/"> Glyphbyte</a> Draw you npub
+                    </div><div class="link-card"><a href="https://github.com/jooray/nsite-clay"> Nsite-Clay</a> A self-editable website. One HTML file that edits and republishes itself, hosted on Nostr.
+                    </div><div class="link-card"><a href="https://github.com/imattau/blossom_ynh">Blossom Server for YunoHost</a>
+                    </div></div>
                     
-                    <h2>Games & 3d</h2>     
-                    </div><div><a href="https://0ihyui15frtv0hxb3k5aw3kmcec7stg3mnc50oxue8szqw9itlsh-viewer.nsite.lol/#/hammer"> 3d viewer</a>
-                    </div><div><a href="https://www.snocrash.art/"> Cyberspace: Snocrash </a>Simple Nostr Object (SNO) Explorer
-                    </div><div><a href="https://napplet.soy/"> Napplets for video games</a> The command line for the agentic age.
-                    </div><div><a href="https://napplet.soy/n/naddr1qvzqqqyf8ypzpxw36w2u005kcamkdeqjg9jvuw3yg02gdc2xv38hvtffsvhhlte9qythwumn8ghj7un9d3shjtnwv9c8qmr9wsh8xmmeqy28wumn8ghj7un9d3shjtnyv9kh2uewd9hszrthwden5te0dehhxtnvdakqz9nhwden5te0wfjkccte9ec8y6tdv9kzumn9wsqq6m3dxv6rwctzxcur2ct9vc5ss6k8"> Crossfire: Napplets games </a> 
-                    </div><div>
+                    <h2>Games & 3d</h2> 
+                    <div class="link-grid">    
+                    <div class="link-card"><a href="https://0ihyui15frtv0hxb3k5aw3kmcec7stg3mnc50oxue8szqw9itlsh-viewer.nsite.lol/#/hammer"> 3d viewer</a>
+                    </div><div class="link-card"><a href="https://www.snocrash.art/"> Cyberspace: Snocrash </a>Simple Nostr Object (SNO) Explorer
+                    </div><div class="link-card"><a href="https://napplet.soy/"> Napplets for video games</a> The command line for the agentic age.
+                    </div><div class="link-card"><a href="https://napplet.soy/n/naddr1qvzqqqyf8ypzpxw36w2u005kcamkdeqjg9jvuw3yg02gdc2xv38hvtffsvhhlte9qythwumn8ghj7un9d3shjtnwv9c8qmr9wsh8xmmeqy28wumn8ghj7un9d3shjtnyv9kh2uewd9hszrthwden5te0dehhxtnvdakqz9nhwden5te0wfjkccte9ec8y6tdv9kzumn9wsqq6m3dxv6rwctzxcur2ct9vc5ss6k8"> Crossfire: Napplets games </a> 
+                    </div></div>
                     
-                    <h2> B stuff</h2>     
-                    </div><div><a href="https://gitlab.com/1440000bytes/color-address"> Color address</a> Every wallet gets a reusable green addres  
-                    </div><div><a href="https://zap.observer/"> Zap Observer</a> Zaps heard on public relays as NIP-57 zaps.
+                    <h2> B stuff</h2>
+                    <div class="link-grid">    
+                    <div class="link-card"><a href="https://gitlab.com/1440000bytes/color-address"> Color address</a> Every wallet gets a reusable green addres  
+                    </div><div class="link-card"><a href="https://zap.observer/"> Zap Observer</a> Zaps heard on public relays as NIP-57 zaps.
+                    </div></div>    
 
                     <h2> Clients</h2>
-                    </div><div><a href="https://github.com/Lwb89dev/librenostr/"> Libre nostr client</a> Born as a Primal fork.
-                    </div><div><a href="https://sneakpeek.nosuta.xyz/"> Concord: client</a> A sneak peek of my (reis) Concord client written in Go / Flutter.    
-                    </div><div><a href="https://canvasstr.org/"> Canvasstr</a> Get paid to build the lexiconomy.
-                    </div><div><a href="https://www.oshigood.us/"> Oshi market</a>
-                    </div><div><a href="https://github.com/besoeasy/Trackstr"> Trackstr </a>Open-source media tracker                        
-                    </div><div><a href="https://razr.social/"> Razr social </a>A decentralized social network
-                        
-                    
-                    </div><div>    
+                    <div class="link-grid">
+                    <div class="link-card"><a href="https://github.com/Lwb89dev/librenostr/"> Libre nostr client</a> Born as a Primal fork.
+                    </div><div class="link-card"><a href="https://sneakpeek.nosuta.xyz/"> Concord: client</a> A sneak peek of my (reis) Concord client written in Go / Flutter.    
+                    </div><div class="link-card"><a href="https://canvasstr.org/"> Canvasstr</a> Get paid to build the lexiconomy.
+                    </div><div class="link-card"><a href="https://www.oshigood.us/"> Oshi market</a>
+                    </div><div class="link-card"><a href="https://github.com/besoeasy/Trackstr"> Trackstr </a>Open-source media tracker                        
+                    </div><div class="link-card"><a href="https://razr.social/"> Razr social </a>A decentralized social network
+                    </div></div>    
                     <h2> Chat Apps</h2>    
-                    </div><div><a href="https://goop.dergigi.com/"> Goop: chat</a> An app to chat with your clankers (and friends)    
-                    </div><div><a href="https://psstpsst.chat/"> Psst Psst</a> Private messaging app
-                    </div><div><a href="https://zapstore.dev/apps/ai.nymbot"> Nymbot on zapstore</a>    
-                    
+                    <div class="link-grid">
+                    <div class="link-card"><a href="https://goop.dergigi.com/"> Goop: chat</a> An app to chat with your clankers (and friends)    
+                    </div><div class="link-card"><a href="https://psstpsst.chat/"> Psst Psst</a> Private messaging app
+                    </div><div class="link-card"><a href="https://zapstore.dev/apps/ai.nymbot"> Nymbot on zapstore</a>    
+                    </div></div>
                     <h2>Other</h2>
-                    </div><div><a href="https://github.com/reyakov/signed"> Signed via Nostr Git</a> Early alpha, not production ready. 
-                    </div>
+                    <div class="link-grid">
+                    <div class="link-card"><a href="https://github.com/reyakov/signed"> Signed via Nostr Git</a> Early alpha, not production ready. 
+                    </div></div>
                                         
-					
-						
-						
-						
-	
-    
-                </div></div>			  
+				</div>                
+<script src="../arrow.js"></script>                
+</body>
+</html>
