@@ -145,10 +145,12 @@ pre {
   .canvas-area {
     max-width: 100% !important;
     width: 100% !important;
-    height: auto !important;
-    min-height: auto !important;
   }
 
+  #relay-value.card {
+    height: 160px !important;
+    min-height: 160px !important;
+}
 
   .app-header nav {
     flex-wrap: wrap;
@@ -160,7 +162,6 @@ pre {
 @media (min-width: 901px) {
   .app-container {
     display: grid;
-    /* 👈 MODIFICA QUI IL PRIMO VALORE: es. 220px o 240px per stringere la sinistra */
     grid-template-columns: 240px 1fr 320px; 
     gap: 12px;
     padding: 12px;
@@ -222,7 +223,6 @@ pre {
 }                    
 
 /* --- LAYOUT SEZIONE RELAY & UTENTI --- */
-/* --- LAYOUT RELAY & UTENTI A DUE BLOCCHI --- */
 .relay-two-columns {
     display: flex;
     gap: 12px;
@@ -245,13 +245,13 @@ pre {
     padding-bottom: 6px;
     scrollbar-width: thin;
     scrollbar-color: #444 #222;
-    max-height: 120px; /* Evita che si espanda troppo in verticale */
+    max-height: 120px; 
 }
 
 /* Ottimizzazione specifica per MOBILE */
 @media (max-width: 768px) {
     .relay-two-columns {
-        flex-direction: column !important; /* Su mobile i due blocchi si impilano in verticale */
+        flex-direction: column !important; 
     }
 
     #nip11Info {
