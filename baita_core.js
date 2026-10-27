@@ -63,7 +63,7 @@ function openNostrClient(term) {
   } else if (cleanTerm.startsWith("naddr1")) {
     window.location.href = `modfile.html?naddr=${encodeURIComponent(cleanTerm)}`;
   } else if (cleanTerm.startsWith("http://") || cleanTerm.startsWith("https://")) {
-    window.open(cleanTerm, '_blank');
+    window.location.href='./Search_media/Search_media.html';
   } else {
     
     if (cleanTerm.startsWith("#")) cleanTerm = cleanTerm.substring(1);

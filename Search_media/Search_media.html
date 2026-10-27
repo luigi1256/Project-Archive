@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baita - Media & Search Hub</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="theme_baita.css">
+<style>
+.filter-row {            
+  display: flex;                    
+  gap: 0.5rem;                      
+  margin-bottom: 0.5rem;                
+}                    
+.filter-row button {                    
+  flex: 1;                    
+  font-size: 0.7rem;                    
+  padding: 8px 10px; 
+  border-radius: 0.375rem; 
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}                                     
+.filter-row button.active {              
+  background-color: #166534; 
+  color: #fff;                        
+  border-color: #22c55e; 
+} 
+/* Personalizzazione scrollbar orizzontale per la shelf */
+#books::-webkit-scrollbar {
+  height: 6px;
+}
+#books::-webkit-scrollbar-track {
+  background: #071810;
+  border-radius: 4px;
+}
+#books::-webkit-scrollbar-thumb {
+  background: #064e3b;
+  border-radius: 4px;
+}
+#books::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+</style>
+</head>
+<body class="min-h-screen bg-[#071810] text-[#4ade80] antialiased p-2 sm:p-4">
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity z-40"></div>
+
+<div class="max-w-4xl mx-auto space-y-3 sm:space-y-4 relative z-50">
+
+  <header class="bg-[#0f2318] border border-emerald-900/60 p-3 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div class="flex items-center justify-between w-full sm:w-auto gap-3">
+        <h1 class="font-mono text-xs sm:text-sm tracking-wider uppercase text-emerald-400">🌿 Baita Hub</h1>
+        <button id="toggleShelfBtn" onclick="toggleShelf()" class="text-xs bg-emerald-950 border border-emerald-800 px-3 py-1.5 rounded font-mono text-emerald-300 hover:text-white cursor-pointer">📚 Saved Shelf</button>
+    </div>
+    
+    <div id="shelfFilters" class="flex flex-wrap items-center gap-1 font-mono text-xs w-full sm:w-auto justify-start sm:justify-end overflow-x-auto pb-1 sm:pb-0">
+        <button onclick="filterAndOpenShelf('all')" class="px-2.5 py-1 rounded bg-emerald-900 text-white border border-emerald-700 cursor-pointer">📁 All</button>
+        <button onclick="filterAndOpenShelf('image')" class="px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="Images">🖼️</button>
+        <button onclick="filterAndOpenShelf('video')" class="px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="Videos">📹</button>
+        <button onclick="filterAndOpenShelf('audio')" class="px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="Audio">🎵</button>
+        <button onclick="filterAndOpenShelf('pdf')" class="px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="PDFs">📄</button>
+        <button onclick="filterAndOpenShelf('link')" class="px-2.5 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="Links">🔗</button>
+    </div>
+  </header>
+
+  <aside id="shelf" class="bg-[#0b1d13] border border-emerald-900/40 p-3 rounded-lg hidden">
+    <div class="flex items-center justify-between mb-2">
+        <h2 class="font-mono text-xs text-emerald-400 uppercase tracking-widest">My Saved Media Shelf</h2>
+        <button onclick="toggleShelf()" class="text-emerald-400 hover:text-white font-mono text-[9px] px-1.5 py-0 bg-emerald-950/60 border border-emerald-800/50 rounded cursor-pointer transition-colors">✕ Close</button>
+    </div>
+
+    <div id="books" class="flex flex-row gap-2.5 overflow-x-auto pb-2 pt-1 whitespace-nowrap"></div>
+  </aside>
+
+<div id="searchArea" class="bg-[#0f2318] border border-emerald-900/60 p-4 sm:p-6 rounded-lg shadow-md space-y-4 mt-2">
+  <div class="filter-row font-mono flex items-center gap-2"> 
+    <button id="modeRelayBtn" onclick="setSearchMode('relay')" class="bg-emerald-600 hover:bg-emerald-500 text-emerald-950 font-bold px-4 sm:px-5 py-2 rounded text-xs sm:text-sm cursor-pointer transition-colors">🌐 Cerca nel network</button>
+    <button id="modeLocalBtn" onclick="setSearchMode('local')" class="bg-emerald-900/80 text-emerald-300 hover:bg-emerald-900 px-4 sm:px-5 py-2 rounded text-xs sm:text-sm cursor-pointer transition-colors">💻 Cerca / Render</button>  
+  </div>
+
+  <div id="searchContainer" class="flex gap-2">
+    <input
+      id="searchBar"
+      type="text"
+      placeholder="search in the silence… (query, npub, note or url)"
+      class="flex-1 bg-[#071810] border border-emerald-900 text-emerald-300 px-3 sm:px-4 py-2.5 rounded font-mono text-xs sm:text-sm focus:outline-none focus:border-emerald-500 min-w-0"
+    >
+    <button id="searchButton" class="bg-emerald-600 hover:bg-emerald-500 text-emerald-950 font-bold px-4 sm:px-5 py-2.5 rounded font-mono text-sm transition-colors cursor-pointer shrink-0">🔍</button>
+  </div>
+</div>
+
+
+  <div id="libraryContainer" class="bg-[#0f2318] border border-emerald-900/60 p-3 sm:p-5 rounded-lg shadow-md">
+    <div id="library" class="space-y-6"></div>
+  </div>
+
+</div>
+
+<script src="baita_core_media.js"></script>
+<script src="baita_media.js"></script>
+
+<script>
+window.filterAndOpenShelf = function(type) {
+  const shelf = document.getElementById('shelf');
+  if (shelf && shelf.classList.contains('hidden')) {
+    toggleShelf();
+  }
+  if (typeof renderMediaShelf === 'function') {
+    renderMediaShelf(type);
+    enhanceShelfCarousel();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(enhanceShelfCarousel, 100);
+});
+
+const searchBar = document.getElementById("searchBar");
+const searchButton = document.getElementById("searchButton");
+
+if (searchButton) {
+  searchButton.onclick = () => {
+    if (typeof handleSearchAction === 'function') {
+      handleSearchAction();
+    } else if (typeof performSearch === 'function') {
+      performSearch();
+    }
+    setTimeout(enhanceShelfCarousel, 200);
+  };
+}
+
+if (searchBar) {
+  searchBar.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      if (typeof handleSearchAction === 'function') {
+        handleSearchAction();
+      } else if (typeof performSearch === 'function') {
+        performSearch();
+      }
+      setTimeout(enhanceShelfCarousel, 200);
+    }
+  });
+}
+</script>
+
+</body>
+</html>
