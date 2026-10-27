@@ -121,7 +121,8 @@
                 }
 
                 if (!targetEvent) {
-                    document.getElementById('loading').innerText = "No valid events or lists specified in the URL.";
+                    document.getElementById('loading').innerText = "";
+                    document.getElementById('statusText').innerText = "No valid events or lists specified in the URL.";
                     return;
                 }
 
@@ -454,7 +455,9 @@
             });
         }        
         
-        function parseNostrContent(content) {
+    function parseNostrContent(content) {
+    if (!content) return '';
+  
     let parsed = content.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
         let url = '#';
         let label = entity.substring(0, 10) + '...';
@@ -470,11 +473,12 @@
         }
         return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
     });
-    
+
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     parsed = parsed.replace(urlRegex, (url) => {
         let cleanUrl = url.replace(/[.,!?)]$/, '');
         let trailing = url.slice(cleanUrl.length);
+        
         if (cleanUrl.includes('njump.to') || cleanUrl.includes('njump.me')) return url;
         let lower = cleanUrl.toLowerCase();
         
@@ -488,17 +492,16 @@
             typeBadge = "🎬 Video";
             badgeClass = "bg-purple-950 text-purple-300 border-purple-800"; 
         }
-        
         let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
         if (displayUrl.length > 35) displayUrl = displayUrl.substring(0, 32) + '...';
         
-        return `<a href="${cleanUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-2 py-0.5 my-1 rounded text-xs border ${badgeClass} hover:underline font-medium"><span class="opacity-80">${typeBadge}</span> <span>${displayUrl}</span></a>` + trailing;
+        return `<a href="${cleanUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-2 py-0.5 my-1 rounded text-xs border ${badgeClass} hover:underline font-medium"><span class="opacity-80">${typeBadge}</span> ${displayUrl}</a>${trailing}`;
     });
-    
+
     return parsed;
 }
 
-        initSmartFeed();
+    initSmartFeed();
     </script>
 </body>
 </html>

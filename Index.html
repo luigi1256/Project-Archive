@@ -7,198 +7,224 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="icon" type="image/png" href="logo.png">
 <style>
-                                                             
-    :root {                                                              
-         --bg-main: #0f172a;                                              
-         --bg-card: #1e293b;                                              
-         --bg-hover: #334155;                                             
-         --text-main: #f8fafc;                                            
-         --text-muted: #94a3b8;                                           
-         --accent: #a855f7;                                               
+    :root {                                     
+         --bg-main: #0f172a;                                   
+         --bg-card: #1e293b;                                   
+         --bg-hover: #334155;                                  
+         --text-main: #f8fafc;                                 
+         --text-muted: #94a3b8;                                
+         --accent: #a855f7;                                    
          --font: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-     }                                                                    
+    }                                                                   
     
-    .testo {                                                             
-         font-family: var(--font);                                        
-         color: var(--text-main);                                         
-         background-color: var(--bg-card);                                
-         border: 1px solid rgba(255, 255, 255, 0.05);                     
-         border-radius: 12px;                                             
-         font-size: 0.95rem;                                              
-         font-weight: 600;                                                
-         cursor: pointer;                                                 
-         transition: all 0.2s ease;                                       
-     }                                                                    
+    .testo {                                    
+         font-family: var(--font);                                   
+         color: var(--text-main);                                    
+         background-color: var(--bg-card);                                   
+         border: 1px solid rgba(255, 255, 255, 0.05);                 
+         border-radius: 12px;                                    
+         font-size: 0.95rem;                                    
+         font-weight: 600;                                    
+         cursor: pointer;                                    
+         transition: all 0.2s ease;                                    
+    }                                                           
     
-    button.testo:hover {                                                 
-         background-color: var(--bg-hover);                               
-         border-color: var(--accent);                                     
-         transform: translateY(-2px);                                     
+    button.testo:hover {                                    
+         background-color: var(--bg-hover);                                   
+         border-color: var(--accent);                                   
+         transform: translateY(-2px);                                   
          box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);                 
-    }                                                                    
- </style>                                                                 
-    
+    }                                   
+</style>    
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen font-sans flex items-center justify-center p-3 sm:p-4">
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans flex flex-col justify-between p-3 sm:p-4">
     
-    <div class="w-full max-w-5xl my-auto grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
+    <!-- Contenuto Principale -->
+    <div class="w-full max-w-5xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start py-8">
         
-    <div class="lg:col-span-6 flex flex-col justify-between py-2">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl sm:text-5xl font-extrabold text-purple-400 mb-2">Project-lost Archive</h1>
-            <h2 class="text-gray-400 text-sm sm:text-base font-medium">
-                Explore the network’s content, resources, and historical archives.
-            </h2>
+        <div class="lg:col-span-6 flex flex-col justify-between py-2">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl sm:text-5xl font-extrabold text-purple-400 mb-2">Project-lost Archive</h1>
+                <h2 class="text-gray-400 text-sm sm:text-base font-medium">
+                    Explore the network’s content, resources, and historical archives.
+                </h2>
+            </div>
+
+            <div class="flex flex-col gap-6 mb-8">
+                <a href="resource_hub.html" class="flex items-center justify-between p-3.5 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                    <span class="flex items-center gap-3">
+                        <span class="text-xl">📚</span> 
+                        <span>Explore the resources</span>
+                    </span>
+                    <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
+                </a>
+
+                <a href="#archive-months" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                    <span class="flex items-center gap-3">
+                        <span class="text-xl">🗓️</span> 
+                        <span>Archive by Month</span>
+                    </span>
+                    <span class="text-gray-400 group-hover:text-purple-400 transition">↓</span>
+                </a>
+
+                <a href="https://formstr.app/f/naddr1qvzqqqr4mqpzqgfcew29une34vg0vm5ccwr7gpj5nzcmfx7dwc5ndl58lp3khj2xqyg8wumn8ghj7mn0wd68ytnddakj7qqx09vh25mxfs0msp0p#nkeys1qqrhv6t9wa9k27gpgq6xvvp4xgcr2dm9v5mxxepj8y6nyvpjx9nxge33vcuxxctzvgenwdmpxajkvcfhv5ckxwp5v9jnsdtxxeskgvnzxc6nzenyxcekxcehlfkgrf" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                    <span class="flex items-center gap-3">
+                        <span class="text-xl">✉️</span> 
+                        <span>Feedback Form</span>
+                    </span>
+                    <span class="text-gray-400 group-hover:text-purple-400 transition">🔗</span>
+                </a>
+
+                <a href="profile.html?npub=npub1ty3ftnetpxnlj42lgwkmwdxta69gfm5f9mfljvmwdgymvsf6pkuswhxq4p" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                    <span class="flex items-center gap-3">
+                        <span class="text-xl">💡</span> 
+                        <span>Profile Page</span>
+                    </span>
+                    <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
+                </a>
+                
+                <a href="https://mastodon.uno/@il_Lost_" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
+                    <span class="flex items-center gap-3">                    
+                        <span class="text-xl">🐘</span> 
+                        <span>Mastodon Profile</span>                    
+                    </span>                                                                  
+                    <span class="text-gray-400 group-hover:text-purple-400 transition">🔗</span>    
+                </a>
+            </div>
+        </div>  
+
+        <div class="lg:col-span-6 lg:pt-[100px]">
+            <div id="archive-months" class="bg-gray-800/40 border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl">
+                
+                <div class="flex items-center justify-between gap-4 mb-3 border-b border-gray-700/60 pb-3">
+                    <h2 class="text-xl font-bold text-white m-0 flex items-center gap-2">
+                        <span>📁</span> 
+                        <span>Archive</span>
+                    </h2>
+                    
+                    <div class="flex items-center gap-2 shrink-0">
+                        <label for="select-anno" class="text-xs font-medium text-gray-400">Year:</label>
+                        <select id="select-anno" onchange="aggiornaAnno()" class="bg-gray-800 text-white border border-gray-700 rounded-xl px-3 py-1.5 font-medium focus:outline-none focus:border-purple-500 transition cursor-pointer text-sm">
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p class="text-xs text-gray-400 mb-4 m-0">
+                    Click on a month to open a list of monthly links and then scroll with the arrows
+                </p>
+                
+                <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-3">
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('Jan')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">01</span>
+                        <span class="text-sm font-semibold">Jan</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('February')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">02</span>
+                        <span class="text-sm font-semibold">Feb</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('March')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">03</span>
+                        <span class="text-sm font-semibold">Mar</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('April')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">04</span>
+                        <span class="text-sm font-semibold">Apr</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('May')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">05</span>
+                        <span class="text-sm font-semibold">May</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('June')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">06</span>
+                        <span class="text-sm font-semibold">Jun</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('July')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">07</span>
+                        <span class="text-sm font-semibold">Jul</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('August')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">08</span>
+                        <span class="text-sm font-semibold">Aug</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('September')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">09</span>
+                        <span class="text-sm font-semibold">Sep</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('October')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">10</span>
+                        <span class="text-sm font-semibold">Oct</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('November')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">11</span>
+                        <span class="text-sm font-semibold">Nov</span>
+                    </button>
+                    <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('December')">
+                        <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">12</span>
+                        <span class="text-sm font-semibold">Dec</span>
+                    </button>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div class="flex flex-col gap-6 mb-8">
-            <a href="resource_hub.html" class="flex items-center justify-between p-3.5 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
-                <span class="flex items-center gap-3">
-                    <span class="text-xl">📚</span> 
-                    <span>Explore the resources</span>
-                </span>
-                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
-            </a>
+    <footer class="w-full max-w-5xl mx-auto mt-12 pt-8 pb-6 border-t border-gray-800 text-sm text-gray-400">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            <div>
+                <h3 class="text-white font-bold mb-3 flex items-center gap-2">
+                    <span>🌌</span> Project-lost
+                </h3>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    Explore network contents, history and decentralized resource archives.
+                </p>
+            </div>
 
-            <a href="#archive-months" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
-                <span class="flex items-center gap-3">
-                    <span class="text-xl">🗓️</span> 
-                    <span>Archive by Month</span>
-                </span>
-                <span class="text-gray-400 group-hover:text-purple-400 transition">↓</span>
-            </a>
+            <div>
+                <h4 class="text-white font-semibold mb-3">Sitemap</h4>
+                <ul class="space-y-2 text-xs">
+                    <li><a href="#" class="hover:text-purple-400 transition">Home Archive</a></li>
+                    <li><a href="resource_hub.html" class="hover:text-purple-400 transition">Resource Hub</a></li>
+                    <li><a href="Search.html" class="hover:text-purple-400 transition">Search</a></li>
+                </ul>
+            </div>
 
-            <a href="https://formstr.app/f/naddr1qvzqqqr4mqpzqgfcew29une34vg0vm5ccwr7gpj5nzcmfx7dwc5ndl58lp3khj2xqyg8wumn8ghj7mn0wd68ytnddakj7qqx09vh25mxfs0msp0p#nkeys1qqrhv6t9wa9k27gpgq6xvvp4xgcr2dm9v5mxxepj8y6nyvpjx9nxge33vcuxxctzvgenwdmpxajkvcfhv5ckxwp5v9jnsdtxxeskgvnzxc6nzenyxcekxcehlfkgrf" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
-                <span class="flex items-center gap-3">
-                    <span class="text-xl">✉️</span> 
-                    <span>Feedback Form</span>
-                </span>
-                <span class="text-gray-400 group-hover:text-purple-400 transition">🔗</span>
-            </a>
+            <div>
+                <h4 class="text-white font-semibold mb-3">Other Social</h4>
+                <ul class="space-y-2 text-xs">
+                    <li><a href="https://mastodon.uno/@il_Lost_" target="_blank" rel="noopener noreferrer" class="hover:text-purple-400 transition">Mastodon</a></li>
+                </ul>
+            </div>
 
-            <a href="profile.html?npub=npub1ty3ftnetpxnlj42lgwkmwdxta69gfm5f9mfljvmwdgymvsf6pkuswhxq4p" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
-                <span class="flex items-center gap-3">
-                    <span class="text-xl">💡 Profile Page</span>                                                                                                         
-
-                </span>
-                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>
-            </a>
-            <a href="https://mastodon.uno/@il_Lost_" class="flex items-center justify-between p-4 bg-gray-800/80 border border-gray-700 rounded-xl font-medium hover:bg-purple-600/20 hover:border-purple-500 transition group">
-                <span class="flex items-center gap-3">                                         
-                    <span class="text-xl">💡 Profile Page Mastodon</span>                               
-                </span>                                                                        
-                <span class="text-gray-400 group-hover:text-purple-400 transition">→</span>    
-            </a>
-
-        </div>
-    
-</div>  
-
-<div class="lg:col-span-6 lg:pt-[100px]">
-    <div id="archive-months" class="bg-gray-800/40 border border-gray-800 rounded-2xl p-5 sm:p-6 shadow-xl">
-        
-        <div class="flex items-center justify-between gap-4 mb-3 border-b border-gray-700/60 pb-3">
-            <h2 class="text-xl font-bold text-white m-0 flex items-center gap-2">
-                <span>📁</span> 
-                <span>Archive</span>
-            </h2>
-            
-            <div class="flex items-center gap-2 shrink-0">
-                <label for="select-anno" class="text-xs font-medium text-gray-400">Year:</label>
-                <select id="select-anno" onchange="aggiornaAnno()" class="bg-gray-800 text-white border border-gray-700 rounded-xl px-3 py-1.5 font-medium focus:outline-none focus:border-purple-500 transition cursor-pointer text-sm">
-                    <option value="2025">2025</option>
-                    <option value="2026" selected>2026</option>
-                    <option value="2027">2027</option>
-                </select>
+            <div>
+                <h4 class="text-white font-semibold mb-3">System</h4>
+                <ul class="space-y-2 text-xs">
+                    <li><span class="text-gray-500">work: in progress</span></li>
+                    <li><span class="text-gray-500">Yattafee: in progress</span></li>
+                    <li><span class="text-gray-500">Coloured json: in progress</span></li>
+                    <li><span class="text-gray-500">v2 Settings: in progress</span></li>
+                </ul>
             </div>
         </div>
 
-        <p class="text-xs text-gray-400 mb-4 m-0">
-            Click on a month to open a list of monthly links and then scroll with the arrows
-        </p>
-        
-        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-3">
+        <div class="border-t border-gray-800/60 pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500">
             
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('Jan')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">01</span>
-                <span class="text-sm font-semibold">Jan</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('February')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">02</span>
-                <span class="text-sm font-semibold">Feb</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('March')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">03</span>
-                <span class="text-sm font-semibold">Mar</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('April')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">04</span>
-                <span class="text-sm font-semibold">Apr</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('May')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">05</span>
-                <span class="text-sm font-semibold">May</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('June')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">06</span>
-                <span class="text-sm font-semibold">Jun</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('July')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">07</span>
-                <span class="text-sm font-semibold">Jul</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('August')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">08</span>
-                <span class="text-sm font-semibold">Aug</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('September')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">09</span>
-                <span class="text-sm font-semibold">Sep</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('October')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">10</span>
-                <span class="text-sm font-semibold">Oct</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('November')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">11</span>
-                <span class="text-sm font-semibold">Nov</span>
-            </button>
-
-            <button class="testo tablinks p-3 flex flex-col items-center justify-center gap-1 hover:border-purple-500 hover:bg-purple-600/10 transition group" onclick="apriFileMese('December')">
-                <span class="text-xs font-bold text-purple-400 group-hover:scale-110 transition">12</span>
-                <span class="text-sm font-semibold">Dec</span>
-            </button>
-
         </div>
+    </footer>
 
-    </div>
-</div>
-
-</body>                                                                                                                                
-    <script>                                                                                                                                                                                  
-        let annoSelezionato = "2026";                                                                                           
-                                                                                                                                                                                                   
-        function aggiornaAnno() {                                                                                               
-            const select = document.getElementById("select-anno");                                                              
-            annoSelezionato = select.value;                                                                                     
-        }                                                                                                                       
-                                                                                                                                                                                                     
-        function apriFileMese(mese) {                                                                                           
-            const percorsoDestinazione = annoSelezionato + "/" + mese + "/index.html";                                          
-            window.location.href = percorsoDestinazione;                                                                        
-        }                                                                                                                       
-    </script>                                                                                                                       
-
-    </div>
+    <script> 
+        let annoSelezionato = "2026";                                                                                                                                                                                                                           
+            
+        function aggiornaAnno() {                                                                                                                                                                                                               
+            const select = document.getElementById("select-anno");                                                                                                                                                                              
+            annoSelezionato = select.value;                                                                                                                                                                                                     
+        }                                                                                                                                                                                                                                       
+            
+        function apriFileMese(mese) {                                                                                                                                                                                                           
+            const percorsoDestinazione = annoSelezionato + "/" + mese + "/index.html";                                                                                                                                                          
+            window.location.href = percorsoDestinazione;                                                                                                                                                                                        
+        }                                                                                                                                                                                                                                       
+    </script> 
 </body>
 </html>
