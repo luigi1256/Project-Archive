@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Baita & Media</title>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-<link rel="stylesheet" href="../theme_baita.css">
+<link rel="stylesheet" href="theme_baita.css">
 <style>
 
 .filter-row {            
@@ -46,61 +46,69 @@
 
 </style>
 </head>
-<body class="min-h-screen bg-[#071810] text-[#4ade80] antialiased p-2 sm:p-4">
-<div id="sidebarOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity z-40"></div>
 
-<div class="max-w-4xl mx-auto space-y-3 sm:space-y-4 relative z-50">
+<body class="min-h-screen bg-[#071810] text-[#4ade80] antialiased p-2 sm:p-6">
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none transition-opacity z-40"></div> 
 
-  <header class="bg-[#0f2318] border border-emerald-900/60 p-3 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-between gap-3">
-    <div class="flex items-center justify-between w-full sm:w-auto gap-3">
-        <h1 class="font-mono text-xs sm:text-sm tracking-wider uppercase text-emerald-400">🌿 Baita Hub</h1>
-        <button id="toggleShelfBtn" onclick="toggleShelf()" class="text-xs bg-emerald-950 border border-emerald-800 px-3 py-2 rounded font-mono text-emerald-300 hover:text-white cursor-pointer min-h-[36px]">📚 Saved Shelf</button>
-    </div>
+  <div class="w-full max-w-[800px] mx-auto space-y-3 sm:space-y-4 relative z-50">
+  
+  <div class="w-full bg-[#0f2318] border border-emerald-900/60 p-3 sm:p-5 rounded-lg shadow-md space-y-3 box-border">
     
-    <div id="shelfFilters" class="flex flex-nowrap items-center gap-1 font-mono text-xs w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-        <button onclick="filterAndOpenShelf('all')" class="px-3 py-1.5 rounded bg-emerald-900 text-white border border-emerald-700 cursor-pointer shrink-0">📁 All</button>
-        <button onclick="filterAndOpenShelf('image')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer shrink-0" title="Images">🖼️</button>
-        <button onclick="filterAndOpenShelf('video')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer shrink-0" title="Videos">📹</button>
-        <button onclick="filterAndOpenShelf('audio')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer shrink-0" title="Audio">🎵</button>
-        <button onclick="filterAndOpenShelf('pdf')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer shrink-0" title="PDFs">📄</button>
-        <button onclick="filterAndOpenShelf('link')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer shrink-0" title="Links">📌</button>
-    </div>
-  </header>
-
-  <aside id="shelf" class="bg-[#0b1d13] border border-emerald-900/40 p-3 rounded-lg hidden">
-    <div class="flex items-center justify-between mb-2">
-        <h2 class="font-mono text-xs text-emerald-400 uppercase tracking-widest">My Saved Media Shelf</h2>
-        <button onclick="toggleShelf()" class="text-emerald-400 hover:text-white font-mono text-xs px-2 py-1 bg-emerald-950/60 border border-emerald-800/50 rounded cursor-pointer transition-colors">✕ Close</button>
-    </div>
-
-    <div id="books" class="flex flex-row gap-2.5 overflow-x-auto pb-2 pt-1 whitespace-nowrap"></div>
-  </aside>
-
-  <div id="searchArea" class="bg-[#0f2318] border border-emerald-900/60 p-3 sm:p-6 rounded-lg shadow-md space-y-2 sm:space-y-4 mt-0 sm:mt-2">
-
-    <div class="filter-row flex flex-col sm:flex-row gap-2 font-mono">  
-      <button id="modeRelayBtn" onclick="setSearchMode('relay')" class="bg-emerald-600 hover:bg-emerald-500 text-emerald-950 font-bold rounded text-xs sm:text-sm cursor-pointer transition-colors">🌐 S-Network</button>
-      <button id="modeLocalBtn" onclick="setSearchMode('local')" class="bg-emerald-900/80 text-emerald-300 hover:bg-emerald-900 rounded text-xs sm:text-sm cursor-pointer transition-colors">💻 L-Render</button>  
-    </div>
-
+    <div class="grid grid-cols-3 items-center w-full">
+      <div></div>
+      <h1 class="font-mono text-xs sm:text-sm tracking-wider uppercase text-emerald-400 text-center justify-self-center">🌿 Baita Hub</h1>
     
-
-    <div id="searchContainer" class="flex gap-2">
-      <input
-        id="searchBar"
-        type="text"
-        placeholder="search in the silence… (query, npub...)"
-        class="flex-1 bg-[#071810] border border-emerald-900 text-emerald-300 px-3 sm:px-4 py-2.5 rounded font-mono text-xs sm:text-sm focus:outline-none focus:border-emerald-500 min-w-0"
-      >
-      <button id="searchButton" class="bg-emerald-600 hover:bg-emerald-500 text-emerald-950 font-bold px-4 sm:px-5 py-2.5 rounded font-mono text-sm transition-colors cursor-pointer shrink-0">🔍</button>
+      
+      <div class="flex justify-end">
+        <button id="toggleShelfBtn" onclick="toggleShelf()" class="text-xs bg-emerald-950 border border-emerald-800 px-3 py-2 rounded font-mono text-emerald-300 hover:text-white cursor-pointer min-h-[36px] transition-colors">📚 Saved Shelf</button>
+      </div>
     </div>
+
+    <div id="shelfFilters" class="flex flex-wrap items-center justify-center gap-1.5 font-mono text-xs w-full pt-1">
+      <button onclick="filterAndOpenShelf('all')" class="px-3 py-1.5 rounded bg-emerald-900 text-white border border-emerald-700 cursor-pointer">📁 All</button>
+      <button onclick="filterAndOpenShelf('image')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="Images">🖼️</button>
+      <button onclick="filterAndOpenShelf('video')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="Videos">📹</button>
+      <button onclick="filterAndOpenShelf('audio')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="Audio">🎵</button>
+      <button onclick="filterAndOpenShelf('pdf')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="PDFs">📄</button>
+      <button onclick="filterAndOpenShelf('link')" class="px-3 py-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-900 hover:bg-emerald-900/50 cursor-pointer" title="Links">📌</button>
+    </div>
+
   </div>
 
-  <div id="libraryContainer" class="bg-[#0f2318] border border-emerald-900/60 p-3 sm:p-5 rounded-lg shadow-md">
-    <div id="library" class="space-y-6"></div>
+    <aside id="shelf" class="bg-[#0b1d13] border border-emerald-900/40 p-3 sm:p-5 rounded-lg hidden">
+  <div class="flex items-center justify-between mb-4 px-1 sm:px-2">
+    <h2 class="font-mono text-xm text-emerald-400 uppercase tracking-widest">Saved Shelf</h2>
+    <button onclick="toggleShelf()" class="text-emerald-400 hover:text-white font-mono bg-emerald-950/60 rounded cursor-pointer transition-colors">✕ Close</button>
   </div>
+  <div id="books" class="flex flex-row gap-2.5 overflow-x-auto pb-2 pt-1 whitespace-nowrap"></div>
+</aside>
+    
+    
+    <div id="searchArea" class="bg-[#0f2318] border border-emerald-900/60 p-3 sm:p-5 rounded-lg shadow-md space-y-2 sm:space-y-3">
 
-</div>
+      <div class="filter-row flex flex-col sm:flex-row gap-2 font-mono">  
+        <button id="modeRelayBtn" onclick="setSearchMode('relay')" class="bg-emerald-600 hover:bg-emerald-500 text-emerald-950 font-bold rounded text-xs sm:text-sm cursor-pointer transition-colors py-2.5">🌐 S-Network</button>
+        <button id="modeLocalBtn" onclick="setSearchMode('local')" class="bg-emerald-900/80 text-emerald-300 hover:bg-emerald-900 rounded text-xs sm:text-sm cursor-pointer transition-colors py-2.5">💻 L-Render</button>  
+      </div>
+
+      <div id="searchContainer" class="flex gap-2">
+        <input
+          id="searchBar"
+          type="text"
+          placeholder="search in the silence… (query, npub...)"
+          class="flex-1 bg-[#071810] border border-emerald-900 text-emerald-300 px-3 sm:px-4 py-2.5 rounded font-mono text-xs sm:text-sm focus:outline-none focus:border-emerald-500 min-w-0"
+        >
+        <button id="searchButton" class="bg-emerald-600 hover:bg-emerald-500 text-emerald-950 font-bold px-4 sm:px-5 py-2.5 rounded font-mono text-sm transition-colors cursor-pointer shrink-0">🔍</button>
+      </div>
+    </div>
+
+    <div id="libraryContainer" class="bg-[#0f2318] border border-emerald-900/60 p-3 sm:p-5 rounded-lg shadow-md">
+      <div id="library" class="space-y-6"></div>
+    </div>
+
+  </div>
+</body>
+
 
 <script src="baita_core_media.js"></script>
 <script src="baita_media.js"></script>
@@ -149,5 +157,4 @@ if (searchBar) {
 }
 </script>
 
-</body>
 </html>
