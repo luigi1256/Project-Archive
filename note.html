@@ -6,25 +6,25 @@
     <title>Note View</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen font-sans antialiased overflow-x-hidden">
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans antialiased overflow-x-hidden">
 
-    <header class="max-w-3xl mx-auto pt-8 pb-4 px-3 sm:px-4 flex justify-between items-center">
-        <h1 class="text-xl sm:text-2xl font-bold text-purple-400">Thread</h1>
-        <a href="resource_hub.html" class="px-3 py-1.5 bg-gray-700 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-600 transition">← Back to resource</a>
+    <header class="max-w-3xl mx-auto pt-8 pb-4 px-3 sm:px-4 flex justify-between items-center border-b border-gray-800 mb-6">
+        <h1 class="text-xl sm:text-2xl font-bold text-purple-400">Thread & Media Note</h1>
+        <a href="resource_hub.html" class="px-3 py-1.5 bg-gray-800 text-gray-300 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-700 transition">← Back to resource</a>
     </header>
 
     <main class="max-w-3xl mx-auto px-3 sm:px-4 pb-24">
         <div id="loading" class="text-center text-gray-400 text-base sm:text-lg py-12">Loading notes and thread...</div>
         <div id="mainNoteContainer" class="hidden mb-6 sm:mb-8">
             <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 sm:mb-3">Main Note</h3>
-            <div id="mainNoteCard" class="bg-gray-800 border-2 border-purple-500/50 p-4 sm:p-6 rounded-2xl shadow-xl"></div>
+            <div id="mainNoteCard" class="bg-gray-900 border-2 border-purple-500/50 p-4 sm:p-6 rounded-2xl shadow-xl overflow-hidden"></div>
         </div>
 
-        <div id="tabsContainer" class="hidden flex border-b border-gray-700 mb-6 overflow-x-auto scrollbar-none">
-            <button id="tabReplies" onclick="switchTab('replies')" class="px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap">
+        <div id="tabsContainer" class="hidden flex border-b border-gray-800 mb-6 overflow-x-auto scrollbar-none">
+            <button id="tabReplies" onclick="switchTab('replies')" class="px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap cursor-pointer">
                 Thread & Answer (<span id="replyCountTab">0</span>)
             </button>
-            <button id="tabQuotes" onclick="switchTab('quotes')" class="px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap">
+            <button id="tabQuotes" onclick="switchTab('quotes')" class="px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap cursor-pointer">
                 Quotes and Mentions (<span id="quoteCountTab">0</span>)
             </button>
         </div>
@@ -42,12 +42,13 @@
         import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
 
         const INITIAL_RELAYS = [
-            'https://relay.snort.social',
+            'wss://relay.damus.io',
             'wss://nos.lol',
+            'wss://nostr.stakey.net',
             'wss://relay.ditto.pub'
         ];
 
-        const PROFILE_RELAYS=["wss://purplepag.es/",...INITIAL_RELAYS]
+        const PROFILE_RELAYS = ["wss://purplepag.es/", ...INITIAL_RELAYS];
         const profilesCache = new Map();
         const pool = new SimplePool();
 
@@ -60,13 +61,13 @@
             if (tabName === 'replies') {
                 repliesDiv.classList.remove('hidden');
                 quotesDiv.classList.add('hidden');
-                tabReplies.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap";
-                tabQuotes.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap";
+                tabReplies.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap cursor-pointer";
+                tabQuotes.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap cursor-pointer";
             } else {
                 quotesDiv.classList.remove('hidden');
                 repliesDiv.classList.add('hidden');
-                tabQuotes.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap";
-                tabReplies.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap";
+                tabQuotes.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-purple-400 border-b-2 border-purple-400 focus:outline-none transition whitespace-nowrap cursor-pointer";
+                tabReplies.className = "px-4 sm:px-6 py-3 text-xs sm:text-sm font-semibold text-gray-400 hover:text-gray-200 border-b-2 border-transparent focus:outline-none transition whitespace-nowrap cursor-pointer";
             }
         }
 
@@ -83,14 +84,13 @@
                     try {
                         const profileData = JSON.parse(ev.content);
                         profilesCache.set(ev.pubkey, profileData);
-                        setProfileCache(ev.pubkey, profileData);
+                        if (typeof setProfileCache === 'function') setProfileCache(ev.pubkey, profileData);
                     } catch(e) {}
                 });
             } catch(e) {
                 console.error("Errore preload profili:", e);
             }
         }
-
 
         async function initThread() {
             try {
@@ -144,24 +144,22 @@
                 const mainEvent = mainEvents[0];
 
                 const relatedEvents = await pool.querySync(queryRelays, {
-                    kinds: [1,1111],
+                    kinds: [1, 1111, 20, 22, 34236, 54, 1244],
                     '#e': [targetId]
                 });
 
                 function classifyEvent(ev, rootId) {
-                const eTags = ev.tags.filter(t => t[0] === 'e' || t[0] === 'E');
-                const qTags = ev.tags.filter(t => t[0] === 'q' || t[0] === 'Q');
+                    const eTags = ev.tags.filter(t => t[0] === 'e' || t[0] === 'E');
+                    const qTags = ev.tags.filter(t => t[0] === 'q' || t[0] === 'Q');
 
-                const isExplicitQuote = qTags.some(t => t[1] === rootId) || eTags.some(t => t[1] === rootId && t[3] === 'mention');
-                if (isExplicitQuote) return 'quote';
-                const targetsRoot = eTags.some(t => t[1] === rootId);
-                if (targetsRoot || ev.tags.some(t => (t[0] === 'E' || t[3] === 'root') && t[1] === rootId)) {
-                    return 'reply'; 
-                }
-            
-                if (eTags.some(t => t[1] === rootId)) return 'reply';
-            
-                return 'other';
+                    const isExplicitQuote = qTags.some(t => t[1] === rootId) || eTags.some(t => t[1] === rootId && t[3] === 'mention');
+                    if (isExplicitQuote) return 'quote';
+                    const targetsRoot = eTags.some(t => t[1] === rootId);
+                    if (targetsRoot || ev.tags.some(t => (t[0] === 'E' || t[3] === 'root') && t[1] === rootId)) {
+                        return 'reply'; 
+                    }
+                    if (eTags.some(t => t[1] === rootId)) return 'reply';
+                    return 'other';
                 }
 
                 let directRepliesEvents = [];
@@ -184,7 +182,7 @@
                 for (let depth = 0; depth < 3; depth++) {
                     if (currentParentIds.length === 0) break;
                     const fetched = await pool.querySync(queryRelays, {
-                        kinds: [1,1111],
+                        kinds: [1, 1111, 20, 22, 34236, 54, 1244],
                         '#e': currentParentIds
                     });
 
@@ -204,7 +202,6 @@
                 const childrenMap = new Map();
                 allThreadEventsMap.forEach((ev, id) => {
                     if (id === targetId) return;
-
                     const parentId = getParentId(ev, targetId);
                     if (!childrenMap.has(parentId)) childrenMap.set(parentId, []);
                     childrenMap.get(parentId).push(ev);
@@ -235,7 +232,7 @@
                 const repliesListDiv = document.getElementById('repliesList');
                 repliesListDiv.innerHTML = '';
                 if (threadedReplies.length === 0) {
-                    repliesListDiv.innerHTML = `<p class="text-gray-500 text-sm italic">No answer found for this note.</p>`;
+                    repliesListDiv.innerHTML = `<p class="text-gray-500 text-sm italic">No answers found for this note.</p>`;
                 } else {
                     threadedReplies.forEach(item => {
                         const wrapper = document.createElement('div');
@@ -278,7 +275,6 @@
 
             const nonRootTags = eTags.filter(t => t[1] !== rootId && t[3] !== 'root');
             if (nonRootTags.length > 0) {
-                
                 return nonRootTags[nonRootTags.length - 1][1];
             }
         
@@ -291,9 +287,15 @@
         }
 
         const KIND_CONFIG = {
-            1111: { label: "Comment (1111)", border: "border-l-4 border-blue-500", badge: "bg-blue-900/80 text-blue-300 border-blue-500/40" },
+            1: { label: "Note", border: "border-l-4 border-gray-600", badge: "bg-gray-800 text-gray-300 border-gray-700" },
+            20: { label: "🖼️ Photo", border: "border-l-4 border-pink-500", badge: "bg-pink-950/80 text-pink-300 border-pink-500/40" },
+            22: { label: "📹 Short Video", border: "border-l-4 border-purple-500", badge: "bg-purple-950/80 text-purple-300 border-purple-500/40" },
+            34236: { label: "🎬 Video (NIP-71)", border: "border-l-4 border-indigo-500", badge: "bg-indigo-950/80 text-indigo-300 border-indigo-500/40" },
+            54: { label: "🎙️ Podcast", border: "border-l-4 border-yellow-500", badge: "bg-yellow-950/80 text-yellow-300 border-yellow-500/40" },
+            1244: { label: "🎵 Track/Audio", border: "border-l-4 border-green-500", badge: "bg-green-950/80 text-green-300 border-green-500/40" },
+            1111: { label: "💬 Comment (1111)", border: "border-l-4 border-blue-500", badge: "bg-blue-950/80 text-blue-300 border-blue-500/40" },
             9802: { label: "Highlights (9802)", border: "border-l-4 border-purple-400", badge: "bg-purple-900/80 text-purple-300 border-purple-500/40" },
-            9735: { label: "Zap", border: "border-l-4 border-yellow-500", badge: "bg-yellow-900/80 text-yellow-300 border-yellow-500/40" }
+            9735: { label: "⚡ Zap", border: "border-l-4 border-yellow-500", badge: "bg-yellow-900/80 text-yellow-300 border-yellow-500/40" }
         };
 
         function renderNoteCard(containerId, event, isMain, level) {
@@ -315,10 +317,10 @@
             const name = meta.display_name || meta.name || (npub ? `${npub.substring(0, 6)}...` : event.pubkey.substring(0, 6));
             const picture = meta.picture || '';
             const imgHtml = picture 
-                ? `<img src="${picture}" class="w-5 h-5 rounded-full object-cover shrink-0" onerror="this.onerror=null; this.parentNode.replaceWith(document.createTextNode('👤'));">`
+                ? `<img src="${picture}" class="w-5 h-5 rounded-full object-cover shrink-0" loading="lazy" onerror="this.onerror=null; this.parentNode.replaceWith(document.createTextNode('👤'));">`
                 : `<span class="text-xs">👤</span>`;
         
-            const formattedContent = parseContent(event.content, event.tags);
+            const formattedContent = parseMultiMediaAndContent(event);
             const dateStr = new Date(event.created_at * 1000).toLocaleString();
     
             let replyBadgeHtml = '';
@@ -369,16 +371,14 @@
             let kindBorder = '';
             let kindBadgeHtml = '';
 
-            if (event.kind && event.kind !== 1) {
-                const config = KIND_CONFIG[event.kind] || { 
-                    label: `Kind ${event.kind}`, 
-                    border: "border-l-4 border-gray-500", 
-                    badge: "bg-gray-700 text-gray-300 border-gray-500/40" 
-                };
+            const config = KIND_CONFIG[event.kind] || { 
+                label: `Kind ${event.kind}`, 
+                border: "border-l-4 border-gray-600", 
+                badge: "bg-gray-800 text-gray-300 border-gray-700" 
+            };
 
-                kindBorder = config.border;
-                kindBadgeHtml = `<span class="text-[10px] px-2 py-0.5 rounded-full border font-mono ${config.badge}">${config.label}</span>`;
-            }
+            kindBorder = config.border;
+            kindBadgeHtml = `<span class="text-[10px] px-2 py-0.5 rounded-full border font-mono ${config.badge}">${config.label}</span>`;
 
             let badgeHtml = '';
             if (!isMain) {
@@ -390,13 +390,13 @@
             }
 
             container.className = `${isMain 
-                ? "bg-gray-800 border-2 border-purple-500/50 p-4 sm:p-6 rounded-2xl shadow-xl" 
-                : `bg-gray-800/80 border border-gray-700 p-3 sm:p-4 rounded-xl shadow-md ${kindBorder}`} ${indentClass} transition-all overflow-hidden`;
+                ? "bg-gray-900 border-2 border-purple-500/50 p-4 sm:p-6 rounded-2xl shadow-xl" 
+                : `bg-gray-900/80 border border-gray-800 p-3 sm:p-4 rounded-xl shadow-md ${kindBorder}`} ${indentClass} transition-all overflow-hidden`;
 
             container.innerHTML = `
                 ${isMain && replyBadgeHtml ? `<div class="mb-3">${replyBadgeHtml}</div>` : ''}
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-3">
-                    <div class="flex items-center gap-2 overflow-hidden">                       
+                    <div class="flex items-center gap-2 overflow-hidden">                     
                         <a href="${profilePageLink}" class="text-xs text-purple-400 hover:text-purple-300 font-semibold transition truncate flex items-center gap-1.5">
                             ${imgHtml}
                             <span class="truncate max-w-[160px]">${name}</span>
@@ -415,8 +415,62 @@
             `;
         }
 
-        function parseContent(text, tags = []) {
-            let parsed = text.replace(/nostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[a-z0-9]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+        function parseMultiMediaAndContent(event) {
+            let content = event.content || '';
+            let mediaItems = [];
+            let cleanContent = content;
+
+            // 1. Estrazione robusta dai TAG (Kind 20, 22, 34236, imeta, url, image)
+            if (event.tags) {
+                event.tags.forEach(t => {
+                    if (t[0] === 'imeta') {
+                        let url = '';
+                        let mime = '';
+                        t.forEach(part => {
+                            if (part.startsWith('url ')) url = part.replace('url ', '').trim();
+                            if (part.startsWith('m ')) mime = part.replace('m ', '').trim().toLowerCase();
+                        });
+                        if (url && !mediaItems.some(m => m.url === url)) {
+                            mediaItems.push({ url, mime });
+                        }
+                    } else if (['url', 'imurl', 'image', 'video', 'audio'].includes(t[0])) {
+                        if (t[1] && !mediaItems.some(m => m.url === t[1])) {
+                            mediaItems.push({ url: t[1], mime: t[0] });
+                        }
+                    } else {
+                        // Controllo generico per qualsiasi tag che contenga un URL valido
+                        for (let i = 1; i < t.length; i++) {
+                            if (typeof t[i] === 'string' && t[i].startsWith('http')) {
+                                let url = t[i].trim();
+                                if (!mediaItems.some(m => m.url === url)) {
+                                    mediaItems.push({ url, mime: t[0] });
+                                }
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Estrazione dal testo (per URL normali inseriti nella nota)
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            let matches = [...content.matchAll(urlRegex)];
+            matches.forEach(match => {
+                let url = match[0].replace(/[.,!?)]$/, '');
+                let lower = url.toLowerCase();
+                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$/i) || lower.includes('imgur') || lower.includes('primal.net/media') || lower.includes('youtube.com') || lower.includes('youtu.be')) {
+                    if (!mediaItems.some(m => m.url === url)) {
+                        mediaItems.push({ url, mime: '' });
+                        cleanContent = cleanContent.replace(url, '');
+                    }
+                }
+            });
+
+            if (event.kind === 20 && cleanContent.trim() === '' && mediaItems.length > 0) {
+                cleanContent = '';
+            }
+
+            let parsedText = cleanContent.trim() ? cleanContent.replace(/nostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
                 let url = '#';
                 let label = entity.substring(0, 8) + '...';
                 if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
@@ -424,79 +478,56 @@
                     url = `profile.html?npub=${entity}`;
                 } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
                     label = '💬 ' + label;
-                    url = `note.html?nevent=${entity}`;     
+                    url = `note.html?nevent=${entity}`;    
                 } else if (entity.startsWith('naddr')) {
                     label = '📚 ' + label;
                     url = `modfile.html?naddr=${entity}`;
                 }
-                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
-            });
+                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
+            }) : '';
 
-            parsed = parsed.replace(/https?:\/\/[^\s]+/g, (url) => {
-                let clean = url.replace(/[.,!?)]$/, '');
-                if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
-                let details = getMediaDetailsFromTags(clean, tags);
-                let dims = details ? details.dims : null;
-                let fallbackUrl = details ? details.fallbackUrl : null;
-                    
-                let style = dims 
-                    ? `width: 100%; height: auto; aspect-ratio: ${dims.w} / ${dims.h};` 
-                    : `width: 100%; height: auto;`;
-                let onerrorAttr = fallbackUrl 
-                    ? `onerror="this.onerror=null; this.src='${fallbackUrl}';"` 
-                    : '';
+            let mediaHtml = '';
 
-                return `<img src="${clean}" ${onerrorAttr} style="${style}" class="my-2 rounded-lg object-cover border border-gray-700">`;
-            }    
-            
-                if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
-                let details = getMediaDetailsFromTags(clean, tags);
-                let dims = details ? details.dims : null;
-                let fallbackUrl = details ? details.fallbackUrl : null;
-
-                let style = dims 
-                    ? `width: 100%; height: auto; aspect-ratio: ${dims.w} / ${dims.h};` 
-                    : `width: 100%; height: auto;`;
-                let videoFallbackScript = fallbackUrl 
-                    ? `onerror="this.onerror=null; this.querySelector('source').src='${fallbackUrl}'; this.load();"` 
-                    : '';
-                return `<video controls ${videoFallbackScript} style="${style}" class="my-2 rounded-lg border border-gray-700 bg-black"><source src="${clean}"></video>`;
-            }
-                
-                if (/\.(mp3|ogg|wav)(\?.*)?$/i.test(clean)) {
-                    return `<br><audio controls class="mt-2 w-full"><source src="${clean}"></audio><br>`;
+            if (mediaItems.length === 1) {
+                let m = mediaItems[0];
+                if (m.mime.includes('video') || m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+                    mediaHtml = `<div class="w-full bg-black mb-3 rounded-xl overflow-hidden"><video src="${m.url}" controls preload="none" class="w-full max-h-[450px] mx-auto"></video></div>`;
+                } else if (m.mime.includes('audio') || m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
+                    mediaHtml = `<div class="p-4 bg-gray-800/80 border border-gray-700 rounded-xl mb-3 flex items-center gap-3"><span class="text-2xl">🎵</span><audio src="${m.url}" controls preload="none" class="w-full h-10"></audio></div>`;
+                } else if (m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
+                    let videoId = m.url.includes('youtu.be/') ? m.url.split('youtu.be/')[1]?.split('?')[0] : m.url.split('watch?v=')[1]?.split('&')[0];
+                    mediaHtml = `<div class="w-full aspect-video bg-black mb-3 rounded-xl overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${videoId}" loading="lazy" frameborder="0" allowfullscreen></iframe></div>`;
+                } else {
+                    mediaHtml = `<div class="w-full bg-black flex items-center justify-center max-h-[450px] overflow-hidden mb-3 rounded-xl"><img src="${m.url}" class="w-full object-cover max-h-[450px]" loading="lazy" decoding="async"></div>`;
                 }
-                return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${url}</a>`;
-            });
-
-            return parsed;
-        }
-
-
-        function getMediaDetailsFromTags(targetUrl, tags) {
-            if (!Array.isArray(tags)) return null;
-
-            for (let tag of tags) {
-                if (tag[0] === 'imeta') {
-                    let hasUrl = tag.some(item => item.startsWith('url ') && item.includes(targetUrl));
-                    if (hasUrl) {
-                        let dims = null;
-                        let fallbackUrl = null;
-                    
-                        for (let item of tag) {
-                            if (item.startsWith('dim ')) {
-                                let [w, h] = item.replace('dim ', '').split('x').map(Number);
-                                if (!isNaN(w) && !isNaN(h)) dims = { w, h };
-                            }
-                            if (item.startsWith('fallback ')) {
-                                fallbackUrl = item.replace('fallback ', '');
-                            }
-                        }
-                        return { dims, fallbackUrl };
+            } else if (mediaItems.length > 1) {
+                let slidesHtml = mediaItems.map((m, index) => {
+                    let slideContent = '';
+                    if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+                        slideContent = `<video src="${m.url}" controls preload="none" class="w-full h-full object-contain bg-black"></video>`;
+                    } else if (m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
+                        slideContent = `<div class="p-6 bg-gray-900 flex flex-col items-center justify-center w-full h-full gap-4"><span class="text-4xl">🎵</span><audio src="${m.url}" controls preload="none" class="w-full"></audio></div>`;
+                    } else {
+                        slideContent = `<img src="${m.url}" class="w-full h-full object-cover" loading="lazy" decoding="async">`;
                     }
-                }
+                    return `
+                        <div class="w-full h-full shrink-0 relative bg-black flex items-center justify-center">
+                            ${slideContent}
+                            <span class="absolute top-3 right-3 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">${index + 1}/${mediaItems.length}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                mediaHtml = `
+                    <div class="relative w-full max-h-[450px] aspect-square overflow-hidden bg-black mb-3 rounded-xl">
+                        <div class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none">
+                            ${slidesHtml}
+                        </div>
+                    </div>
+                `;
             }
-            return null;
+
+            return mediaHtml + (parsedText ? `<div class="mt-2">${parsedText}</div>` : '');
         }
 
         initThread();
