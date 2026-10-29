@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authors Multimedia Feed</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans pb-24">
+
+    <header class="max-w-4xl mx-auto pt-8 pb-4 px-4 text-center border-b border-gray-800 mb-6">
+        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-1" id="feedTitle">
+            Authors Multimedia Feed
+        </h1>
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-2 text-xs text-gray-400 mt-2">
+            <span id="statusText" class="font-medium">Reading parameters...</span>
+            <span id="relayStats" class="text-purple-400"></span>
+        </div>
+        <div class="mt-3">
+            <a href="resource_hub.html" class="inline-block px-3 py-1 bg-gray-800 rounded-lg text-xs font-medium hover:bg-gray-700 transition">← Back to resource</a>
+        </div>
+    </header>
+
+    <section class="max-w-4xl mx-auto px-4 mb-6 hidden" id="authorsBarSection">
+        <div id="authorsBarContainer" class="flex gap-4 overflow-x-auto pb-2 scrollbar-none"></div>
+    </section>
+
+    <section class="max-w-4xl mx-auto px-4 mb-4" id="tabsSection">
+        <div class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-800 pb-3 gap-3">
+            <div class="flex text-sm font-semibold w-full sm:w-auto" id="tabsContainer">
+                <button id="tabMediaBtn" onclick="switchTab('media')" class="px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer">
+                    🎬 Media & Video (<span id="mediaCount">0</span>)
+                </button>
+                <button id="tabAudioBtn" onclick="switchTab('audio')" class="px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer">
+                    🎵 Podcast & Audio (<span id="audioCount">0</span>)
+                </button>
+            </div>
+            <div class="flex items-center bg-gray-900 border border-gray-800 rounded-lg p-1 text-xs">
+                <button onclick="switchView('feed')" id="viewFeedBtn" class="px-3 py-1.5 rounded-md bg-purple-600 text-white font-medium transition cursor-pointer">📱 Feed</button>
+                <button onclick="switchView('grid')" id="viewGridBtn" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition cursor-pointer">🖼️ Griglia (4x)</button>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-4xl mx-auto px-4">
+        <div id="loading" class="text-center text-gray-400 text-sm py-12">Loading media feed from network (last 30 days)...</div>
+        
+        <div id="sectionMedia" class="space-y-6">
+            <div id="feedGridMedia" class="space-y-6"></div>
+            <div id="galleryGridMedia" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 hidden"></div>
+        </div>
+
+        <div id="sectionAudio" class="space-y-6 hidden">
+            <div id="feedGridAudio" class="space-y-6"></div>
+            <div id="galleryGridAudio" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 hidden"></div>
+        </div>
+    </main>
+
+    <script src="cache.js"></script>
+    <script type="module">
+        import { openZapModal } from './ZapPrepar.js';
+        import { sendLike } from './likes_zap.js';
+        import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+
+        const INITIAL_RELAYS = [
+            'wss://relay.damus.io',
+            'wss://nos.lol',
+            'wss://nostr.stakey.net',
+            'wss://relay.ditto.pub'
+        ];
+
+        const pool = new SimplePool();
+        let globalMediaEvents = [];
+        let globalAudioEvents = [];
+        let globalSelectedRelays = INITIAL_RELAYS;
+        let currentTab = 'media';
+        let currentView = 'feed';
+
+        window.switchTab = function(tabName) {
+            currentTab = tabName;
+            const mediaBtn = document.getElementById('tabMediaBtn');
+            const audioBtn = document.getElementById('tabAudioBtn');
+            const sectionMedia = document.getElementById('sectionMedia');
+            const sectionAudio = document.getElementById('sectionAudio');
+
+            if (tabName === 'media') {
+                mediaBtn.className = "px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer";
+                audioBtn.className = "px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer";
+                sectionMedia.classList.remove('hidden');
+                sectionAudio.classList.add('hidden');
+            } else {
+                audioBtn.className = "px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer";
+                mediaBtn.className = "px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer";
+                sectionAudio.classList.remove('hidden');
+                sectionMedia.classList.add('hidden');
+            }
+            applyViewMode();
+        }
+
+        window.switchView = function(viewMode) {
+            currentView = viewMode;
+            const feedBtn = document.getElementById('viewFeedBtn');
+            const gridBtn = document.getElementById('viewGridBtn');
+
+            if (viewMode === 'feed') {
+                feedBtn.className = "px-3 py-1.5 rounded-md bg-purple-600 text-white font-medium transition cursor-pointer";
+                gridBtn.className = "px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition cursor-pointer";
+            } else {
+                gridBtn.className = "px-3 py-1.5 rounded-md bg-purple-600 text-white font-medium transition cursor-pointer";
+                feedBtn.className = "px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition cursor-pointer";
+            }
+            applyViewMode();
+        }
+
+        function applyViewMode() {
+            const feedMedia = document.getElementById('feedGridMedia');
+            const galleryMedia = document.getElementById('galleryGridMedia');
+            const feedAudio = document.getElementById('feedGridAudio');
+            const galleryAudio = document.getElementById('galleryGridAudio');
+
+            if (currentTab === 'media') {
+                if (currentView === 'feed') {
+                    feedMedia.classList.remove('hidden');
+                    galleryMedia.classList.add('hidden');
+                } else {
+                    feedMedia.classList.add('hidden');
+                    galleryMedia.classList.remove('hidden');
+                }
+            } else {
+                if (currentView === 'feed') {
+                    feedAudio.classList.remove('hidden');
+                    galleryAudio.classList.add('hidden');
+                } else {
+                    feedAudio.classList.add('hidden');
+                    galleryAudio.classList.remove('hidden');
+                }
+            }
+        }
+
+        async function initSmartFeed() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const naddrParam = urlParams.get('naddr');
+                const neventParam = urlParams.get('nevent');
+                const idParam = urlParams.get('id');
+
+                if (!naddrParam && !neventParam && !idParam) {
+                    document.getElementById('loading').innerHTML = `
+                        <div class="text-center py-12 space-y-3">
+                            <p class="text-zinc-400 text-sm font-mono">Nessun parametro specificato nell'URL (naddr, nevent o id).</p>
+                            <div class="flex justify-center gap-3 mt-4">
+                                <a href="Search.html" class="inline-block px-4 py-2 bg-gray-800 text-gray-200 text-xs font-mono rounded-lg hover:bg-gray-700 transition">← Search</a>
+                                <a href="Start_parck_sign.html" class="inline-block px-4 py-2 bg-purple-600 text-white text-xs font-mono rounded-lg hover:bg-purple-500 transition">Start Pack List</a>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('statusText').innerText = "Parametri mancanti.";
+                    return;
+                }
+            
+                let targetEvent = null;
+
+                if (naddrParam) {
+                    const decoded = nip19.decode(naddrParam);
+                    if (decoded.type === 'naddr') {
+                        const { kind, pubkey, identifier, relays } = decoded.data;
+                        const queryRelays = relays && relays.length > 0 ? relays : INITIAL_RELAYS;
+                        const events = await pool.querySync(queryRelays, {
+                            authors: [pubkey],
+                            kinds: [kind],
+                            '#d': [identifier],
+                            limit: 1
+                        });
+                        if (events.length > 0) targetEvent = events[0];
+                    }
+                } else if (neventParam) {
+                    const decoded = nip19.decode(neventParam);
+                    const eventId = decoded.type === 'nevent' ? decoded.data.id : decoded.data;
+                    const events = await pool.querySync(INITIAL_RELAYS, { ids: [eventId] });
+                    if (events.length > 0) targetEvent = events[0];
+                } else if (idParam) {
+                    const events = await pool.querySync(INITIAL_RELAYS, { ids: [idParam] });
+                    if (events.length > 0) targetEvent = events[0];
+                }
+
+                if (!targetEvent) {
+                    document.getElementById('loading').innerText = "";
+                    document.getElementById('statusText').innerText = "No valid events or lists specified in the URL.";
+                    window.location.href = 'shashin.html';
+                    return;
+                }
+
+                document.getElementById('feedTitle').innerText = `Multimedia Feed (${targetEvent.kind})`;
+                document.getElementById('statusText').innerText = "Extracting authors...";
+
+                const authorSet = new Set();
+                const eventIdsToFetch = [];
+
+                targetEvent.tags.forEach(t => {
+                    if (t[0] === 'e' || t[0] === 'a') {
+                        if (t[3]) authorSet.add(t[3]);
+                        else if (t[0] === 'e') eventIdsToFetch.push(t[1]);
+                    }
+                    if (t[0] === 'p') {
+                        authorSet.add(t[1]);
+                    }
+                });
+
+                if (eventIdsToFetch.length > 0) {
+                    const referencedNotes = await pool.querySync(INITIAL_RELAYS, { ids: eventIdsToFetch });
+                    referencedNotes.forEach(note => {
+                        if (note.pubkey) authorSet.add(note.pubkey);
+                    });
+                }
+
+                const authors = Array.from(authorSet);
+                if (authors.length === 0) {
+                    document.getElementById('loading').innerText = "No authors found within this resource.";
+                    return;
+                }
+
+                document.getElementById('statusText').innerText = `Connecting relays for ${authors.length} authors...`;
+
+                const relayListEvents = await pool.querySync(INITIAL_RELAYS, {
+                    authors: authors,
+                    kinds: [10002]
+                });
+                const authorRelaysMap = new Map();
+                relayListEvents.forEach(ev => {
+                    const relays = new Set();
+                    ev.tags.forEach(t => {
+                        if (t[0] === 'r' && (!t[2] || t[2] === 'write' || t[2] === '')) {
+                            let url = t[1].trim().toLowerCase();
+                            if (url.endsWith('/')) url = url.slice(0, -1);
+                            if (url.startsWith('wss://')) relays.add(url);
+                        }
+                    });
+                    if (relays.size > 0) authorRelaysMap.set(ev.pubkey, relays);
+                });
+
+                let remainingAuthors = new Set(authors);
+                const selectedRelays = [];
+
+                while (selectedRelays.length < 10 && remainingAuthors.size > 0) {
+                    const relayCoverage = new Map();
+                    authorRelaysMap.forEach((relays, author) => {
+                        if (remainingAuthors.has(author)) {
+                            relays.forEach(relay => {
+                                if (!selectedRelays.includes(relay)) {
+                                    if (!relayCoverage.has(relay)) relayCoverage.set(relay, new Set());
+                                    relayCoverage.get(relay).add(author);
+                                }
+                            });
+                        }
+                    });
+
+                    if (relayCoverage.size === 0) break;
+                    let bestRelay = null;
+                    let maxCovered = -1;
+                    relayCoverage.forEach((coveredAuthors, relay) => {
+                        if (coveredAuthors.size > maxCovered) {
+                            maxCovered = coveredAuthors.size;
+                            bestRelay = relay;
+                        }
+                    });
+
+                    if (!bestRelay || maxCovered === 0) break;
+                    selectedRelays.push(bestRelay);
+                    relayCoverage.get(bestRelay).forEach(author => remainingAuthors.delete(author));
+                }
+
+                if (selectedRelays.length === 0) {
+                    selectedRelays.push(...INITIAL_RELAYS);
+                }
+
+                globalSelectedRelays = selectedRelays;
+                document.getElementById('relayStats').innerText = `${selectedRelays.length} relays`;
+                document.getElementById('statusText').innerText = "Downloading feed (last 30 days)...";
+
+                const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+
+                let feedEvents = await pool.querySync(selectedRelays, {
+                    authors: authors,
+                    kinds: [20, 22, 34236, 1244, 54],
+                    since: thirtyDaysAgo,
+                    limit: 60
+                });
+
+                if (feedEvents.length === 0) {
+                    const kind1Events = await pool.querySync(selectedRelays, {
+                        authors: authors,
+                        kinds: [1],
+                        since: thirtyDaysAgo,
+                        limit: 50
+                    });
+                    feedEvents = kind1Events.filter(ev => hasMediaOrAudioInContent(ev.content));
+                }
+
+                const sortedFeed = feedEvents.sort((a, b) => b.created_at - a.created_at);
+                globalMediaEvents = [];
+                globalAudioEvents = [];
+
+                sortedFeed.forEach(event => {
+                    if (event.kind === 1244 || event.kind === 54 || hasAudioContent(event)) {
+                        globalAudioEvents.push(event);
+                    } else {
+                        globalMediaEvents.push(event);
+                    }
+                });
+
+                document.getElementById('mediaCount').innerText = globalMediaEvents.length;
+                document.getElementById('audioCount').innerText = globalAudioEvents.length;
+
+                renderFeedSection('feedGridMedia', 'galleryGridMedia', globalMediaEvents, 'No media posts found in the last 30 days.');
+                renderFeedSection('feedGridAudio', 'galleryGridAudio', globalAudioEvents, 'No podcasts or audio tracks found in the last 30 days.');
+                await updatequadro(sortedFeed);
+
+                document.getElementById('statusText').innerText = `Feed ready (${sortedFeed.length} posts).`;
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('authorsBarSection').classList.remove('hidden');
+
+            } catch (err) {
+                console.warn(err);
+                document.getElementById('loading').innerText = "Error loading feed data.";
+            }
+        }
+
+        async function updatequadro(events) {
+            const container = document.getElementById('authorsBarContainer');
+            container.innerHTML = '';
+
+            const activePubkeys = [...new Set(events.map(ev => ev.pubkey))];
+            if (activePubkeys.length === 0) {
+                document.getElementById('authorsBarSection').classList.add('hidden');
+                return;
+            }
+
+            const missingPubkeys = [];
+            const authorDataMap = new Map();
+
+            activePubkeys.forEach(pubkey => {
+                let profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(pubkey) : null;
+                if (profile) authorDataMap.set(pubkey, profile);
+                else missingPubkeys.push(pubkey);
+            });
+
+            if (missingPubkeys.length > 0) {
+                try {
+                    const metadataEvents = await pool.querySync(globalSelectedRelays, {
+                        authors: missingPubkeys,
+                        kinds: [0]
+                    });
+                    metadataEvents.forEach(ev => {
+                        try {
+                            const profileContent = JSON.parse(ev.content);
+                            authorDataMap.set(ev.pubkey, profileContent);
+                            if (typeof saveProfileToCache === 'function') saveProfileToCache(ev.pubkey, profileContent);
+                        } catch (e) {}
+                    });
+                } catch (e) {}
+            }
+
+            activePubkeys.forEach(pubkey => {
+                let npub = '';
+                try { npub = nip19.npubEncode(pubkey); } catch(e) {}
+                const profile = authorDataMap.get(pubkey);
+                const name = profile ? (profile.name || profile.display_name || npub.substring(0, 6) + '..') : npub.substring(0, 6) + '..';
+                const picture = profile && profile.picture ? profile.picture : `https://api.dicebear.com/7.x/identicon/svg?seed=${pubkey}`;
+
+                const itemHtml = `
+                    <div class="flex flex-col items-center cursor-pointer shrink-0 group" onclick="scrollToAuthor('${pubkey}')">
+                        <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 transition-transform group-hover:scale-105 shadow-md">
+                            <img src="${picture}" alt="${name}" class="w-full h-full rounded-full object-cover bg-gray-900 border-2 border-gray-950">
+                        </div>
+                        <span class="text-[11px] text-gray-300 mt-1 max-w-[70px] truncate">${name}</span>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            });
+        }
+
+        window.scrollToAuthor = function(pubkey) {
+            const activeFeed = document.querySelector('main > div:not(.hidden)');
+            if (!activeFeed) return;
+            const cards = activeFeed.querySelectorAll('[data-pubkey]');
+            for (let card of cards) {
+                if (card.getAttribute('data-pubkey') === pubkey) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.classList.add('ring-2', 'ring-pink-500');
+                    setTimeout(() => card.classList.remove('ring-2', 'ring-pink-500'), 2000);
+                    break;
+                }
+            }
+        }
+
+        function hasMediaOrAudioInContent(content) {
+            if (!content) return false;
+            const lower = content.toLowerCase();
+            return lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$/i) !== null ||
+                   lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('imgur');
+        }
+
+        function hasAudioContent(event) {
+            if (event.kind === 1244 || event.kind === 54) return true;
+            const lower = event.content.toLowerCase();
+            return lower.includes('.mp3') || lower.includes('.wav') || lower.includes('.m4a') || lower.includes('audio');
+        }
+
+        window.openReplyPage = function(targetId, rootId, authorPubkey) {
+        let nevent = '';
+        try {
+            nevent = nip19.neventEncode({ id: targetId });
+        } catch(e) {}
+        window.location.href = `comment.html?nevent=${nevent}`;
+        }
+
+        function renderFeedSection(feedContainerId, galleryContainerId, events, emptyMessage) {
+            const feedGrid = document.getElementById(feedContainerId);
+            const galleryGrid = document.getElementById(galleryContainerId);
+            feedGrid.innerHTML = '';
+            galleryGrid.innerHTML = '';
+
+            if (events.length === 0) {
+                feedGrid.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm">${emptyMessage}</p>`;
+                galleryGrid.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm">${emptyMessage}</p>`;
+                return;
+            }
+            
+            events.forEach(event => {
+                let npub = '';
+                let profileLink = '#';
+                try {
+                    npub = nip19.npubEncode(event.pubkey);
+                    profileLink = `profile.html?npub=${npub}`;
+                } catch(e) {}
+
+                let nevent = '';
+                let noteLink = '#';
+                try {
+                    nevent = nip19.neventEncode({ id: event.id });
+                    noteLink = `note.html?nevent=${nevent}`;
+                } catch(e) {}
+
+                const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(event.pubkey) : null;
+                const nickname = profile ? (profile.name || profile.display_name || npub.substring(0, 8)) : npub.substring(0, 8);
+                const avatar = profile && profile.picture ? profile.picture : `https://api.dicebear.com/7.x/identicon/svg?seed=${event.pubkey}`;
+                const dateStr = new Date(event.created_at * 1000).toLocaleDateString();
+
+                let kindBadge = `Kind ${event.kind}`;
+                if (event.kind === 20) kindBadge = "🖼️ Photo";
+                else if (event.kind === 22) kindBadge = "📹 Short Video";
+                else if (event.kind === 34236) kindBadge = "🎬 Video (NIP-71)";
+                else if (event.kind === 54) kindBadge = "🎙️ Podcast (NIP-F4)";
+                else if (event.kind === 1244) kindBadge = "🎵 Track/Audio";
+                else if (event.kind === 1) kindBadge = "Note";
+
+                let rootId = event.id;
+                if (event.tags) {
+                    const existingRootTag = event.tags.find(t => (t[0] === 'E' || t[0] === 'e') && t[3] === 'root');
+                    if (existingRootTag) {
+                        rootId = existingRootTag[1];
+                    } else {
+                        const firstThreadTag = event.tags.find(t => t[0] === 'E' || t[0] === 'e');
+                        if (firstThreadTag) {
+                            rootId = firstThreadTag[1];
+                        }
+                    }
+                }
+
+                const { mediaItems, mediaHtml, cleanContent } = parseMultiMediaAndContent(event);
+
+                const feedCard = `
+                    <article data-pubkey="${event.pubkey}" class="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                <a href="${profileLink}" target="_blank">
+                                    <img src="${avatar}" class="w-9 h-9 rounded-full object-cover border border-gray-700">
+                                </a>
+                                <div>
+                                    <a href="${profileLink}" target="_blank" class="text-xs font-semibold text-gray-200 hover:underline">${nickname}</a>
+                                    <span class="block text-[10px] text-purple-400 font-mono">${kindBadge} • ${dateStr}</span>
+                                </div>
+                            </div>
+                            <a href="${noteLink}" target="_blank" class="text-gray-400 hover:text-pink-400 text-xs px-2 py-1 bg-gray-800/60 rounded-lg">Open ↗</a>
+                        </div>
+
+                        ${mediaHtml}
+
+                        <div class="px-4 py-3 flex items-center gap-2 border-t border-gray-800/60">
+                            <button onclick="openReplyPage('${event.id}', '${rootId}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">💬 Rispondi</button>
+                            <button onclick="openZapModal('${event.pubkey}', '${event.id}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">⚡ Pay</button>
+                            <button onclick="sendLike('${event.id}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
+                        </div>
+
+                        ${cleanContent ? `<div class="px-4 pb-4 text-sm text-gray-200 leading-snug whitespace-pre-wrap"><span class="font-semibold mr-1">${nickname}</span>${cleanContent}</div>` : ''}
+                    </article>
+                `;
+                feedGrid.innerHTML += feedCard;
+
+                if (mediaItems && mediaItems.length > 0) {
+                    mediaItems.forEach(m => {
+                        let galleryThumb = '';
+                        if (m.url.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || m.url.includes('imgur') || m.url.includes('primal.net/media')) {
+                            galleryThumb = `<img src="${m.url}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">`;
+                        } else if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$|youtube\.com|youtu\.be/i)) {
+                            galleryThumb = `<div class="w-full h-full bg-gray-800 flex items-center justify-center text-2xl">📹</div>`;
+                        } else if (m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
+                            galleryThumb = `<div class="w-full h-full bg-gray-800 flex items-center justify-center text-2xl">🎵</div>`;
+                        } else {
+                            galleryThumb = `<div class="w-full h-full bg-gray-800 flex items-center justify-center text-xs p-2 text-center text-gray-400">${kindBadge}</div>`;
+                        }
+
+                        const galleryItem = `
+                            <a href="${noteLink}" target="_blank" data-pubkey="${event.pubkey}" class="relative group aspect-square rounded-xl overflow-hidden bg-gray-900 border border-gray-800 block shadow-md">
+                                ${galleryThumb}
+                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                                    <span class="text-[10px] text-white truncate font-medium">${nickname}</span>
+                                </div>
+                            </a>
+                        `;
+                        galleryGrid.innerHTML += galleryItem;
+                    });
+                } else {
+                    const galleryItem = `
+                        <a href="${noteLink}" target="_blank" data-pubkey="${event.pubkey}" class="relative group aspect-square rounded-xl overflow-hidden bg-gray-900 border border-gray-800 block shadow-md">
+                            <div class="w-full h-full bg-gray-800 flex items-center justify-center text-xs p-2 text-center text-gray-400">${kindBadge}</div>
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                                <span class="text-[10px] text-white truncate font-medium">${nickname}</span>
+                            </div>
+                        </a>
+                    `;
+                    galleryGrid.innerHTML += galleryItem;
+                }
+            });
+        }
+
+        function parseMultiMediaAndContent(event) {
+            let content = event.content || '';
+            let mediaItems = [];
+            let cleanContent = content;
+
+            if (event.tags) {
+                event.tags.forEach(t => {
+                    if (t[0] === 'imeta') {
+                        let url = '';
+                        let mime = '';
+                        t.forEach(part => {
+                            if (part.startsWith('url ')) url = part.replace('url ', '').trim();
+                            if (part.startsWith('m ')) mime = part.replace('m ', '').trim().toLowerCase();
+                        });
+                        if (url) mediaItems.push({ url, mime });
+                    } else if (['url', 'imurl', 'image', 'video', 'audio'].includes(t[0])) {
+                        if (t[1]) mediaItems.push({ url: t[1], mime: t[0] });
+                    }
+                });
+            }
+
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            let matches = [...content.matchAll(urlRegex)];
+            matches.forEach(match => {
+                let url = match[0].replace(/[.,!?)]$/, '');
+                let lower = url.toLowerCase();
+                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$/i) || lower.includes('imgur') || lower.includes('primal.net/media') || lower.includes('youtube.com') || lower.includes('youtu.be')) {
+                    if (!mediaItems.some(m => m.url === url)) {
+                        mediaItems.push({ url, mime: '' });
+                        cleanContent = cleanContent.replace(url, '');
+                    }
+                }
+            });
+
+            let mediaHtml = '';
+
+            if (mediaItems.length === 1) {
+                let m = mediaItems[0];
+                if (m.mime.includes('video') || m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+                    mediaHtml = `<div class="w-full bg-black"><video src="${m.url}" controls class="w-full max-h-[450px] mx-auto" preload="metadata"></video></div>`;
+                } else if (m.mime.includes('audio') || m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
+                    mediaHtml = `<div class="p-4 bg-gray-800/80 border-y border-gray-800 flex items-center gap-3"><span class="text-2xl">🎵</span><audio src="${m.url}" controls class="w-full h-10"></audio></div>`;
+                } else if (m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
+                    let videoId = m.url.includes('youtu.be/') ? m.url.split('youtu.be/')[1]?.split('?')[0] : m.url.split('watch?v=')[1]?.split('&')[0];
+                    mediaHtml = `<div class="w-full aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe></div>`;
+                } else {
+                    mediaHtml = `<div class="w-full bg-black flex items-center justify-center max-h-[450px] overflow-hidden"><img src="${m.url}" class="w-full object-cover max-h-[450px]" loading="lazy"></div>`;
+                }
+            } else if (mediaItems.length > 1) {
+                let slidesHtml = mediaItems.map((m, index) => {
+                    let slideContent = '';
+                    if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+                        slideContent = `<video src="${m.url}" controls class="w-full h-full object-contain bg-black" preload="metadata"></video>`;
+                    } else if (m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
+                        slideContent = `<div class="p-6 bg-gray-900 flex flex-col items-center justify-center w-full h-full gap-4"><span class="text-4xl">🎵</span><audio src="${m.url}" controls class="w-full"></audio></div>`;
+                    } else {
+                        slideContent = `<img src="${m.url}" class="w-full h-full object-cover" loading="lazy">`;
+                    }
+                    return `
+                        <div class="w-full h-full shrink-0 relative bg-black flex items-center justify-center">
+                            ${slideContent}
+                            <span class="absolute top-3 right-3 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">${index + 1}/${mediaItems.length}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                mediaHtml = `
+                    <div class="relative w-full max-h-[450px] aspect-square overflow-hidden bg-black group">
+                        <div class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none" id="carousel-${event.id}">
+                            ${slidesHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return { mediaItems, mediaHtml, cleanContent: cleanContent.trim() };
+        }
+
+        window.openZapModal = openZapModal;
+        window.sendLike = async (targetId, targetAuthorPubkey) => { 
+        await sendLike(INITIAL_RELAYS, targetId, targetAuthorPubkey);
+        }
+        initSmartFeed();
+    </script>
+</body>
+</html>

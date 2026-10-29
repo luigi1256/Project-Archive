@@ -684,10 +684,12 @@ async function publishStarterPack() {
                         <a href="feed.html?naddr=${naddr}" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition">
                             Apri Feed Pack →
                         </a>
+                        <a href="shashin.html?naddr=${naddr}" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition">
+                            Apri Media Pack →                                                                                                                
+                        </a>                                                                                                                                
                     </div>
                 `;
 
-                // 🔀 NEW: Listener per fork/load
                 card.querySelector('[data-action="load-pack"]').addEventListener('click', () => {
                     loadPackToSelection(ev, true);
                 });
