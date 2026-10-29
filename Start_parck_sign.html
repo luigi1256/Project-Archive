@@ -675,19 +675,24 @@ async function publishStarterPack() {
                             <div class="profiles-container flex flex-wrap gap-2"></div>
                         </div>
                     </div>
-
-                    <div class="mt-6 pt-3 border-t border-gray-700/70 flex justify-between items-center text-xs text-gray-400">
-                        <div class="flex items-center gap-2">
-                            <span>📅 ${dateStr}</span>
-                            ${newProfiles > 0 && alreadySelected > 0 ? `<span class="bg-blue-900/50 text-blue-300 border border-blue-700 px-2 py-0.5 rounded">🔄 ${alreadySelected} già selezionati</span>` : ''}
-                        </div>
-                        <a href="feed.html?naddr=${naddr}" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition">
+                    <div class="mt-6 pt-3 border-t border-gray-700/70 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-gray-400">
+    
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span>📅 ${dateStr}</span>
+                        ${newProfiles > 0 && alreadySelected > 0 ? `<span class="bg-blue-900/50 text-blue-300 border border-blue-700 px-2 py-0.5 rounded">🔄 ${alreadySelected} già selezionati</span>` : ''}
+                    </div>
+                
+                    
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                        <a href="feed.html?naddr=${naddr}" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-center font-medium rounded-lg transition shadow-md">
                             Apri Feed Pack →
                         </a>
-                        <a href="shashin.html?naddr=${naddr}" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition">
-                            Apri Media Pack →                                                                                                                
-                        </a>                                                                                                                                
+                        <a href="shashin.html?naddr=${naddr}" class="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-center font-medium rounded-lg transition border border-zinc-700">
+                            Apri Media Pack →                                                                                                                 
+                        </a>            
                     </div>
+                </div>
+
                 `;
 
                 card.querySelector('[data-action="load-pack"]').addEventListener('click', () => {

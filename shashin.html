@@ -414,126 +414,134 @@
         } catch(e) {}
         window.location.href = `comment.html?nevent=${nevent}`;
         }
-
+                                                                                                                                                                                                          
+                                                                                                                                     
         function renderFeedSection(feedContainerId, galleryContainerId, events, emptyMessage) {
-            const feedGrid = document.getElementById(feedContainerId);
-            const galleryGrid = document.getElementById(galleryContainerId);
-            feedGrid.innerHTML = '';
-            galleryGrid.innerHTML = '';
+    const feedGrid = document.getElementById(feedContainerId);
+    const galleryGrid = document.getElementById(galleryContainerId);
+    
+    feedGrid.innerHTML = '';
+    galleryGrid.innerHTML = '';
 
-            if (events.length === 0) {
-                feedGrid.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm">${emptyMessage}</p>`;
-                galleryGrid.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm">${emptyMessage}</p>`;
-                return;
+    if (events.length === 0) {
+        feedGrid.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm">${emptyMessage}</p>`;
+        galleryGrid.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm">${emptyMessage}</p>`;
+        return;
+    }
+    
+    // Usiamo DocumentFragment per evitare reflow multipli del DOM
+    const feedFragment = document.createDocumentFragment();
+    const galleryFragment = document.createDocumentFragment();
+
+    events.forEach(event => {
+        let npub = '';
+        let profileLink = '#';
+        try {
+            npub = nip19.npubEncode(event.pubkey);
+            profileLink = `profile.html?npub=${npub}`;
+        } catch(e) {}
+
+        let nevent = '';
+        let noteLink = '#';
+        try {
+            nevent = nip19.neventEncode({ id: event.id });
+            noteLink = `note.html?nevent=${nevent}`;
+        } catch(e) {}
+
+        const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(event.pubkey) : null;
+        const nickname = profile ? (profile.name || profile.display_name || npub.substring(0, 8)) : npub.substring(0, 8);
+        const avatar = profile && profile.picture ? profile.picture : `https://api.dicebear.com/7.x/identicon/svg?seed=${event.pubkey}`;
+        const dateStr = new Date(event.created_at * 1000).toLocaleDateString();
+
+        let kindBadge = `Kind ${event.kind}`;
+        if (event.kind === 20) kindBadge = "🖼️ Photo";
+        else if (event.kind === 22) kindBadge = "📹 Short Video";
+        else if (event.kind === 34236) kindBadge = "🎬 Video";
+        else if (event.kind === 54) kindBadge = "🎙️ Podcast";
+        else if (event.kind === 1244) kindBadge = "🎵 Audio";
+
+        let rootId = event.id;
+        if (event.tags) {
+            const existingRootTag = event.tags.find(t => (t[0] === 'E' || t[0] === 'e') && t[3] === 'root');
+            if (existingRootTag) rootId = existingRootTag[1];
+            else {
+                const firstThreadTag = event.tags.find(t => t[0] === 'E' || t[0] === 'e');
+                if (firstThreadTag) rootId = firstThreadTag[1];
             }
-            
-            events.forEach(event => {
-                let npub = '';
-                let profileLink = '#';
-                try {
-                    npub = nip19.npubEncode(event.pubkey);
-                    profileLink = `profile.html?npub=${npub}`;
-                } catch(e) {}
+        }
 
-                let nevent = '';
-                let noteLink = '#';
-                try {
-                    nevent = nip19.neventEncode({ id: event.id });
-                    noteLink = `note.html?nevent=${nevent}`;
-                } catch(e) {}
+        const { mediaItems, mediaHtml, cleanContent } = parseMultiMediaAndContent(event);
 
-                const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(event.pubkey) : null;
-                const nickname = profile ? (profile.name || profile.display_name || npub.substring(0, 8)) : npub.substring(0, 8);
-                const avatar = profile && profile.picture ? profile.picture : `https://api.dicebear.com/7.x/identicon/svg?seed=${event.pubkey}`;
-                const dateStr = new Date(event.created_at * 1000).toLocaleDateString();
+        // 1. CARDA FEED PRINCIPALE
+        const cardArticle = document.createElement('article');
+        cardArticle.setAttribute('data-pubkey', event.pubkey);
+        cardArticle.className = "bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden";
+        cardArticle.innerHTML = `
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <a href="${profileLink}" target="_blank">
+                        <img src="${avatar}" class="w-9 h-9 rounded-full object-cover border border-gray-700" loading="lazy" decoding="async">
+                    </a>
+                    <div>
+                        <a href="${profileLink}" target="_blank" class="text-xs font-semibold text-gray-200 hover:underline">${nickname}</a>
+                        <span class="block text-[10px] text-purple-400 font-mono">${kindBadge} • ${dateStr}</span>
+                    </div>
+                </div>
+                <a href="${noteLink}" target="_blank" class="text-gray-400 hover:text-pink-400 text-xs px-2 py-1 bg-gray-800/60 rounded-lg">Open ↗</a>
+            </div>
 
-                let kindBadge = `Kind ${event.kind}`;
-                if (event.kind === 20) kindBadge = "🖼️ Photo";
-                else if (event.kind === 22) kindBadge = "📹 Short Video";
-                else if (event.kind === 34236) kindBadge = "🎬 Video (NIP-71)";
-                else if (event.kind === 54) kindBadge = "🎙️ Podcast (NIP-F4)";
-                else if (event.kind === 1244) kindBadge = "🎵 Track/Audio";
-                else if (event.kind === 1) kindBadge = "Note";
+            ${mediaHtml}
 
-                let rootId = event.id;
-                if (event.tags) {
-                    const existingRootTag = event.tags.find(t => (t[0] === 'E' || t[0] === 'e') && t[3] === 'root');
-                    if (existingRootTag) {
-                        rootId = existingRootTag[1];
-                    } else {
-                        const firstThreadTag = event.tags.find(t => t[0] === 'E' || t[0] === 'e');
-                        if (firstThreadTag) {
-                            rootId = firstThreadTag[1];
-                        }
-                    }
-                }
+            <div class="px-4 py-3 flex items-center gap-2 border-t border-gray-800/60">
+                <button onclick="openReplyPage('${event.id}', '${rootId}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">💬 Rispondi</button>
+                <button onclick="openZapModal('${event.pubkey}', '${event.id}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">⚡ Pay</button>
+                <button onclick="sendLike('${event.id}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
+            </div>
 
-                const { mediaItems, mediaHtml, cleanContent } = parseMultiMediaAndContent(event);
+            ${cleanContent ? `<div class="px-4 pb-4 text-sm text-gray-200 leading-snug whitespace-pre-wrap"><span class="font-semibold mr-1">${nickname}</span>${cleanContent}</div>` : ''}
+        `;
+        feedFragment.appendChild(cardArticle);
 
-                const feedCard = `
-                    <article data-pubkey="${event.pubkey}" class="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden">
-                        <div class="flex items-center justify-between px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <a href="${profileLink}" target="_blank">
-                                    <img src="${avatar}" class="w-9 h-9 rounded-full object-cover border border-gray-700">
-                                </a>
-                                <div>
-                                    <a href="${profileLink}" target="_blank" class="text-xs font-semibold text-gray-200 hover:underline">${nickname}</a>
-                                    <span class="block text-[10px] text-purple-400 font-mono">${kindBadge} • ${dateStr}</span>
-                                </div>
-                            </div>
-                            <a href="${noteLink}" target="_blank" class="text-gray-400 hover:text-pink-400 text-xs px-2 py-1 bg-gray-800/60 rounded-lg">Open ↗</a>
-                        </div>
-
-                        ${mediaHtml}
-
-                        <div class="px-4 py-3 flex items-center gap-2 border-t border-gray-800/60">
-                            <button onclick="openReplyPage('${event.id}', '${rootId}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">💬 Rispondi</button>
-                            <button onclick="openZapModal('${event.pubkey}', '${event.id}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">⚡ Pay</button>
-                            <button onclick="sendLike('${event.id}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
-                        </div>
-
-                        ${cleanContent ? `<div class="px-4 pb-4 text-sm text-gray-200 leading-snug whitespace-pre-wrap"><span class="font-semibold mr-1">${nickname}</span>${cleanContent}</div>` : ''}
-                    </article>
-                `;
-                feedGrid.innerHTML += feedCard;
-
-                if (mediaItems && mediaItems.length > 0) {
-                    mediaItems.forEach(m => {
-                        let galleryThumb = '';
-                        if (m.url.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || m.url.includes('imgur') || m.url.includes('primal.net/media')) {
-                            galleryThumb = `<img src="${m.url}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">`;
-                        } else if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$|youtube\.com|youtu\.be/i)) {
-                            galleryThumb = `<div class="w-full h-full bg-gray-800 flex items-center justify-center text-2xl">📹</div>`;
-                        } else if (m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
-                            galleryThumb = `<div class="w-full h-full bg-gray-800 flex items-center justify-center text-2xl">🎵</div>`;
-                        } else {
-                            galleryThumb = `<div class="w-full h-full bg-gray-800 flex items-center justify-center text-xs p-2 text-center text-gray-400">${kindBadge}</div>`;
-                        }
-
-                        const galleryItem = `
-                            <a href="${noteLink}" target="_blank" data-pubkey="${event.pubkey}" class="relative group aspect-square rounded-xl overflow-hidden bg-gray-900 border border-gray-800 block shadow-md">
-                                ${galleryThumb}
-                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                                    <span class="text-[10px] text-white truncate font-medium">${nickname}</span>
-                                </div>
-                            </a>
-                        `;
-                        galleryGrid.innerHTML += galleryItem;
-                    });
+        
+        // 2. ELEMENTI DELLA GRIGLIA (LOOK OPACO & MINIMALE)
+        if (mediaItems && mediaItems.length > 0) {
+            mediaItems.forEach(m => {
+                let galleryThumb = '';
+                const isImage = m.url.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || m.url.includes('imgur') || m.url.includes('primal.net/media');
+                
+                if (isImage) {
+                    const thumbUrl = `https://primal.net/media-cache?s=o&u=${encodeURIComponent(m.url)}`;
+                    // Tolto lo zoom (scale-105) per un effetto stabile e opaco
+                    galleryThumb = `<img src="${thumbUrl}" onerror="this.src='${m.url}'" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition duration-200" loading="lazy" decoding="async">`;
+                } else if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$|youtube\.com|youtu\.be/i)) {
+                    // Stile opaco con sfumature neutre (senza colori troppo accesi)
+                    galleryThumb = `<div class="w-full h-full bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center text-zinc-400"><span class="text-2xl">📹</span><span class="text-[9px] font-mono mt-1 text-zinc-500 uppercase tracking-wider">Video</span></div>`;
+                } else if (m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
+                    galleryThumb = `<div class="w-full h-full bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center text-zinc-400"><span class="text-2xl">🎵</span><span class="text-[9px] font-mono mt-1 text-zinc-500 uppercase tracking-wider">Audio</span></div>`;
                 } else {
-                    const galleryItem = `
-                        <a href="${noteLink}" target="_blank" data-pubkey="${event.pubkey}" class="relative group aspect-square rounded-xl overflow-hidden bg-gray-900 border border-gray-800 block shadow-md">
-                            <div class="w-full h-full bg-gray-800 flex items-center justify-center text-xs p-2 text-center text-gray-400">${kindBadge}</div>
-                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                                <span class="text-[10px] text-white truncate font-medium">${nickname}</span>
-                            </div>
-                        </a>
-                    `;
-                    galleryGrid.innerHTML += galleryItem;
+                    galleryThumb = `<div class="w-full h-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-xs p-2 text-center text-zinc-500">${kindBadge}</div>`;
                 }
+
+                const galleryItem = document.createElement('a');
+                galleryItem.href = noteLink;
+                galleryItem.target = "_blank";
+                galleryItem.setAttribute('data-pubkey', event.pubkey);
+                // Bordi netti e sfondo opaco di base
+                galleryItem.className = "relative group aspect-square rounded-lg overflow-hidden bg-zinc-950 border border-zinc-800/80 block shadow-sm hover:border-zinc-700 transition";
+                galleryItem.innerHTML = `
+                    ${galleryThumb}
+                    <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-[10px] text-zinc-300 truncate font-mono">${nickname}</span>
+                    </div>
+                `;
+                galleryFragment.appendChild(galleryItem);
             });
         }
+    });
+
+    feedGrid.appendChild(feedFragment);
+    galleryGrid.appendChild(galleryFragment);
+}                                                                                                                      
 
         function parseMultiMediaAndContent(event) {
             let content = event.content || '';
