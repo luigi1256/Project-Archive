@@ -21,7 +21,7 @@
     flex-direction: row; 
   }
 }
-            
+         
 .filter-row button {                
   flex: 1;                
   font-size: 0.8125rem; 
@@ -75,14 +75,38 @@
 
   </div>
 
-    <aside id="shelf" class="bg-[#0b1d13] border border-emerald-900/40 p-3 sm:p-5 rounded-lg hidden">
-  <div class="flex items-center justify-between mb-4 px-1 sm:px-2">
-    <h2 class="font-mono text-sm text-emerald-400 uppercase tracking-widest">Saved Shelf</h2>
-    <button onclick="toggleShelf()" class="text-emerald-400 hover:text-white font-mono bg-emerald-950/60 rounded cursor-pointer transition-colors">✕ Close</button>
+  <aside id="shelf" class="bg-[#0b1d13] border border-emerald-900/40 p-4 sm:p-6 rounded-xl shadow-2xl backdrop-blur-md hidden space-y-6">
+  
+  <div class="flex items-center justify-between pb-3 border-b border-emerald-900/40">
+    <h2 class="font-mono text-xs sm:text-sm text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      Saved Shelf
+    </h2>
+    <button onclick="toggleShelf()" class="text-emerald-400/80 hover:text-white font-mono text-xs px-2.5 py-1 bg-emerald-950/80 hover:bg-emerald-900 rounded border border-emerald-800/50 cursor-pointer transition-all">
+      ✕ Close
+    </button>
   </div>
-  <div id="books" class="flex flex-row gap-2.5 overflow-x-auto pb-2 pt-1 whitespace-nowrap"></div>
+
+  <nav class="space-y-2">
+    <a href="Player_Stream.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-mono text-xs text-emerald-300 hover:text-emerald-100 bg-emerald-950/30 hover:bg-emerald-900/40 border border-emerald-900/30 transition-all group">
+      <span class="text-sm group-hover:scale-110 transition-transform">🌿</span> 
+      <span>Stream Media</span>
+    </a>
+    <a href="Player_Pod.html" class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-mono text-xs text-emerald-300 hover:text-emerald-100 bg-emerald-950/30 hover:bg-emerald-900/40 border border-emerald-900/30 transition-all group">
+      <span class="text-sm group-hover:scale-110 transition-transform">🌿</span> 
+      <span>Pod Media</span>
+    </a>
+  </nav>
+
+  <div class="space-y-2">
+    <p class="font-mono text-[10px] text-emerald-500/70 uppercase tracking-wider">Collection of items</p>
+    <div id="books" class="flex flex-row gap-3 overflow-x-auto pb-2 pt-1 whitespace-nowrap scrollbar-thin scrollbar-thumb-emerald-800 scrollbar-track-transparent">
+     
+    </div>
+  </div>
+
 </aside>
-    
+
     
     <div id="searchArea" class="bg-[#0f2318] border border-emerald-900/60 p-3 sm:p-5 rounded-lg shadow-md space-y-2 sm:space-y-3">
 

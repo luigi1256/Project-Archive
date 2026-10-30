@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">                                            
+<meta name="viewport" content="width=device-width, initial-scale=1.0">       
+<title>Baita & Pod</title>                                                                                                                                                                                                                                                                                                                                
+<link rel="stylesheet" href="theme_baita.css">
+<link rel="stylesheet" href="theme_baita_stream.css">
+<link rel="stylesheet" href="theme_baita_audio.css">
+<style>
+#shelf {
+  max-width: 320px;
+  margin: 15px auto;
+}
+#books {
+  display: flex !important;
+  flex-direction: column !important; 
+  gap: 6px !important;
+  max-height: 180px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+.book {
+  background: rgba(4, 47, 27, 0.4);
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(6, 95, 70, 0.3);
+}
+</style>
+</head>  
+
+<body>
+
+  <div class="ipod-container">
+    
+    <div class="ipod-header">
+      <span class="ipod-brand">🎛️ Baita Pod v1.0</span>
+      <span id="ipodStatus" class="ipod-status">STANDBY</span>
+    </div>
+                                                                                                                                                                                                                                                                                  
+  <div class="ipod-screen">
+      <div class="ipod-scanlines"></div>
+      
+      <div class="ipod-info">
+        <div id="ipodTitle" class="ipod-title">Nessun file selezionato</div>
+        <div id="ipodSubtitle" class="ipod-subtitle">Usa la ghiera o la libreria</div>
+      </div>
+
+      <div id="ipodScreenContent" class="ipod-screen-content">
+        <div class="ipod-ready-text">▶ READY</div>
+      </div>
+
+      <div class="ipod-progress-area">
+        <div class="ipod-progress-track" id="ipodProgressTrack">
+          <div id="ipodProgressBar" class="ipod-progress-bar"></div>
+        </div>
+        <div class="ipod-time-row">
+          <span id="ipodCurrentTime">00:00</span>
+          <span id="ipodDuration">00:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ipod-wheel">
+      <button id="ipodCenterBtn" onclick="ipodTogglePlay()" class="ipod-center-btn">PLAY</button>
+      <button onclick="ipodMenuAction()" class="ipod-btn-menu">MENU</button>
+      <button onclick="ipodNextMedia()" class="ipod-btn-next">⏭</button>
+      <button onclick="ipodPrevMedia()" class="ipod-btn-prev">⏮</button>
+      <button onclick="ipodToggleShuffle()" class="ipod-btn-shuffle">🔀</button>
+    </div>
+
+    <audio id="ipodAudioPlayer" style="display:none;"></audio>
+    <video id="ipodVideoPlayer" style="display:none;"></video>
+  </div>
+
+<aside id="shelf" class="bg-[#0b1d13] border border-emerald-900/40 p-3 sm:p-5 rounded-lg hidden">
+  <div class="items-center justify-between mb-4 px-1 sm:px-2 flex">
+    <h2 class="font-mono text-xs text-emerald-400 uppercase tracking-widest"><a href="Search_media.html" class="hover:underline"> 🌿 Search media</a></h2>
+    <h2 class="font-mono text-xs text-emerald-400 uppercase tracking-widest">🎛️ Baita Stream</h2>
+    <button onclick="toggleIpodShelf()" class="text-emerald-400 hover:text-white font-mono bg-emerald-950/60 px-2 py-1 rounded cursor-pointer transition-colors text-xs">✕ Chiudi</button>
+  </div>
+  <div id="books"></div>
+</aside>
+
+<script src="baita_core_media.js"></script>
+<script src="baita_media.js"></script>
+<script src="baita_pod.js"></script>
+<script src="baita_pod_menu.js"></script>
+<script src="baita_stream.js"></script>
+
+</body>
+</html>
