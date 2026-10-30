@@ -320,7 +320,7 @@
                 ? `<img src="${picture}" class="w-5 h-5 rounded-full object-cover shrink-0" loading="lazy" onerror="this.onerror=null; this.parentNode.replaceWith(document.createTextNode('👤'));">`
                 : `<span class="text-xs">👤</span>`;
         
-            const formattedContent = parseMultiMediaAndContent(event);
+            const formattedContent = parseContent(event);
             const dateStr = new Date(event.created_at * 1000).toLocaleString();
     
             let replyBadgeHtml = '';
@@ -415,122 +415,42 @@
             `;
         }
 
-        function parseMultiMediaAndContent(event) {
-            let content = event.content || '';
-            let mediaItems = [];
-            let cleanContent = content;
-
-            // 1. Estrazione robusta dai TAG (Kind 20, 22, 34236, imeta, url, image)
-            if (event.tags) {
-                event.tags.forEach(t => {
-                    if (t[0] === 'imeta') {
-                        let url = '';
-                        let mime = '';
-                        t.forEach(part => {
-                            if (part.startsWith('url ')) url = part.replace('url ', '').trim();
-                            if (part.startsWith('m ')) mime = part.replace('m ', '').trim().toLowerCase();
-                        });
-                        if (url && !mediaItems.some(m => m.url === url)) {
-                            mediaItems.push({ url, mime });
-                        }
-                    } else if (['url', 'imurl', 'image', 'video', 'audio'].includes(t[0])) {
-                        if (t[1] && !mediaItems.some(m => m.url === t[1])) {
-                            mediaItems.push({ url: t[1], mime: t[0] });
-                        }
-                    } else {
-                        // Controllo generico per qualsiasi tag che contenga un URL valido
-                        for (let i = 1; i < t.length; i++) {
-                            if (typeof t[i] === 'string' && t[i].startsWith('http')) {
-                                let url = t[i].trim();
-                                if (!mediaItems.some(m => m.url === url)) {
-                                    mediaItems.push({ url, mime: t[0] });
-                                }
-                                break;
-                            }
-                        }
-                    }
-                });
-            }
-
-            // 2. Estrazione dal testo (per URL normali inseriti nella nota)
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            let matches = [...content.matchAll(urlRegex)];
-            matches.forEach(match => {
-                let url = match[0].replace(/[.,!?)]$/, '');
-                let lower = url.toLowerCase();
-                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$/i) || lower.includes('imgur') || lower.includes('primal.net/media') || lower.includes('youtube.com') || lower.includes('youtu.be')) {
-                    if (!mediaItems.some(m => m.url === url)) {
-                        mediaItems.push({ url, mime: '' });
-                        cleanContent = cleanContent.replace(url, '');
-                    }
-                }
-            });
-
-            if (event.kind === 20 && cleanContent.trim() === '' && mediaItems.length > 0) {
-                cleanContent = '';
-            }
-
-            let parsedText = cleanContent.trim() ? cleanContent.replace(/nostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
-                let url = '#';
-                let label = entity.substring(0, 8) + '...';
-                if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
-                    label = '👤 ' + label;
-                    url = `profile.html?npub=${entity}`;
-                } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
-                    label = '💬 ' + label;
-                    url = `note.html?nevent=${entity}`;    
-                } else if (entity.startsWith('naddr')) {
-                    label = '📚 ' + label;
-                    url = `modfile.html?naddr=${entity}`;
-                }
-                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
-            }) : '';
-
-            let mediaHtml = '';
-
-            if (mediaItems.length === 1) {
-                let m = mediaItems[0];
-                if (m.mime.includes('video') || m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
-                    mediaHtml = `<div class="w-full bg-black mb-3 rounded-xl overflow-hidden"><video src="${m.url}" controls preload="none" class="w-full max-h-[450px] mx-auto"></video></div>`;
-                } else if (m.mime.includes('audio') || m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
-                    mediaHtml = `<div class="p-4 bg-gray-800/80 border border-gray-700 rounded-xl mb-3 flex items-center gap-3"><span class="text-2xl">🎵</span><audio src="${m.url}" controls preload="none" class="w-full h-10"></audio></div>`;
-                } else if (m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
-                    let videoId = m.url.includes('youtu.be/') ? m.url.split('youtu.be/')[1]?.split('?')[0] : m.url.split('watch?v=')[1]?.split('&')[0];
-                    mediaHtml = `<div class="w-full aspect-video bg-black mb-3 rounded-xl overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${videoId}" loading="lazy" frameborder="0" allowfullscreen></iframe></div>`;
-                } else {
-                    mediaHtml = `<div class="w-full bg-black flex items-center justify-center max-h-[450px] overflow-hidden mb-3 rounded-xl"><img src="${m.url}" class="w-full object-cover max-h-[450px]" loading="lazy" decoding="async"></div>`;
-                }
-            } else if (mediaItems.length > 1) {
-                let slidesHtml = mediaItems.map((m, index) => {
-                    let slideContent = '';
-                    if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
-                        slideContent = `<video src="${m.url}" controls preload="none" class="w-full h-full object-contain bg-black"></video>`;
-                    } else if (m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
-                        slideContent = `<div class="p-6 bg-gray-900 flex flex-col items-center justify-center w-full h-full gap-4"><span class="text-4xl">🎵</span><audio src="${m.url}" controls preload="none" class="w-full"></audio></div>`;
-                    } else {
-                        slideContent = `<img src="${m.url}" class="w-full h-full object-cover" loading="lazy" decoding="async">`;
-                    }
-                    return `
-                        <div class="w-full h-full shrink-0 relative bg-black flex items-center justify-center">
-                            ${slideContent}
-                            <span class="absolute top-3 right-3 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">${index + 1}/${mediaItems.length}</span>
-                        </div>
-                    `;
-                }).join('');
-
-                mediaHtml = `
-                    <div class="relative w-full max-h-[450px] aspect-square overflow-hidden bg-black mb-3 rounded-xl">
-                        <div class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none">
-                            ${slidesHtml}
-                        </div>
-                    </div>
-                `;
-            }
-
-            return mediaHtml + (parsedText ? `<div class="mt-2">${parsedText}</div>` : '');
-        }
-
-        initThread();
+    function parseContent(event) {    
+    if (!event.content) return '';                                                                                                                                                                                                                                                                                             
+    
+    let parsed = event.content.replace(/\bnostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[a-z0-9]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+        let url = '#';                                                                                                                                                                                                                                                              
+        let label = entity.substring(0, 8) + '...';                                                                                                                                                                                                                               
+        if (entity.startsWith('npub') || entity.startsWith('nprofile')) {                                                                                                                                                                                                                               
+            label = '👤 ' + label;                                                                                                                                                                                                                               
+            url = `profile-social.html?npub=${entity}`;                                                                                                                                                                                                                               
+        } else if (entity.startsWith('note') || entity.startsWith('nevent')) {                                                                                                                                                                                                                               
+            label = '💬 ' + label;                                                                                                                                                                                                                               
+            url = `note.html?nevent=${entity}`;                                                                                                                                                                                                                               
+        } else if (entity.startsWith('naddr')) {                                                                                                                                                                                                                               
+            label = '📚 ' + label;                                                                                                                                                                                                                               
+            url = `modfile.html?naddr=${entity}`;                                                                                                                                                                                                                               
+        }                                                                                                                                                                                                                               
+        return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
+    });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+        
+    parsed = parsed.replace(/https?:\/\/[^\s<]+/g, (url) => {                                                                                                                                                                                                                               
+        let matchPunct = url.match(/[.,!?)]+$/);                                                                                                                                                                                                                               
+        let punct = matchPunct ? matchPunct[0] : '';                                                                                                                                                                                                                               
+        let clean = url.substring(0, url.length - punct.length);                                                                                                                                                                                                                               
+        if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {                                                                                                                                                                                                                               
+            return `<br><img src="${clean}" class="mt-2 max-h-60 w-full object-cover border border-zinc-800" loading="lazy"><br>${punct}`;        
+        }                                                                                                                                                                                                                               
+        if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {                                                                                                                                                                                                                               
+            return `<br><video controls class="mt-2 max-h-60 w-full"><source src="${clean}"></video><br>${punct}`;                                                                                                                                                             
+        }                                                                                                                                                                                                                               
+        return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;                     
+    });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+        
+    return parsed;                                                                                                                                                                                                                               
+}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+    initThread();
     </script>
 </body>
 </html>
