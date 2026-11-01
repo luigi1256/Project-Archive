@@ -71,7 +71,7 @@
         ]; 
         
         const RELAYS = [
-            'wss://relay.damus.io',
+            'wss://offchain.pub/',
             'wss://nos.lol',
             'wss://nostr.stakey.net',
             'wss://relay.ditto.pub'
@@ -127,7 +127,7 @@
                     try {
                     const nevent = nip19.neventEncode({
                         id: event.id,
-                        relays: ['wss://relay.damus.io', 'wss://nos.lol'],
+                        relays: ['wss://nos.lol'],
                     });
                     const npub = nip19.npubEncode(event.pubkey);
                     link = `feed.html?nevent=${nevent}`; //${event.id} 
@@ -155,7 +155,7 @@
                             kind: event.kind,
                             pubkey: event.pubkey,
                             identifier: identifier,
-                            relays: ['wss://relay.damus.io', 'wss://nos.lol']
+                            relays: ['wss://nos.lol']
                         });
                         link = `modfile.html?naddr=${naddr}`;
                         other_link = `https://nostr.ae/${naddr}`;
@@ -178,7 +178,7 @@
                         kind: event.kind,
                         pubkey: event.pubkey,
                         identifier: identifier,
-                        relays: ['wss://relay.damus.io', 'wss://nos.lol'] 
+                        relays: ['wss://nos.lol'] 
                     });
                     link = `https://nostrhub.io/${naddr}`;
                     other_link = `https://nips.pollerama.fun/#/nip/${naddr}`;
@@ -210,7 +210,7 @@
                         kind: event.kind,
                         pubkey: event.pubkey,
                         identifier: identifier,
-                        relays: ['wss://relay.damus.io', 'wss://nos.lol'] 
+                        relays: ['wss://nos.lol'] 
                     });
                     link = `modfile.html?naddr=${naddr}`;
                     other_link = `https://nostr.ae/${naddr}`;

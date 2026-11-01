@@ -1,7 +1,7 @@
 import { prepareZapTarget, sendZapPrepared } from './likes_zap.js';
 
 const defaultRelays = [      
-    'wss://relay.damus.io',  
+    'wss://offchain.pub/',  
     'wss://nos.lol',         
     'wss://relay.primal.net'     
 ];                           

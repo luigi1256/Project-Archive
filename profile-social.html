@@ -56,7 +56,7 @@
         let profileuserdata='';
         
         const defaultRelays = [
-            'wss://relay.damus.io',
+            'wss://offchain.pub/',
             'wss://nos.lol',
             'wss://relay.primal.net',
             'wss://purplepag.es'
@@ -338,7 +338,7 @@
                 try {
                     nevent = NostrTools.nip19.neventEncode({
                         id: note.id,
-                        relays: ['wss://relay.damus.io', 'wss://nos.lol']
+                        relays: ['wss://offchain.pub', 'wss://nos.lol']
                     });
                 } catch(e) {}
                 
@@ -447,7 +447,7 @@
             try {
                 nevent = NostrTools.nip19.neventEncode({
                     id: bookmarkEvent.id,
-                    relays: ['wss://relay.damus.io', 'wss://nos.lol']
+                    relays: ['wss://offchain.pub', 'wss://nos.lol']
                 });
             } catch(e) {}
         
