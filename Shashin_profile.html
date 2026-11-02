@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Profile Media Feed (Kind 20)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans pb-24">
+
+    <header class="max-w-4xl mx-auto pt-8 pb-4 px-4 text-center border-b border-gray-800 mb-6">
+        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 mb-2" id="feedTitle">
+            Profile Media Feed
+        </h1>
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-2 text-xs text-gray-400 mt-2 mb-4">
+            <span id="statusText" class="font-medium">Enter an npub or use URL parameters (?npub=...)</span>
+            <span id="relayStats" class="text-purple-400"></span>
+        </div>
+
+        <div class="max-w-md mx-auto flex gap-2">
+            <input type="text" id="npubInput" placeholder="npub1... (enter public key)" class="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-purple-500">
+            <button onclick="searchProfile()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg transition cursor-pointer">Search</button>
+        </div>
+    </header>
+
+    
+<section class="max-w-4xl mx-auto px-4 mb-6 hidden" id="profileInfoSection">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
+        <div id="profileBanner" class="h-32 sm:h-44 bg-gray-800 bg-cover bg-center"></div>
+        
+        <div class="px-5 sm:px-8 pb-6 relative">
+            
+            <div class="flex justify-between items-end -mt-12 sm:-mt-16 mb-4">
+                <img id="profilePicture" src="" alt="Avatar" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-gray-900 bg-gray-950 object-cover shadow-xl">
+                
+                <div class="flex items-center gap-2">
+                    <button onclick="document.getElementById('npubInput').focus()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold rounded-lg transition border border-gray-700 cursor-pointer">🔍 Top -></button>
+                </div>
+            </div>
+
+            <h2 id="profileName" class="text-2xl font-extrabold text-white">--</h2>
+            <p id="profileDisplayName" class="text-purple-400 text-xs font-mono mb-3">@--</p>
+
+            <p id="profileAbout" class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words mb-4">--</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono bg-gray-950/80 p-4 rounded-xl border border-gray-800/80">
+                <div>
+                    <span class="text-gray-500 block mb-0.5">NPUB:</span>
+                    <span id="profileNpub" class="text-purple-300 break-all select-all cursor-pointer hover:underline" title="Clicca per copiare">npub1...</span>
+                </div>
+                <div id="profileWebsiteContainer" class="hidden">
+                    <span class="text-gray-500 block mb-0.5">Website:</span>
+                    <a id="profileWebsite" href="#" target="_blank" class="text-blue-400 hover:underline break-all">...</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <section class="max-w-4xl mx-auto px-4 mb-4" id="tabsSection">
+        <div class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-800 pb-3 gap-3">
+            <div class="flex text-sm font-semibold w-full sm:w-auto" id="tabsContainer">
+                <button id="tabMediaBtn" onclick="switchTab('media')" class="px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer">
+                    🎬 Media & Kind 20 (<span id="mediaCount">0</span>)
+                </button>
+                <button id="tabAudioBtn" onclick="switchTab('audio')" class="px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer">
+                    🎵 Audio & Podcast (<span id="audioCount">0</span>)
+                </button>
+            </div>
+            <div class="flex items-center bg-gray-900 border border-gray-800 rounded-lg p-1 text-xs">
+                <button onclick="switchView('feed')" id="viewFeedBtn" class="px-3 py-1.5 rounded-md bg-purple-600 text-white font-medium transition cursor-pointer">📱 Feed</button>
+                <button onclick="switchView('grid')" id="viewGridBtn" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition cursor-pointer">🖼️ Grill (4x)</button>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-4xl mx-auto px-4">
+        <div id="loading" class="text-center text-gray-400 text-sm py-12">Waiting for an npub to load the contents...</div>
+        
+        <div id="sectionMedia" class="space-y-6">
+            <div id="feedGridMedia" class="space-y-6"></div>
+            <div id="galleryGridMedia" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 hidden"></div>
+        </div>
+
+        <div id="sectionAudio" class="space-y-6 hidden">
+            <div id="feedGridAudio" class="space-y-6"></div>
+            <div id="galleryGridAudio" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 hidden"></div>
+        </div>
+    </main>
+
+    <script src="cache.js"></script>
+    <script type="module">
+        import { openZapModal } from './ZapPrepar.js';
+        import { sendLike } from './likes_zap.js';
+        import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm';
+
+        const INITIAL_RELAYS = [
+            'wss://offchain.pub/',
+            'wss://nos.lol',
+            'wss://nostr.stakey.net',
+            'wss://relay.ditto.pub'
+        ];
+
+        const pool = new SimplePool();
+        let globalMediaEvents = [];
+        let globalAudioEvents = [];
+        let globalSelectedRelays = INITIAL_RELAYS;
+        let currentTab = 'media';
+        let currentView = 'feed';
+
+        window.switchTab = function(tabName) {
+            currentTab = tabName;
+            const mediaBtn = document.getElementById('tabMediaBtn');
+            const audioBtn = document.getElementById('tabAudioBtn');
+            const sectionMedia = document.getElementById('sectionMedia');
+            const sectionAudio = document.getElementById('sectionAudio');
+
+            if (tabName === 'media') {
+                mediaBtn.className = "px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer";
+                audioBtn.className = "px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer";
+                sectionMedia.classList.remove('hidden');
+                sectionAudio.classList.add('hidden');
+            } else {
+                audioBtn.className = "px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer";
+                mediaBtn.className = "px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer";
+                sectionAudio.classList.remove('hidden');
+                sectionMedia.classList.add('hidden');
+            }
+            applyViewMode();
+        }
+
+        window.switchView = function(viewMode) {
+            currentView = viewMode;
+            const feedBtn = document.getElementById('viewFeedBtn');
+            const gridBtn = document.getElementById('viewGridBtn');
+
+            if (viewMode === 'feed') {
+                feedBtn.className = "px-3 py-1.5 rounded-md bg-purple-600 text-white font-medium transition cursor-pointer";
+                gridBtn.className = "px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition cursor-pointer";
+            } else {
+                gridBtn.className = "px-3 py-1.5 rounded-md bg-purple-600 text-white font-medium transition cursor-pointer";
+                feedBtn.className = "px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition cursor-pointer";
+            }
+            applyViewMode();
+        }
+
+        function applyViewMode() {
+            const feedMedia = document.getElementById('feedGridMedia');
+            const galleryMedia = document.getElementById('galleryGridMedia');
+            const feedAudio = document.getElementById('feedGridAudio');
+            const galleryAudio = document.getElementById('galleryGridAudio');
+
+            if (currentTab === 'media') {
+                if (currentView === 'feed') {
+                    feedMedia.classList.remove('hidden');
+                    galleryMedia.classList.add('hidden');
+                } else {
+                    feedMedia.classList.add('hidden');
+                    galleryMedia.classList.remove('hidden');
+                }
+            } else {
+                if (currentView === 'feed') {
+                    feedAudio.classList.remove('hidden');
+                    galleryAudio.classList.add('hidden');
+                } else {
+                    feedAudio.classList.add('hidden');
+                    galleryAudio.classList.remove('hidden');
+                }
+            }
+        }
+
+        window.searchProfile = function() {
+            const inputVal = document.getElementById('npubInput').value.trim();
+            if (!inputVal) return;
+            try {
+                let pubkeyToSearch = inputVal;
+                if (inputVal.startsWith('npub')) {
+                    const decoded = nip19.decode(inputVal);
+                    if (decoded.type === 'npub') pubkeyToSearch = decoded.data;
+                }
+                window.location.search = `?npub=${nip19.npubEncode(pubkeyToSearch)}`;
+            } catch(e) {
+                alert("Npub non valido!");
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const npubParam = urlParams.get('npub');
+
+            if (!npubParam) {
+                document.getElementById('loading').innerHTML = `<p class="text-zinc-400 text-sm font-mono">Insert an npub into the search bar above or pass?npub=npub1... in the URL.</p>`;
+                document.getElementById('statusText').innerText = "Waiting for input.";
+                return;
+            }
+
+            document.getElementById('npubInput').value = npubParam;
+
+            try {
+                let targetPubkey = '';
+                if (npubParam.startsWith('npub')) {
+                    const decoded = nip19.decode(npubParam);
+                    if (decoded.type === 'npub') targetPubkey = decoded.data;
+                } else {
+                    targetPubkey = npubParam;
+                }
+
+                if (!targetPubkey) {
+                    document.getElementById('loading').innerText = "npub non valido.";
+                    return;
+                }
+
+                document.getElementById('statusText').innerText = "Loading profile and relay list (kind 10002)...";
+
+                const relayListEvents = await pool.querySync(INITIAL_RELAYS, {
+                    authors: [targetPubkey],
+                    kinds: [10002]
+                });
+
+                const userRelays = new Set(INITIAL_RELAYS);
+                relayListEvents.forEach(ev => {
+                    ev.tags.forEach(t => {
+                        if (t[0] === 'r' && (!t[2] || t[2] === 'write' || t[2] === '')) {
+                            let url = t[1].trim().toLowerCase();
+                            if (url.endsWith('/')) url = url.slice(0, -1);
+                            if (url.startsWith('wss://')) userRelays.add(url);
+                        }
+                    });
+                });
+
+                globalSelectedRelays = Array.from(userRelays);
+                document.getElementById('relayStats').innerText = `${globalSelectedRelays.length} relays`;
+
+                
+const metadataEvents = await pool.querySync(globalSelectedRelays, {
+    authors: [targetPubkey],
+    kinds: [0],
+    limit: 1
+});
+
+if (metadataEvents.length > 0) {
+    try {
+        const profileData = JSON.parse(metadataEvents[0].content);
+        const npub = nip19.npubEncode(targetPubkey);
+
+        const nameEl = document.getElementById('profileName');
+        const displayNameEl = document.getElementById('profileDisplayName');
+        const aboutEl = document.getElementById('profileAbout');
+        const avatarEl = document.getElementById('profilePicture');
+        const bannerEl = document.getElementById('profileBanner');
+        const npubEl = document.getElementById('profileNpub');
+        const sectionEl = document.getElementById('profileInfoSection');
+
+        if (nameEl) nameEl.innerText = profileData.name || profileData.username || 'Unknown user';
+        if (displayNameEl) displayNameEl.innerText = profileData.display_name ? `@${profileData.display_name}` : `@${npub.substring(0, 10)}...`;
+        
+        if (aboutEl) {
+            const bioText = profileData.about || 'No bio available.';
+            aboutEl.innerHTML = typeof parseContent === 'function' ? parseContent(bioText) : bioText;
+        }
+
+        if (avatarEl) {
+            avatarEl.src = profileData.picture || `https://api.dicebear.com/7.x/identicon/svg?seed=${targetPubkey}`;
+        }
+
+        if (bannerEl && profileData.banner) {
+            bannerEl.style.backgroundImage = `url('${profileData.banner}')`;
+        }
+
+        if (npubEl) {
+            npubEl.innerText = npub;
+            npubEl.onclick = () => {
+                navigator.clipboard.writeText(npub);
+                alert("Npub copiato negli appunti!");
+            };
+        }
+
+        if (profileData.website) {
+            const webContainer = document.getElementById('profileWebsiteContainer');
+            const webLink = document.getElementById('profileWebsite');
+            if (webLink && webContainer) {
+                webLink.href = profileData.website;
+                webLink.innerText = profileData.website;
+                webContainer.classList.remove('hidden');
+            }
+        }
+
+        if (sectionEl) sectionEl.classList.remove('hidden');
+
+    } catch(e) {
+        console.warn("Error parsing Kind 0 profile", e);
+    }
+}
+                
+                document.getElementById('statusText').innerText = "Downloading multimedia posts (Kind 20, 22, 34236)...";
+
+                let feedEvents = await pool.querySync(globalSelectedRelays, {
+                    authors: [targetPubkey],
+                    kinds: [20, 22, 34236, 1244, 54],
+                    limit: 50
+                });
+
+                if (feedEvents.length === 0) {
+                    const kind1Events = await pool.querySync(globalSelectedRelays, {
+                        authors: [targetPubkey],
+                        kinds: [1],
+                        limit: 50
+                    });
+                    feedEvents = kind1Events.filter(ev => hasMediaOrAudioInContent(ev.content));
+                }
+
+                const sortedFeed = feedEvents.sort((a, b) => b.created_at - a.created_at);
+                globalMediaEvents = [];
+                globalAudioEvents = [];
+
+                sortedFeed.forEach(event => {
+                    if (event.kind === 1244 || event.kind === 54 || hasAudioContent(event)) {
+                        globalAudioEvents.push(event);
+                    } else {
+                        globalMediaEvents.push(event);
+                    }
+                });
+
+                document.getElementById('mediaCount').innerText = globalMediaEvents.length;
+                document.getElementById('audioCount').innerText = globalAudioEvents.length;
+
+                renderFeedSection('feedGridMedia', 'galleryGridMedia', globalMediaEvents, 'No media posts or Kind 20 found for this user.');
+                renderFeedSection('feedGridAudio', 'galleryGridAudio', globalAudioEvents, 'No audio content found.');
+
+                document.getElementById('statusText').innerText = `Ready (${sortedFeed.length} post).`;
+                document.getElementById('loading').classList.add('hidden');
+
+            } catch (err) {
+                console.warn(err);
+                document.getElementById('loading').innerText = "Error loading data.";
+            }
+        });
+
+        function hasMediaOrAudioInContent(content) {
+            if (!content) return false;
+            const lower = content.toLowerCase();
+            return lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$/i) !== null ||
+                   lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('imgur');
+        }
+
+        function hasAudioContent(event) {
+            if (event.kind === 1244 || event.kind === 54) return true;
+            const lower = event.content.toLowerCase();
+            return lower.includes('.mp3') || lower.includes('.wav') || lower.includes('.m4a') || lower.includes('audio');
+        }
+
+        window.openReplyPage = function(targetId, rootId, authorPubkey) {
+            let nevent = '';
+            try {
+                nevent = nip19.neventEncode({ id: targetId });
+            } catch(e) {}
+            window.location.href = `comment.html?nevent=${nevent}`;
+        }
+
+        function renderFeedSection(feedContainerId, galleryContainerId, events, emptyMessage) {
+            const feedGrid = document.getElementById(feedContainerId);
+            const galleryGrid = document.getElementById(galleryContainerId);
+            
+            feedGrid.innerHTML = '';
+            galleryGrid.innerHTML = '';
+
+            if (events.length === 0) {
+                feedGrid.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm">${emptyMessage}</p>`;
+                galleryGrid.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm">${emptyMessage}</p>`;
+                return;
+            }
+            
+            const feedFragment = document.createDocumentFragment();
+            const galleryFragment = document.createDocumentFragment();
+
+            events.forEach(event => {
+                let npub = '';
+                try { npub = nip19.npubEncode(event.pubkey); } catch(e) {}
+
+                let nevent = '';
+                let noteLink = '#';
+                try {
+                    nevent = nip19.neventEncode({ id: event.id });
+                    noteLink = `note.html?nevent=${nevent}`;
+                } catch(e) {}
+
+                const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(event.pubkey) : null;
+                const nickname = profile ? (profile.name || profile.display_name || npub.substring(0, 8)) : npub.substring(0, 8);
+                const avatar = profile && profile.picture ? profile.picture : `https://api.dicebear.com/7.x/identicon/svg?seed=${event.pubkey}`;
+                const dateStr = new Date(event.created_at * 1000).toLocaleDateString();
+
+                let kindBadge = `Kind ${event.kind}`;
+                if (event.kind === 20) kindBadge = "🖼️ Kind 20 (Photo)";
+                else if (event.kind === 22) kindBadge = "📹 Short Video";
+                else if (event.kind === 34236) kindBadge = "🎬 Video";
+                else if (event.kind === 54) kindBadge = "🎙️ Podcast";
+                else if (event.kind === 1244) kindBadge = "🎵 Audio";
+
+                let rootId = event.id;
+                if (event.tags) {
+                    const existingRootTag = event.tags.find(t => (t[0] === 'E' || t[0] === 'e') && t[3] === 'root');
+                    if (existingRootTag) rootId = existingRootTag[1];
+                }
+
+                const { mediaItems, mediaHtml, cleanContent } = parseMultiMediaAndContent(event);
+
+                const cardArticle = document.createElement('article');
+                cardArticle.className = "bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden";
+                cardArticle.innerHTML = `
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <div class="flex items-center gap-3">
+                            <img src="${avatar}" class="w-9 h-9 rounded-full object-cover border border-gray-700" loading="lazy">
+                            <div>
+                                <span class="text-xs font-semibold text-gray-200">${nickname}</span>
+                                <span class="block text-[10px] text-purple-400 font-mono">${kindBadge} • ${dateStr}</span>
+                            </div>
+                        </div>
+                        <a href="${noteLink}" target="_blank" class="text-gray-400 hover:text-pink-400 text-xs px-2 py-1 bg-gray-800/60 rounded-lg">Open ↗</a>
+                    </div>
+
+                    ${mediaHtml}
+
+                    <div class="px-4 py-3 flex items-center gap-2 border-t border-gray-800/60">
+                        <button onclick="openReplyPage('${event.id}', '${rootId}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">💬 Rispondi</button>
+                        <button onclick="openZapModal('${event.pubkey}', '${event.id}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">⚡ Pay</button>
+                        <button onclick="sendLike('${event.id}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
+                    </div>
+
+                    ${cleanContent ? `<div class="px-4 pb-4 text-sm text-gray-200 leading-snug whitespace-pre-wrap"><span class="font-semibold mr-1">${nickname}</span>${cleanContent}</div>` : ''}
+                `;
+                feedFragment.appendChild(cardArticle);
+                
+                if (mediaItems && mediaItems.length > 0) {
+                    mediaItems.forEach(m => {
+                        let galleryThumb = '';
+                        const isImage = m.url.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || m.url.includes('imgur') || m.url.includes('primal.net/media');
+                        
+                        if (isImage) {
+                            galleryThumb = `<img src="${m.url}" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition duration-200" loading="lazy">`;
+                        } else if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$|youtube\.com|youtu\.be/i)) {
+                            galleryThumb = `<div class="w-full h-full bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center text-zinc-400"><span class="text-2xl">📹</span><span class="text-[9px] font-mono mt-1 text-zinc-500 uppercase tracking-wider">Video</span></div>`;
+                        } else {
+                            galleryThumb = `<div class="w-full h-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-xs p-2 text-center text-zinc-500">${kindBadge}</div>`;
+                        }
+
+                        const galleryItem = document.createElement('a');
+                        galleryItem.href = noteLink;
+                        galleryItem.target = "_blank";
+                        galleryItem.className = "relative group aspect-square rounded-lg overflow-hidden bg-zinc-950 border border-zinc-800/80 block shadow-sm hover:border-zinc-700 transition";
+                        galleryItem.innerHTML = galleryThumb;
+                        galleryFragment.appendChild(galleryItem);
+                    });
+                }
+            });
+
+            feedGrid.appendChild(feedFragment);
+            galleryGrid.appendChild(galleryFragment);
+        }
+
+        function parseMultiMediaAndContent(event) {
+            let content = event.content || '';
+            let mediaItems = [];
+            let cleanContent = content;
+
+            if (event.tags) {
+                event.tags.forEach(t => {
+                    if (t[0] === 'imeta') {
+                        let url = '';
+                        let mime = '';
+                        t.forEach(part => {
+                            if (part.startsWith('url ')) url = part.replace('url ', '').trim();
+                            if (part.startsWith('m ')) mime = part.replace('m ', '').trim().toLowerCase();
+                        });
+                        if (url) mediaItems.push({ url, mime });
+                    } else if (['url', 'imurl', 'image', 'video', 'audio'].includes(t[0])) {
+                        if (t[1]) mediaItems.push({ url: t[1], mime: t[0] });
+                    }
+                });
+            }
+
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            let matches = [...content.matchAll(urlRegex)];
+            matches.forEach(match => {
+                let url = match[0].replace(/[.,!?)]$/, '');
+                let lower = url.toLowerCase();
+                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$/i) || lower.includes('imgur') || lower.includes('primal.net/media') || lower.includes('youtube.com') || lower.includes('youtu.be')) {
+                    if (!mediaItems.some(m => m.url === url)) {
+                        mediaItems.push({ url, mime: '' });
+                        cleanContent = cleanContent.replace(url, '');
+                    }
+                }
+            });
+
+            let mediaHtml = '';
+            if (mediaItems.length === 1) {
+                let m = mediaItems[0];
+                if (m.mime.includes('video') || m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+                    mediaHtml = `<div class="w-full bg-black"><video src="${m.url}" controls class="w-full max-h-[450px] mx-auto" preload="metadata"></video></div>`;
+                } else if (m.mime.includes('audio') || m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
+                    mediaHtml = `<div class="p-4 bg-gray-800/80 border-y border-gray-800 flex items-center gap-3"><span class="text-2xl">🎵</span><audio src="${m.url}" controls class="w-full h-10"></audio></div>`;
+                } else if (m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
+                    let videoId = m.url.includes('youtu.be/') ? m.url.split('youtu.be/')[1]?.split('?')[0] : m.url.split('watch?v=')[1]?.split('&')[0];
+                    mediaHtml = `<div class="w-full aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe></div>`;
+                } else {
+                    mediaHtml = `<div class="w-full bg-black flex justify-center"><img src="${m.url}" class="max-h-[500px] w-full object-contain" loading="lazy"></div>`;
+                }
+            } else if (mediaItems.length > 1) {
+                let m = mediaItems[0];
+                mediaHtml = `<div class="w-full bg-black flex justify-center"><img src="${m.url}" class="max-h-[500px] w-full object-contain" loading="lazy"></div>`;
+            }
+
+            return { mediaItems, mediaHtml, cleanContent: cleanContent.trim() };
+        }
+    </script>
+</body>
+</html>

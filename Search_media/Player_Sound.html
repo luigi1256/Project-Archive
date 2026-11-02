@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Podzone - Minimal Retro VLC</title>
+<link rel="stylesheet" href="theme_baita.css">      
+<link rel="stylesheet" href="theme_baita_sound.css">
+<style>
+  .podzone-header {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 0 4px;
+    font-family: monospace;
+  }
+  .podzone-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--baita-heading, #34d399);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .podzone-subtitle-badge {
+    font-size: 9px;
+    background: #0d1712;
+    color: var(--baita-text-muted, #94a3b8);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--baita-card-border, #1f3829);
+  }
+
+  .podzone-footer {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding: 0 6px;
+    font-family: monospace;
+    font-size: 10px;
+  }
+  .podzone-footer a {
+    color: var(--baita-accent-green, #10b981);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .podzone-footer a:hover {
+    text-decoration: underline;
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+
+  <div class="baita-main-layout">
+  <div class="player-column">
+      <header class="podzone-header">
+        <div class="podzone-title">🎧 PodZone &bull; Audio & Media Hub</div>
+        <div class="podzone-subtitle-badge">V.2.0 Retro</div>
+      </header>
+
+      <div class="ipod-container">
+        <div class="ipod-header">
+          <span class="ipod-brand">🎛️ BAITA VLC POD</span>
+          <span id="ipodStatus" class="ipod-status">STANDBY</span>
+        </div>
+          
+        <div class="ipod-screen">
+          <div class="ipod-scanlines"></div>
+          
+          <div class="ipod-info">
+            <div id="ipodTitle" class="ipod-title">No files selected</div>
+            <div id="ipodSubtitle" class="ipod-subtitle">Use commands or open the queue</div>
+          </div>
+
+          <div id="ipodScreenContent" class="ipod-screen-content">
+            <div class="ipod-ready-text"> ▶ VLC READY</div>
+          </div>
+
+          <div class="ipod-progress-area">
+            <div class="ipod-progress-track" id="ipodProgressTrack">
+              <div id="ipodProgressBar" class="ipod-progress-bar"></div>
+            </div>
+            <div class="ipod-time-row">
+              <span id="ipodCurrentTime">00:00</span>
+              <span id="ipodDuration">00:00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ipod-wheel">         
+          <button onclick="ipodPrevMedia()" class="ipod-btn-prev">⏮</button>                             
+          <button onclick="ipodToggleShuffle()" class="ipod-btn-shuffle">🔀</button>
+          <button onclick="ipodNextMedia()" class="ipod-btn-next">⏭</button>
+          <button onclick="ipodMenuAction()" class="ipod-btn-menu">MENU</button>
+          <button id="ipodCenterBtn" onclick="ipodTogglePlay()" class="ipod-center-btn">PLAY</button>
+        </div>
+
+        <audio id="ipodAudioPlayer" style="display:none;"></audio>
+      </div>
+
+      <aside id="shelf">
+        <div class="shelf-top-bar">
+          <a href="Search_media.html" class="shelf-link-search">🌿 Search media</a>
+          <span class="shelf-title">🎛️ Baita VLC</span>
+          <button onclick="toggleIpodShelf()" class="shelf-close-btn">✕</button>
+        </div>
+        <div id="library" style="display:none;"></div>
+        <div id="books"></div>
+      </aside>
+
+      <footer class="podzone-footer">
+        <div>&copy; 2026 Baita Project</div>
+        <div style="display: flex; gap: 15px;">
+          <a href="Search_media.html">Media</a>
+          <a href="#" onclick="ipodMenuAction(); return false;">Coda VLC</a>
+          <a href="../Search.html">Search</a>
+        </div>
+      </footer>
+
+    </div>
+
+    <aside class="nostr-column">
+      <div class="nostr-header">
+        <span>🟣 Music Tracks (36787)</span>
+        <button onclick="fetchNostrTracks()" class="nostr-refresh-btn">🔄</button>
+      </div>
+      
+      <div id="nostrStatus" class="nostr-status">Connecting to Relays...</div>
+      
+      <div id="nostrTrackList" class="nostr-track-list"></div>
+    </aside>
+
+    <div class="nostr-tag-column">
+  <div class="nostr-header">
+    <span>🏷️ Filter Music</span>
+  </div>
+  <div class="nostr-status" id="nostrTagStatus">From the last 20 tracks</div>
+  
+  <button data-genre="all" class="genre-filter-btn active-genre" onclick="toggleGenreFilter(null)">
+    <span>🌐 All Tags</span>
+    <span id="nostrTotalCount" class="tag-count">(0)</span>
+  </button>
+  
+  <div id="dynamicTagList" class="dynamic-tag-list">
+    <div class="tag-waiting">Waiting for tracks...</div>
+  </div>
+</div>   
+                                           
+  </div>
+
+  <script src="baita_core_media.js"></script>
+  <script src="baita_media.js"></script>        
+  <script src="baita_pod_menu.js"></script>  
+  <script src="baita_pod_sound.js"></script>   
+
+  <script>
+    let isPlaying = false;
+    let currentTrackIndex = 0;
+    let isShuffle = false;
+  </script>
+</body>
+</html>
