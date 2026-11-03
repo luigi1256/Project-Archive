@@ -92,7 +92,7 @@
     <script src="cache.js"></script>
     <script type="module">
         import { openZapModal } from './ZapPrepar.js';
-        import { sendLike } from './likes_zap.js';
+        import { sendLike } from './likes_zap.js';    
         import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm';
 
         const INITIAL_RELAYS = [
@@ -512,6 +512,12 @@ if (metadataEvents.length > 0) {
 
             return { mediaItems, mediaHtml, cleanContent: cleanContent.trim() };
         }
+        window.openZapModal = openZapModal;                         
+        window.sendLike = async (targetId, targetAuthorPubkey) => { 
+        await sendLike(globalSelectedRelays, targetId, targetAuthorPubkey);
+        }
+
+
     </script>
 </body>
 </html>
