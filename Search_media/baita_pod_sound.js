@@ -132,7 +132,7 @@ function loadIntoIpod(url, type, label = '', artist = '', cover = '', fallbacks 
         </div>
       `;
     } else {
-      screenContent.innerHTML = `<div style="color: var(--baita-accent-green); font-size: 11px;">🎵 Audio in riproduzione</div>`;
+      screenContent.innerHTML = `<div style="color: var(--baita-accent-green); font-size: 11px;">🎵 Audio playing</div>`;
     }
   
   } else if (type === 'video') {
@@ -269,8 +269,8 @@ function ipodAdjustVolume(delta) {
   let newVolume = activePlayer.volume + delta;
   activePlayer.volume = Math.min(1, Math.max(0, newVolume));
   window.ipodCurrentVolume = activePlayer.volume; 
-
   const statusEl = document.getElementById('ipodStatus');
+
   if (statusEl) {
     const volPercent = Math.round(activePlayer.volume * 100);
     statusEl.innerText = `VOL: ${volPercent}%`;
@@ -288,15 +288,15 @@ function ipodAdjustVolume(delta) {
 
 function renderIpodPlaylist(filterType = null) {
   const playlistDiv = document.getElementById("books"); 
+ 
   if (!playlistDiv) return;
-  
-  playlistDiv.innerHTML = "";
-  
-  let queueToDisplay = ipodPlaylistQueue;
+    playlistDiv.innerHTML = "";
+    let queueToDisplay = ipodPlaylistQueue;
 
   if (filterType) {
     queueToDisplay = queueToDisplay.filter(item => item.type === filterType);
   }
+ 
   if (selectedGenres.length > 0) {
     queueToDisplay = queueToDisplay.filter(item => {
       if (!item.genres && !item.tags) return false;
@@ -306,7 +306,7 @@ function renderIpodPlaylist(filterType = null) {
   }
 
   if (queueToDisplay.length === 0) {
-    playlistDiv.innerHTML = `<div class="text-xs text-emerald-400/50 italic p-2">Nessuna traccia trovata con i filtri selezionati.</div>`;
+    playlistDiv.innerHTML = `<div class="text-xs text-emerald-400/50 italic p-2">No trace found with the selected filters.</div>`;
     return;
   }
 
@@ -338,7 +338,7 @@ function renderIpodPlaylist(filterType = null) {
     const btnRemove = document.createElement("button");
     btnRemove.className = "text-emerald-500/60 hover:text-red-400 font-mono text-xs px-1.5 py-0.5 rounded transition-colors cursor-pointer";
     btnRemove.textContent = "✕";
-    btnRemove.title = "Rimuovi dalla coda";
+    btnRemove.title = "Remove from queue";
     btnRemove.onclick = (e) => {
       e.stopPropagation(); 
       ipodPlaylistQueue.splice(index, 1);
@@ -360,14 +360,14 @@ function renderIpodPlaylist(filterType = null) {
 async function fetchNostrTracks() {
   const statusEl = document.getElementById('nostrStatus');
   const trackListEl = document.getElementById('nostrTrackList');
-  if (statusEl) statusEl.innerText = "Connessione ai Relay in corso...";
+  if (statusEl) statusEl.innerText = "Connection to Relays in progress...";
   if (trackListEl) trackListEl.innerHTML = "";
   nostrTracks = [];
 
   const socket = new WebSocket(NOSTR_RELAYS[1]);
 
   socket.onopen = () => {
-    if (statusEl) statusEl.innerText = "Ricerca tracce Kind 36787...";
+    if (statusEl) statusEl.innerText = "Track Search Event 36787...";
     const req = JSON.stringify([
       "REQ", 
       "baita_music_sub", 
