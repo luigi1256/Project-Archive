@@ -99,7 +99,8 @@
                     label = '📚 ' + label;
                     url = `modfile.html?naddr=${entity}`;
                 }
-                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
+                let safeUrl = sanitizeUrl(url);
+                return `<a href="${safeUrl}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
             });
 
             parsed = parsed.replace(/https?:\/\/[^\s<]+/g, (url) => {
@@ -107,20 +108,22 @@
                 let punct = matchPunct ? matchPunct[0] : '';
                 let clean = url.substring(0, url.length - punct.length);
                 
+                let safeUrl = sanitizeUrl(clean);
                 if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
-                    return `<br><img src="${clean}" class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg object-cover border border-gray-700" loading="lazy"><br>${punct}`;
+                    if (/\.svg(\?.*)?$/i.test(clean)) {
+                        return `<a href="${safeUrl}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;
+                    }
+                    return `<br><img src="${safeUrl}" class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg object-cover border border-gray-750" loading="lazy"><br>${punct}`;
                 }
                 if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
-                    return `<br><video controls class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg"><source src="${clean}"></video><br>${punct}`;
+                    return `<br><video controls class="mt-2 max-h-60 sm:max-h-80 w-full rounded-lg"><source src="${safeUrl}"></video><br>${punct}`;
                 }
                 if (/\.(mp3|ogg|wav)(\?.*)?$/i.test(clean)) {
-                    return `<br><audio controls class="mt-2 w-full"><source src="${clean}"></audio><br>${punct}`;
+                    return `<br><audio controls class="mt-2 w-full"><source src="${safeUrl}"></audio><br>${punct}`;
                 }
-                return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;
-            });
-
-            return parsed;
-        }
+                return `<a href="${safeUrl}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;                                                                                                          
+              });
+            }
 
         async function initProfile() {
             try {
@@ -189,16 +192,17 @@
                     const banner = document.getElementById('profileBanner');
                     banner.style.backgroundImage = `url('${profileData.banner}')`;
                 }
+
                 if (profileData.website) {
                     const webContainer = document.getElementById('profileWebsiteContainer');
                     const webLink = document.getElementById('profileWebsite');
-                    webLink.href = profileData.website;
-                    webLink.innerText = profileData.website;
+                    const safeWebUrl = sanitizeUrl(profileData.website);
+                    webLink.href = safeWebUrl;
+                    webLink.innerText = profileData.website; 
                     webContainer.classList.remove('hidden');
                 }
 
                 document.getElementById('externalProfile').href = `profile-social.html?npub=${npub}`;
-
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('profileContainer').classList.remove('hidden');
 
@@ -207,6 +211,17 @@
                 document.getElementById('loading').innerText = "Error while loading the profile.";
             }
         }
+
+        // -1 
+        function sanitizeUrl(url) {
+            if (!url) return '#';
+            const trimmed = url.trim();
+            if (/^https?:\/\//i.test(trimmed)) {
+                return trimmed;
+            }
+            return '#'; 
+        }
+
 
         initProfile();
     </script>

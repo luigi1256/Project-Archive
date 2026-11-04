@@ -146,11 +146,11 @@
         function renderProfileHeader(profile, npub) {
             const name = profile.display_name || profile.name || npub.substring(0, 12) + '...';
             const about = profile.about ? parseContent(profile.about) : 'No bio available.';
-            const picture = profile.picture || 'https://www.gravatar.com/avatar/?d=mp';
-            const banner = profile.banner ? `style="background-image: url('${profile.banner}')"` : '';
+            const picture = escapeHtml(sanitizeUrl(profile.picture)) || 'https://www.gravatar.com/avatar/?d=mp';
+            const banner = profile.banner ? `style="background-image: url('${escapeHtml(sanitizeUrl(profile.banner))}')"` : '';
 
             document.getElementById('profile-container').innerHTML = `
-                ${profile.banner ? `<div class="h-32 bg-cover bg-center mb-4 -mt-6 -mx-6 border-b border-zinc-800" ${banner}></div>` : ''}
+                ${escapeHtml(profile.banner) ? `<div class="h-32 bg-cover bg-center mb-4 -mt-6 -mx-6 border-b border-zinc-800" ${banner}></div>` : ''}
                 <div class="flex items-start gap-4">
                     <img src="${picture}" alt="Avatar" class="w-16 h-16 object-cover border border-zinc-700 bg-zinc-800">
                     <div class="flex-1 min-w-0">
@@ -159,7 +159,7 @@
                             <p class="text-xs font-mono text-zinc-500 truncate">npub: ${npub}</p>
                             <button onclick="copyNpub()" class="text-[10px] font-mono bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 px-2 py-0.5 transition-colors cursor-pointer" id="copy-btn">Copy</button>
                         </div>
-                        <div class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words min-w-0">${about}</div>
+                        <div class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words min-w-0">${sanitizeUrl(about)}</div>
                     </div>
                 </div>
             `;
@@ -343,7 +343,7 @@
                 } catch(e) {}
                 
                 const name_user = profileuserdata.display_name || profileuserdata.name || "User" + '...';    
-                const authorPic = profileuserdata.picture || 'https://www.gravatar.com/avatar/?d=mp';            
+                const authorPic = escapeHtml(sanitizeUrl(profileuserdata.picture)) || 'https://www.gravatar.com/avatar/?d=mp';            
             
                 return `
                     <div class="bg-zinc-900 border border-zinc-800 p-4 mb-4 flex gap-4 hover:border-zinc-700 transition-colors">
@@ -613,7 +613,15 @@
         await sendLike(defaultRelays, targetId, targetAuthorPubkey);
     };
 
-    </script>
+    function sanitizeUrl(url) {             
+        if (!url) return '#';               
+        const trimmed = url.trim();         
+        if (/^https?:\/\//i.test(trimmed)) {
+            return trimmed;                 
+        }                                   
+        return '#';                         
+    }                                       
     
+</script>    
 </body>
 </html>
