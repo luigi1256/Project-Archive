@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Profile Media Feed (Kind 20)</title>
+    <title>Profile Media Feed (Kind 20)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
 </head>
@@ -24,39 +24,35 @@
         </div>
     </header>
 
-    
-<section class="max-w-4xl mx-auto px-4 mb-6 hidden" id="profileInfoSection">
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
-        <div id="profileBanner" class="h-32 sm:h-44 bg-gray-800 bg-cover bg-center"></div>
-        
-        <div class="px-5 sm:px-8 pb-6 relative">
+    <section class="max-w-4xl mx-auto px-4 mb-6 hidden" id="profileInfoSection">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
+            <div id="profileBanner" class="h-32 sm:h-44 bg-gray-800 bg-cover bg-center"></div>
             
-            <div class="flex justify-between items-end -mt-12 sm:-mt-16 mb-4">
-                <img id="profilePicture" src="" alt="Avatar" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-gray-900 bg-gray-950 object-cover shadow-xl">
-                
-                <div class="flex items-center gap-2">
-                    <button onclick="document.getElementById('npubInput').focus()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold rounded-lg transition border border-gray-700 cursor-pointer">🔍 Top -></button>
+            <div class="px-5 sm:px-8 pb-6 relative">
+                <div class="flex justify-between items-end -mt-12 sm:-mt-16 mb-4">
+                    <img id="profilePicture" src="" alt="Avatar" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-gray-900 bg-gray-950 object-cover shadow-xl">
+                    <div class="flex items-center gap-2">
+                        <button onclick="document.getElementById('npubInput').focus()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold rounded-lg transition border border-gray-700 cursor-pointer">🔍 Top -></button>
+                    </div>
                 </div>
-            </div>
 
-            <h2 id="profileName" class="text-2xl font-extrabold text-white">--</h2>
-            <p id="profileDisplayName" class="text-purple-400 text-xs font-mono mb-3">@--</p>
+                <h2 id="profileName" class="text-2xl font-extrabold text-white">--</h2>
+                <p id="profileDisplayName" class="text-purple-400 text-xs font-mono mb-3">@--</p>
+                <p id="profileAbout" class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words mb-4">--</p>
 
-            <p id="profileAbout" class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words mb-4">--</p>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono bg-gray-950/80 p-4 rounded-xl border border-gray-800/80">
-                <div>
-                    <span class="text-gray-500 block mb-0.5">NPUB:</span>
-                    <span id="profileNpub" class="text-purple-300 break-all select-all cursor-pointer hover:underline" title="Clicca per copiare">npub1...</span>
-                </div>
-                <div id="profileWebsiteContainer" class="hidden">
-                    <span class="text-gray-500 block mb-0.5">Website:</span>
-                    <a id="profileWebsite" href="#" target="_blank" class="text-blue-400 hover:underline break-all">...</a>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono bg-gray-950/80 p-4 rounded-xl border border-gray-800/80">
+                    <div>
+                        <span class="text-gray-500 block mb-0.5">NPUB:</span>
+                        <span id="profileNpub" class="text-purple-300 break-all select-all cursor-pointer hover:underline" title="Clicca per copiare">npub1...</span>
+                    </div>
+                    <div id="profileWebsiteContainer" class="hidden">
+                        <span class="text-gray-500 block mb-0.5">Website:</span>
+                        <a id="profileWebsite" href="#" target="_blank" class="text-blue-400 hover:underline break-all">...</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <section class="max-w-4xl mx-auto px-4 mb-4" id="tabsSection">
         <div class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-800 pb-3 gap-3">
@@ -70,7 +66,7 @@
             </div>
             <div class="flex items-center bg-gray-900 border border-gray-800 rounded-lg p-1 text-xs">
                 <button onclick="switchView('feed')" id="viewFeedBtn" class="px-3 py-1.5 rounded-md bg-purple-600 text-white font-medium transition cursor-pointer">📱 Feed</button>
-                <button onclick="switchView('grid')" id="viewGridBtn" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition cursor-pointer">🖼️ Grill (4x)</button>
+                <button onclick="switchView('grid')" id="viewGridBtn" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition cursor-pointer">🖼️ Grid (4x)</button>
             </div>
         </div>
     </section>
@@ -108,6 +104,20 @@
         let globalSelectedRelays = INITIAL_RELAYS;
         let currentTab = 'media';
         let currentView = 'feed';
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function sanitizeUrl(url) {
+            if (!url) return '#';
+            const trimmed = url.trim();
+            if (/^https?:\/\//i.test(trimmed)) {
+                return trimmed;
+            }
+            return '#';
+        }
 
         window.switchTab = function(tabName) {
             currentTab = tabName;
@@ -190,7 +200,7 @@
             const npubParam = urlParams.get('npub');
 
             if (!npubParam) {
-                document.getElementById('loading').innerHTML = `<p class="text-zinc-400 text-sm font-mono">Insert an npub into the search bar above or pass?npub=npub1... in the URL.</p>`;
+                document.getElementById('loading').innerHTML = `<p class="text-zinc-400 text-sm font-mono">Insert an npub into the search bar above or pass ?npub=npub1... in the URL.</p>`;
                 document.getElementById('statusText').innerText = "Waiting for input.";
                 return;
             }
@@ -232,66 +242,65 @@
                 globalSelectedRelays = Array.from(userRelays);
                 document.getElementById('relayStats').innerText = `${globalSelectedRelays.length} relays`;
 
-                
-const metadataEvents = await pool.querySync(globalSelectedRelays, {
-    authors: [targetPubkey],
-    kinds: [0],
-    limit: 1
-});
+                const metadataEvents = await pool.querySync(globalSelectedRelays, {
+                    authors: [targetPubkey],
+                    kinds: [0],
+                    limit: 1
+                });
 
-if (metadataEvents.length > 0) {
-    try {
-        const profileData = JSON.parse(metadataEvents[0].content);
-        const npub = nip19.npubEncode(targetPubkey);
+                if (metadataEvents.length > 0) {
+                    try {
+                        const profileData = JSON.parse(metadataEvents[0].content);
+                        const npub = nip19.npubEncode(targetPubkey);
 
-        const nameEl = document.getElementById('profileName');
-        const displayNameEl = document.getElementById('profileDisplayName');
-        const aboutEl = document.getElementById('profileAbout');
-        const avatarEl = document.getElementById('profilePicture');
-        const bannerEl = document.getElementById('profileBanner');
-        const npubEl = document.getElementById('profileNpub');
-        const sectionEl = document.getElementById('profileInfoSection');
+                        const nameEl = document.getElementById('profileName');
+                        const displayNameEl = document.getElementById('profileDisplayName');
+                        const aboutEl = document.getElementById('profileAbout');
+                        const avatarEl = document.getElementById('profilePicture');
+                        const bannerEl = document.getElementById('profileBanner');
+                        const npubEl = document.getElementById('profileNpub');
+                        const sectionEl = document.getElementById('profileInfoSection');
 
-        if (nameEl) nameEl.innerText = profileData.name || profileData.username || 'Unknown user';
-        if (displayNameEl) displayNameEl.innerText = profileData.display_name ? `@${profileData.display_name}` : `@${npub.substring(0, 10)}...`;
-        
-        if (aboutEl) {
-            const bioText = profileData.about || 'No bio available.';
-            aboutEl.innerHTML = typeof parseContent === 'function' ? parseContent(bioText) : bioText;
-        }
+                        if (nameEl) nameEl.innerText = profileData.name || profileData.username || 'Unknown user';
+                        if (displayNameEl) displayNameEl.innerText = profileData.display_name ? `@${profileData.display_name}` : `@${npub.substring(0, 10)}...`;
+                        
+                        if (aboutEl) {
+                            const bioText = profileData.about || 'No bio available.';
+                            aboutEl.innerText = bioText;
+                        }
 
-        if (avatarEl) {
-            avatarEl.src = profileData.picture || `https://api.dicebear.com/7.x/identicon/svg?seed=${targetPubkey}`;
-        }
+                        if (avatarEl) {
+                            avatarEl.src = sanitizeUrl(profileData.picture) || `https://api.dicebear.com/7.x/identicon/svg?seed=${targetPubkey}`;
+                        }
 
-        if (bannerEl && profileData.banner) {
-            bannerEl.style.backgroundImage = `url('${profileData.banner}')`;
-        }
+                        if (bannerEl && profileData.banner) {
+                            bannerEl.style.backgroundImage = `url('${sanitizeUrl(profileData.banner)}')`;
+                        }
 
-        if (npubEl) {
-            npubEl.innerText = npub;
-            npubEl.onclick = () => {
-                navigator.clipboard.writeText(npub);
-                alert("Npub copiato negli appunti!");
-            };
-        }
+                        if (npubEl) {
+                            npubEl.innerText = npub;
+                            npubEl.onclick = () => {
+                                navigator.clipboard.writeText(npub);
+                                alert("Npub copiato negli appunti!");
+                            };
+                        }
 
-        if (profileData.website) {
-            const webContainer = document.getElementById('profileWebsiteContainer');
-            const webLink = document.getElementById('profileWebsite');
-            if (webLink && webContainer) {
-                webLink.href = profileData.website;
-                webLink.innerText = profileData.website;
-                webContainer.classList.remove('hidden');
-            }
-        }
+                        if (profileData.website) {
+                            const webContainer = document.getElementById('profileWebsiteContainer');
+                            const webLink = document.getElementById('profileWebsite');
+                            if (webLink && webContainer) {
+                                webLink.href = sanitizeUrl(profileData.website);
+                                webLink.innerText = profileData.website;
+                                webContainer.classList.remove('hidden');
+                            }
+                        }
 
-        if (sectionEl) sectionEl.classList.remove('hidden');
+                        if (sectionEl) sectionEl.classList.remove('hidden');
 
-    } catch(e) {
-        console.warn("Error parsing Kind 0 profile", e);
-    }
-}
+                    } catch(e) {
+                        console.warn("Error parsing Kind 0 profile", e);
+                    }
+                }
                 
                 document.getElementById('statusText').innerText = "Downloading multimedia posts (Kind 20, 22, 34236)...";
 
@@ -387,7 +396,7 @@ if (metadataEvents.length > 0) {
 
                 const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(event.pubkey) : null;
                 const nickname = profile ? (profile.name || profile.display_name || npub.substring(0, 8)) : npub.substring(0, 8);
-                const avatar = profile && profile.picture ? profile.picture : `https://api.dicebear.com/7.x/identicon/svg?seed=${event.pubkey}`;
+                const avatar = profile && profile.picture ? sanitizeUrl(profile.picture) : `https://api.dicebear.com/7.x/identicon/svg?seed=${event.pubkey}`;
                 const dateStr = new Date(event.created_at * 1000).toLocaleDateString();
 
                 let kindBadge = `Kind ${event.kind}`;
@@ -412,8 +421,8 @@ if (metadataEvents.length > 0) {
                         <div class="flex items-center gap-3">
                             <img src="${avatar}" class="w-9 h-9 rounded-full object-cover border border-gray-700" loading="lazy">
                             <div>
-                                <span class="text-xs font-semibold text-gray-200">${nickname}</span>
-                                <span class="block text-[10px] text-purple-400 font-mono">${kindBadge} • ${dateStr}</span>
+                                <span class="text-xs font-semibold text-gray-200">${escapeHtml(nickname)}</span>
+                                <span class="block text-[10px] text-purple-400 font-mono">${kindBadge} | ${dateStr}</span>
                             </div>
                         </div>
                         <a href="${noteLink}" target="_blank" class="text-gray-400 hover:text-pink-400 text-xs px-2 py-1 bg-gray-800/60 rounded-lg">Open ↗</a>
@@ -427,17 +436,18 @@ if (metadataEvents.length > 0) {
                         <button onclick="sendLike('${event.id}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
                     </div>
 
-                    ${cleanContent ? `<div class="px-4 pb-4 text-sm text-gray-200 leading-snug whitespace-pre-wrap"><span class="font-semibold mr-1">${nickname}</span>${cleanContent}</div>` : ''}
+                    ${cleanContent ? `<div class="px-4 pb-4 text-sm text-gray-200 leading-snug whitespace-pre-wrap"><span class="font-semibold mr-1">${escapeHtml(nickname)}</span>${escapeHtml(cleanContent)}</div>` : ''}
                 `;
                 feedFragment.appendChild(cardArticle);
                 
                 if (mediaItems && mediaItems.length > 0) {
                     mediaItems.forEach(m => {
                         let galleryThumb = '';
-                        const isImage = m.url.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || m.url.includes('imgur') || m.url.includes('primal.net/media');
+                        const isImage = m.url.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$|imgur|primal\.net\/media/i);
+                        const safeThumbUrl = sanitizeUrl(m.url);
                         
                         if (isImage) {
-                            galleryThumb = `<img src="${m.url}" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition duration-200" loading="lazy">`;
+                            galleryThumb = `<img src="${safeThumbUrl}" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition duration-200" loading="lazy">`;
                         } else if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$|youtube\.com|youtu\.be/i)) {
                             galleryThumb = `<div class="w-full h-full bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center text-zinc-400"><span class="text-2xl">📹</span><span class="text-[9px] font-mono mt-1 text-zinc-500 uppercase tracking-wider">Video</span></div>`;
                         } else {
@@ -495,29 +505,30 @@ if (metadataEvents.length > 0) {
             let mediaHtml = '';
             if (mediaItems.length === 1) {
                 let m = mediaItems[0];
+                let safeUrl = sanitizeUrl(m.url);
                 if (m.mime.includes('video') || m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
-                    mediaHtml = `<div class="w-full bg-black"><video src="${m.url}" controls class="w-full max-h-[450px] mx-auto" preload="metadata"></video></div>`;
+                    mediaHtml = `<div class="w-full bg-black"><video src="${safeUrl}" controls class="w-full max-h-[450px] mx-auto" preload="metadata"></video></div>`;
                 } else if (m.mime.includes('audio') || m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
-                    mediaHtml = `<div class="p-4 bg-gray-800/80 border-y border-gray-800 flex items-center gap-3"><span class="text-2xl">🎵</span><audio src="${m.url}" controls class="w-full h-10"></audio></div>`;
+                    mediaHtml = `<div class="p-4 bg-gray-800/80 border-y border-gray-800 flex items-center gap-3"><span class="text-2xl">🎵</span><audio src="${safeUrl}" controls class="w-full h-10"></audio></div>`;
                 } else if (m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
                     let videoId = m.url.includes('youtu.be/') ? m.url.split('youtu.be/')[1]?.split('?')[0] : m.url.split('watch?v=')[1]?.split('&')[0];
-                    mediaHtml = `<div class="w-full aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe></div>`;
+                    mediaHtml = `<div class="w-full aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${escapeHtml(videoId)}" frameborder="0" allowfullscreen></iframe></div>`;
                 } else {
-                    mediaHtml = `<div class="w-full bg-black flex justify-center"><img src="${m.url}" class="max-h-[500px] w-full object-contain" loading="lazy"></div>`;
+                    mediaHtml = `<div class="w-full bg-black flex justify-center"><img src="${safeUrl}" class="max-h-[500px] w-full object-contain" loading="lazy"></div>`;
                 }
             } else if (mediaItems.length > 1) {
                 let m = mediaItems[0];
-                mediaHtml = `<div class="w-full bg-black flex justify-center"><img src="${m.url}" class="max-h-[500px] w-full object-contain" loading="lazy"></div>`;
+                let safeUrl = sanitizeUrl(m.url);
+                mediaHtml = `<div class="w-full bg-black flex justify-center"><img src="${safeUrl}" class="max-h-[500px] w-full object-contain" loading="lazy"></div>`;
             }
 
             return { mediaItems, mediaHtml, cleanContent: cleanContent.trim() };
         }
-        window.openZapModal = openZapModal;                         
+
+        window.openZapModal = openZapModal;                                 
         window.sendLike = async (targetId, targetAuthorPubkey) => { 
-        await sendLike(globalSelectedRelays, targetId, targetAuthorPubkey);
-        }
-
-
+            await sendLike(globalSelectedRelays, targetId, targetAuthorPubkey);
+        };
     </script>
 </body>
 </html>
