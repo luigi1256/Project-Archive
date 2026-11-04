@@ -76,9 +76,9 @@
                     try {
                         const decoded = nip19.decode(entity);
                         if (decoded.type === 'npub') {
-                           
+                            // Eventuale logica aggiuntiva
                         } else if (decoded.type === 'nprofile') {
-                            
+                            // Eventuale logica aggiuntiva
                         }
                     } catch (e) {
                         console.warn("Error in the npub/profile decoder:", e);
@@ -121,9 +121,11 @@
                 if (/\.(mp3|ogg|wav)(\?.*)?$/i.test(clean)) {
                     return `<br><audio controls class="mt-2 w-full"><source src="${safeUrl}"></audio><br>${punct}`;
                 }
-                return `<a href="${safeUrl}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;                                                                                                          
-              });
-            }
+                return `<a href="${safeUrl}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;                                                                 
+            });
+
+            return parsed; 
+        }
 
         async function initProfile() {
             try {
@@ -212,15 +214,21 @@
             }
         }
 
-        // -1 
         function sanitizeUrl(url) {
             if (!url) return '#';
             const trimmed = url.trim();
+                
+                
             if (/^https?:\/\//i.test(trimmed)) {
                 return trimmed;
             }
-            return '#'; 
-        }
+        
+            if (/^(?:[a-z0-9\-]+\.html|\/[^\s]*|\?[^\s]*)/i.test(trimmed) && !/^javascript:/i.test(trimmed)) {
+                return trimmed;
+            }
+        
+            return '#';
+}
 
 
         initProfile();

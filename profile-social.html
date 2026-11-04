@@ -76,7 +76,7 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
 
-            parsed = parsed.replace(/\bnostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[a-z0-9]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+            parsed = parsed.replace(/\bnostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
                 let url = '#';
                 let label = entity.substring(0, 8) + '...';
 
@@ -90,7 +90,9 @@
                     label = '📚 ' + label;
                     url = `modfile.html?naddr=${entity}`;
                 }
-                return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
+                
+                let safeUrl = sanitizeUrl(url);
+                return `<a href="${safeUrl}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
             });
         
             parsed = parsed.replace(/https?:\/\/[^\s<]+/g, (url) => {
@@ -98,17 +100,20 @@
                 let punct = matchPunct ? matchPunct[0] : '';
                 let clean = url.substring(0, url.length - punct.length);
 
+                let safeUrl = sanitizeUrl(clean); 
+
                 if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
-                    return `<br><img src="${clean}" class="mt-2 max-h-60 w-full object-cover border border-zinc-800" loading="lazy"><br>${punct}`;
+                    return `<br><img src="${escapeHtml(safeUrl)}" class="mt-2 max-h-60 w-full object-cover border border-zinc-800" loading="lazy"><br>${punct}`;
                 }
                 if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
-                    return `<br><video controls class="mt-2 max-h-60 w-full"><source src="${clean}"></video><br>${punct}`;
+                    return `<br><video controls class="mt-2 max-h-60 w-full"><source src="${safeUrl}"></video><br>${punct}`;
                 }
-                return `<a href="${clean}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;
+                return `<a href="${escapeHtml(safeUrl)}" target="_blank" class="text-purple-400 hover:underline break-all">${clean}</a>${punct}`;
             });
         
             return parsed;
         }
+
 
         async function initProfile() {
             const npubParam = getQueryParam('npub');
@@ -159,7 +164,7 @@
                             <p class="text-xs font-mono text-zinc-500 truncate">npub: ${npub}</p>
                             <button onclick="copyNpub()" class="text-[10px] font-mono bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 px-2 py-0.5 transition-colors cursor-pointer" id="copy-btn">Copy</button>
                         </div>
-                        <div class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words min-w-0">${sanitizeUrl(about)}</div>
+                        <div class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words min-w-0">${(about)}</div>
                     </div>
                 </div>
             `;
@@ -613,14 +618,20 @@
         await sendLike(defaultRelays, targetId, targetAuthorPubkey);
     };
 
-    function sanitizeUrl(url) {             
-        if (!url) return '#';               
-        const trimmed = url.trim();         
-        if (/^https?:\/\//i.test(trimmed)) {
-            return trimmed;                 
-        }                                   
-        return '#';                         
-    }                                       
+    function sanitizeUrl(url) {
+    if (!url) return '#';
+    const trimmed = url.trim();
+
+    if (/^https?:\/\//i.test(trimmed)) {
+        return trimmed;
+    }
+
+    if (/^(?:[a-z0-9\-]+\.html|\/[^\s]*|\?[^\s]*)/i.test(trimmed) && !/^javascript:/i.test(trimmed)) {
+        return trimmed;
+    }
+
+    return '#';
+}
     
 </script>    
 </body>
