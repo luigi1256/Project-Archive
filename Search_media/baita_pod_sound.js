@@ -668,9 +668,12 @@ async function fetchNostrTracksByTag(tags) {
       const dTagValue = dTagEntry[1];
       if (!seenTrackIds.has(dTagValue)) {
         seenTrackIds.add(dTagValue); 
-      parseAndAddNostrTrack(data[2]);}
+      parseAndAddNostrTrack(data[2]);
+    renderDynamicTagSidebar();
+    }
     } else if (data[0] === "EOSE") {
       if (statusEl) statusEl.innerText = `Found ${nostrTracks.length} tracks...`;
+      renderDynamicTagSidebar();
       socket.close();
     }
   };
@@ -713,16 +716,37 @@ function renderDynamicTagSidebar() {
   }
 
   const tagIcons = {
-    'music': "",
-    'lofi': '☕',
-    'techno': '⚡',
-    'hiphop': '🎤',
-    'rock': '🎸',
-    'podcast': '🎙️',
-    'jazz': '🎷',
-    'ambient': '🌌',
-    'electronic': '💻'
-  };
+  'music': "🎧",
+  'lofi': '☕',
+  'techno': '⚡',
+  'hip-hop': '🎤',
+  'alternative': '🎸',
+  'rock': '🎸',
+  'podcast': '🎙️',
+  'jazz': '🎷',
+  'ambient': '🌌',
+  'dark ambient': '⛚',
+  'electronic': '💻',
+  'gruuv': '🕺',         
+  'house': '🏠',          
+  'tech-house': '🎛️',
+  'disco': '🪩',
+  'funk': '🤹',           
+  'deep-house': '🌊',
+  'black metal': '🦇',    
+  'metal': '🤘',
+  'death-metal': '💀',
+  'doom-metal': '⚰️',
+  'punk': '🧷',
+  'goth': '🕸️',
+  'synthwave': '🌆',
+  'vaporwave': '🌴',
+  'classical': '🎻',
+  'pop': '✨',
+  'rnb': '💫',
+  'reggae': '🦁',
+  'acoustic': '🪵'
+};
 
   sortedTags.forEach(tag => {
     let icon = tagIcons[tag.toLowerCase()] || '🏷️';
