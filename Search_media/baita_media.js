@@ -98,15 +98,21 @@ function previewMediaItem(url, type) {
     return;
   }
 
-  library.innerHTML = `
-    <div class="bg-[#0f2318] border border-emerald-900 rounded-lg p-4 space-y-3 shadow-lg">
-      <div class="flex justify-between items-center font-mono text-xs text-emerald-400 border-b border-emerald-900/40 pb-2">
-        <span class="truncate max-w-[80%]">🔗 ${url}</span>
-        <button onclick="document.getElementById('library').innerHTML = ''" class="text-red-400 hover:text-red-300 cursor-pointer font-bold px-2 py-0.5 bg-red-950/40 rounded border border-red-900/60">✕ Close</button>
-      </div>
-      <div class="flex justify-center">${mediaElement}</div>
+  const uniqueId = 'preview-' + btoa(url).replace(/[^a-zA-Z0-9]/g, '');
+  if (document.getElementById(uniqueId)) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.id = uniqueId;
+  wrapper.className = "bg-[#0f2318] border border-emerald-900 rounded-lg p-4 space-y-3 shadow-lg mb-3";
+  wrapper.innerHTML = `
+    <div class="flex justify-between items-center font-mono text-xs text-emerald-400 border-b border-emerald-900/40 pb-2">
+      <span class="truncate max-w-[80%]">🔗 ${url}</span>
+      <button onclick="document.getElementById('${uniqueId}').remove()" class="text-red-400 hover:text-red-300 cursor-pointer font-bold px-2 py-0.5 bg-red-950/40 rounded border border-red-900/60">✕ Close</button>
     </div>
-  ` + library.innerHTML;
+    <div class="flex justify-center">${mediaElement}</div>
+  `;
+
+  library.insertBefore(wrapper, library.firstChild);
 }
 
 
@@ -338,18 +344,24 @@ function renderDirectMediaUrl(url, type) {
     mediaElement = `<video controls playsinline class="max-h-96 w-full rounded-lg bg-black border border-emerald-950"><source src="${url}"></video>`;
   }
 
-  library.innerHTML = `
-    <div class="bg-[#0f2318] border border-emerald-900 rounded-lg p-4 space-y-3 shadow-lg">
-      <div class="flex justify-between items-center font-mono text-xs text-emerald-400 border-b border-emerald-900/40 pb-2">
-        <span class="truncate max-w-[75%]">🔗 ${url}</span>
-        <div class="flex gap-2">
-          <button onclick="navigator.clipboard.writeText('${url}').then(() => alert('URL copiato negli appunti!'))" class="text-emerald-300 hover:text-white font-mono text-xs px-2 py-0.5 bg-emerald-950 rounded border border-emerald-800 cursor-pointer">📋 Copia</button>
-          <button onclick="document.getElementById('library').innerHTML = ''" class="text-red-400 hover:text-red-300 cursor-pointer font-bold px-2 py-0.5 bg-red-950/40 rounded border border-red-900/60">✕ Close</button>
-        </div>
+  const uniqueId = 'direct-' + btoa(url).replace(/[^a-zA-Z0-9]/g, '');
+  if (document.getElementById(uniqueId)) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.id = uniqueId;
+  wrapper.className = "bg-[#0f2318] border border-emerald-900 rounded-lg p-4 space-y-3 shadow-lg mb-3";
+  wrapper.innerHTML = `
+    <div class="flex justify-between items-center font-mono text-xs text-emerald-400 border-b border-emerald-900/40 pb-2">
+      <span class="truncate max-w-[75%]">🔗 ${url}</span>
+      <div class="flex gap-2">
+        <button onclick="navigator.clipboard.writeText('${url}').then(() => alert('URL copiato negli appunti!'))" class="text-emerald-300 hover:text-white font-mono text-xs px-2 py-0.5 bg-emerald-950 rounded border border-emerald-800 cursor-pointer">📋 Copia</button>
+        <button onclick="document.getElementById('${uniqueId}').remove()" class="text-red-400 hover:text-red-300 cursor-pointer font-bold px-2 py-0.5 bg-red-950/40 rounded border border-red-900/60">✕ Close</button>
       </div>
-      <div class="flex justify-center">${mediaElement}</div>
     </div>
+    <div class="flex justify-center">${mediaElement}</div>
   `;
+
+  library.insertBefore(wrapper, library.firstChild);
 }
 
 let currentSearchMode = 'relay'; 
