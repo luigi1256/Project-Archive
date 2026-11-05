@@ -56,15 +56,18 @@
 
     <section class="max-w-4xl mx-auto px-4 mb-4" id="tabsSection">
         <div class="flex flex-col sm:flex-row justify-between items-center border-b border-gray-800 pb-3 gap-3">
-            <div class="flex text-sm font-semibold w-full sm:w-auto" id="tabsContainer">
-                <button id="tabMediaBtn" onclick="switchTab('media')" class="px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer">
-                    🎬 Media & Kind 20 (<span id="mediaCount">0</span>)
+            <div class="flex text-sm font-semibold w-full sm:w-auto overflow-x-auto" id="tabsContainer">
+                <button id="tabMediaBtn" onclick="switchTab('media')" class="px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer whitespace-nowrap">
+                    🎬 Media (<span id="mediaCount">0</span>)
                 </button>
-                <button id="tabAudioBtn" onclick="switchTab('audio')" class="px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer">
-                    🎵 Audio & Podcast (<span id="audioCount">0</span>)
+                <button id="tabAudioBtn" onclick="switchTab('audio')" class="px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer whitespace-nowrap">
+                    🎵 Audio (<span id="audioCount">0</span>)
+                </button>
+                <button id="tabDiscoveryBtn" onclick="switchTab('discovery')" class="px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer whitespace-nowrap">
+                    🌐 Discovery (<span id="discoveryCount">0</span>)
                 </button>
             </div>
-            <div class="flex items-center bg-gray-900 border border-gray-800 rounded-lg p-1 text-xs">
+            <div id="viewModeContainer" class="flex items-center bg-gray-900 border border-gray-800 rounded-lg p-1 text-xs shrink-0">
                 <button onclick="switchView('feed')" id="viewFeedBtn" class="px-3 py-1.5 rounded-md bg-purple-600 text-white font-medium transition cursor-pointer">📱 Feed</button>
                 <button onclick="switchView('grid')" id="viewGridBtn" class="px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition cursor-pointer">🖼️ Grid (4x)</button>
             </div>
@@ -83,6 +86,10 @@
             <div id="feedGridAudio" class="space-y-6"></div>
             <div id="galleryGridAudio" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 hidden"></div>
         </div>
+
+        <div id="sectionDiscovery" class="space-y-6 hidden">
+            <div id="discoveryContent" class="space-y-4"></div>
+        </div>
     </main>
 
     <script src="cache.js"></script>
@@ -95,12 +102,14 @@
             'wss://offchain.pub/',
             'wss://nos.lol',
             'wss://nostr.stakey.net',
-            'wss://relay.ditto.pub'
+            'wss://relay.ditto.pub',
+            'wss://purplepag.es'
         ];
 
         const pool = new SimplePool();
         let globalMediaEvents = [];
         let globalAudioEvents = [];
+        let globalDiscoveryEvents = [];
         let globalSelectedRelays = INITIAL_RELAYS;
         let currentTab = 'media';
         let currentView = 'feed';
@@ -123,19 +132,31 @@
             currentTab = tabName;
             const mediaBtn = document.getElementById('tabMediaBtn');
             const audioBtn = document.getElementById('tabAudioBtn');
+            const discoveryBtn = document.getElementById('tabDiscoveryBtn');
+            
             const sectionMedia = document.getElementById('sectionMedia');
             const sectionAudio = document.getElementById('sectionAudio');
+            const sectionDiscovery = document.getElementById('sectionDiscovery');
+            const viewModeContainer = document.getElementById('viewModeContainer');
+
+            [mediaBtn, audioBtn, discoveryBtn].forEach(btn => {
+                btn.className = "px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer whitespace-nowrap";
+            });
+
+            [sectionMedia, sectionAudio, sectionDiscovery].forEach(sec => sec.classList.add('hidden'));
 
             if (tabName === 'media') {
-                mediaBtn.className = "px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer";
-                audioBtn.className = "px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer";
+                mediaBtn.className = "px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer whitespace-nowrap";
                 sectionMedia.classList.remove('hidden');
-                sectionAudio.classList.add('hidden');
-            } else {
-                audioBtn.className = "px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer";
-                mediaBtn.className = "px-5 pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer";
+                viewModeContainer.classList.remove('hidden');
+            } else if (tabName === 'audio') {
+                audioBtn.className = "px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer whitespace-nowrap";
                 sectionAudio.classList.remove('hidden');
-                sectionMedia.classList.add('hidden');
+                viewModeContainer.classList.remove('hidden');
+            } else if (tabName === 'discovery') {
+                discoveryBtn.className = "px-5 pb-2 border-b-2 border-purple-500 text-purple-400 transition cursor-pointer whitespace-nowrap";
+                sectionDiscovery.classList.remove('hidden');
+                viewModeContainer.classList.add('hidden');
             }
             applyViewMode();
         }
@@ -156,6 +177,7 @@
         }
 
         function applyViewMode() {
+            if (currentTab === 'discovery') return;
             const feedMedia = document.getElementById('feedGridMedia');
             const galleryMedia = document.getElementById('galleryGridMedia');
             const feedAudio = document.getElementById('feedGridAudio');
@@ -169,7 +191,7 @@
                     feedMedia.classList.add('hidden');
                     galleryMedia.classList.remove('hidden');
                 }
-            } else {
+            } else if (currentTab === 'audio') {
                 if (currentView === 'feed') {
                     feedAudio.classList.remove('hidden');
                     galleryAudio.classList.add('hidden');
@@ -191,7 +213,7 @@
                 }
                 window.location.search = `?npub=${nip19.npubEncode(pubkeyToSearch)}`;
             } catch(e) {
-                alert("Npub non valido!");
+                alert("Invalid Npub!");
             }
         }
 
@@ -217,11 +239,10 @@
                 }
 
                 if (!targetPubkey) {
-                    document.getElementById('loading').innerText = "npub non valido.";
+                    document.getElementById('loading').innerText = "Invalid Npub.";
                     return;
-                }
-
-                document.getElementById('statusText').innerText = "Loading profile and relay list (kind 10002)...";
+                }                                                                                                    
+                document.getElementById('statusText').innerText = "Loading profile and relays list...";
 
                 const relayListEvents = await pool.querySync(INITIAL_RELAYS, {
                     authors: [targetPubkey],
@@ -240,7 +261,7 @@
                 });
 
                 globalSelectedRelays = Array.from(userRelays);
-                document.getElementById('relayStats').innerText = `${globalSelectedRelays.length} relays`;
+                document.getElementById('relayStats').innerText = `${globalSelectedRelays.length} relays`;   
 
                 const metadataEvents = await pool.querySync(globalSelectedRelays, {
                     authors: [targetPubkey],
@@ -265,8 +286,7 @@
                         if (displayNameEl) displayNameEl.innerText = profileData.display_name ? `@${profileData.display_name}` : `@${npub.substring(0, 10)}...`;
                         
                         if (aboutEl) {
-                            const bioText = profileData.about || 'No bio available.';
-                            aboutEl.innerText = bioText;
+                            aboutEl.innerText = profileData.about || 'No bio available.';
                         }
 
                         if (avatarEl) {
@@ -281,7 +301,7 @@
                             npubEl.innerText = npub;
                             npubEl.onclick = () => {
                                 navigator.clipboard.writeText(npub);
-                                alert("Npub copiato negli appunti!");
+                                alert("Npub copied to clipboard!");
                             };
                         }
 
@@ -301,8 +321,8 @@
                         console.warn("Error parsing Kind 0 profile", e);
                     }
                 }
-                
-                document.getElementById('statusText').innerText = "Downloading multimedia posts (Kind 20, 22, 34236)...";
+                document.getElementById('loading').innerHTML = `<p class="text-zinc-400 text-sm font-mono">The profile should be loaded.... is maybe still loading something</p>`;    
+                document.getElementById('statusText').innerText = "Downloading multimedia and discovery sets...";
 
                 let feedEvents = await pool.querySync(globalSelectedRelays, {
                     authors: [targetPubkey],
@@ -319,6 +339,24 @@
                     feedEvents = kind1Events.filter(ev => hasMediaOrAudioInContent(ev.content));
                 }
 
+                const discoveryEvents = await pool.querySync(globalSelectedRelays, {
+                    authors: [targetPubkey],
+                    kinds: [39089, 30000],
+                    limit: 5
+                });
+                let allDiscoveryEvents = [...discoveryEvents];
+                if (allDiscoveryEvents.length === 0) {
+                    const taggedInLists = await pool.querySync(globalSelectedRelays, {
+                        '#p': [targetPubkey],
+                        kinds: [30000, 39089],
+                        limit: 2
+                    });
+                    if (taggedInLists && taggedInLists.length > 0) {
+                        allDiscoveryEvents = taggedInLists;
+                    }
+                }
+
+                globalDiscoveryEvents = allDiscoveryEvents;
                 const sortedFeed = feedEvents.sort((a, b) => b.created_at - a.created_at);
                 globalMediaEvents = [];
                 globalAudioEvents = [];
@@ -333,11 +371,13 @@
 
                 document.getElementById('mediaCount').innerText = globalMediaEvents.length;
                 document.getElementById('audioCount').innerText = globalAudioEvents.length;
+                document.getElementById('discoveryCount').innerText = globalDiscoveryEvents.length;
 
                 renderFeedSection('feedGridMedia', 'galleryGridMedia', globalMediaEvents, 'No media posts or Kind 20 found for this user.');
                 renderFeedSection('feedGridAudio', 'galleryGridAudio', globalAudioEvents, 'No audio content found.');
+                renderDiscoverySection(globalDiscoveryEvents, targetPubkey);
 
-                document.getElementById('statusText').innerText = `Ready (${sortedFeed.length} post).`;
+                document.getElementById('statusText').innerText = `Ready (${sortedFeed.length} posts, ${globalDiscoveryEvents.length} discovery sets).`;
                 document.getElementById('loading').classList.add('hidden');
 
             } catch (err) {
@@ -349,8 +389,7 @@
         function hasMediaOrAudioInContent(content) {
             if (!content) return false;
             const lower = content.toLowerCase();
-            return lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$/i) !== null ||
-                   lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('imgur');
+            return lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$|imgur|youtube\.com|youtu\.be/i) !== null;
         }
 
         function hasAudioContent(event) {
@@ -365,6 +404,73 @@
                 nevent = nip19.neventEncode({ id: targetId });
             } catch(e) {}
             window.location.href = `comment.html?nevent=${nevent}`;
+        }
+
+        window.openRelayFeed = function(param1, kind, identifier) {
+            if (!kind && !identifier) {
+                if (param1) {
+                    window.location.href = `relay-feed.html?relay=${encodeURIComponent(param1)}`;
+                }
+                return;
+            }
+            if (kind === 30000 || kind === 39089) {
+                try {
+                    let naddr = nip19.naddrEncode({
+                        pubkey: param1,
+                        kind: kind,
+                        identifier: identifier,
+                        relays: globalSelectedRelays
+                    });
+                    window.location.href = `shashin.html?naddr=${naddr}`;
+                } catch (err) {
+                    console.error("Errore nella generazione di naddr:", err);
+                }
+            }
+        }
+
+        function renderDiscoverySection(events, targetPubkey) {
+            const container = document.getElementById('discoveryContent');
+            if (!events || events.length === 0) {
+                container.innerHTML = `<div class="bg-gray-900 border border-gray-800 p-6 text-center text-gray-500 text-sm font-mono">No discovery sets or tagged lists found.</div>`;
+                return;
+            }
+
+            container.innerHTML = events.map(ev => {
+                let titleTag = ev.tags.find(t => t[0] === 'title');
+                let dTag = ev.tags.find(t => t[0] === 'd');
+                let setName = titleTag ? titleTag[1] : (dTag ? dTag[1] : `Set (Kind ${ev.kind})`);
+                let dValue = dTag ? dTag[1] : '';
+                
+                let isOwner = ev.pubkey === targetPubkey;
+                let kindLabel = ev.kind === 39089 ? 'Starter Pack (39089)' : `List (Kind ${ev.kind})`;
+                if (!isOwner) kindLabel += ' 🔗 (You are tagged here)';
+
+                let pTags = ev.tags.filter(t => t[0] === 'p').slice(0, 5);
+                let relayTags = ev.tags.filter(t => t[0] === 'relay' || t[0] === 'r').slice(0, 5);
+
+                let previewHtml = '';
+                if (pTags.length > 0) {
+                    previewHtml = `<div class="mt-2 text-[11px] text-gray-400 font-mono">Members sample (${pTags.length}): ${pTags.map(t => t[1].substring(0, 8) + '...').join(', ')}</div>`;
+                } else {
+                    previewHtml = `<div class="mt-2 text-[11px] text-gray-400 font-mono">Empty list no public members.</div>`;
+                }
+
+                return `
+                    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-md">
+                        <div class="flex justify-between items-start mb-2 pb-2 border-b border-gray-800">
+                            <div>
+                                <span class="text-xs font-mono text-purple-400 bg-purple-950/60 border border-purple-800/60 px-2 py-0.5 rounded">${kindLabel}</span>
+                                <h3 class="text-base font-bold text-gray-100 mt-2">${escapeHtml(setName)}</h3>
+                                <span class="text-[10px] text-gray-500 font-mono">Author: ${ev.pubkey.substring(0, 10)}... | d: ${escapeHtml(dValue)}</span>
+                            </div>
+                            <button onclick="openRelayFeed('${ev.pubkey}', ${ev.kind}, '${escapeHtml(dValue)}')" class="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg transition cursor-pointer">
+                                Open Set ↗
+                            </button>
+                        </div>
+                        ${previewHtml}
+                    </div>
+                `;
+            }).join('');
         }
 
         function renderFeedSection(feedContainerId, galleryContainerId, events, emptyMessage) {
@@ -386,7 +492,6 @@
             events.forEach(event => {
                 let npub = '';
                 try { npub = nip19.npubEncode(event.pubkey); } catch(e) {}
-
                 let nevent = '';
                 let noteLink = '#';
                 try {
@@ -413,7 +518,6 @@
                 }
 
                 const { mediaItems, mediaHtml, cleanContent } = parseMultiMediaAndContent(event);
-
                 const cardArticle = document.createElement('article');
                 cardArticle.className = "bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden";
                 cardArticle.innerHTML = `
@@ -494,7 +598,7 @@
             matches.forEach(match => {
                 let url = match[0].replace(/[.,!?)]$/, '');
                 let lower = url.toLowerCase();
-                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$/i) || lower.includes('imgur') || lower.includes('primal.net/media') || lower.includes('youtube.com') || lower.includes('youtu.be')) {
+                if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$|imgur|primal\.net\/media|youtube\.com|youtu\.be/i)) {
                     if (!mediaItems.some(m => m.url === url)) {
                         mediaItems.push({ url, mime: '' });
                         cleanContent = cleanContent.replace(url, '');
@@ -508,7 +612,7 @@
                 let safeUrl = sanitizeUrl(m.url);
                 if (m.mime.includes('video') || m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
                     mediaHtml = `<div class="w-full bg-black"><video src="${safeUrl}" controls class="w-full max-h-[450px] mx-auto" preload="metadata"></video></div>`;
-                } else if (m.mime.includes('audio') || m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
+                } else if (m.mime.includes('audio') || m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$|m4a/i)) {
                     mediaHtml = `<div class="p-4 bg-gray-800/80 border-y border-gray-800 flex items-center gap-3"><span class="text-2xl">🎵</span><audio src="${safeUrl}" controls class="w-full h-10"></audio></div>`;
                 } else if (m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
                     let videoId = m.url.includes('youtu.be/') ? m.url.split('youtu.be/')[1]?.split('?')[0] : m.url.split('watch?v=')[1]?.split('&')[0];
@@ -525,7 +629,7 @@
             return { mediaItems, mediaHtml, cleanContent: cleanContent.trim() };
         }
 
-        window.openZapModal = openZapModal;                                 
+        window.openZapModal = openZapModal;                                   
         window.sendLike = async (targetId, targetAuthorPubkey) => { 
             await sendLike(globalSelectedRelays, targetId, targetAuthorPubkey);
         };

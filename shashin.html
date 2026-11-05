@@ -326,13 +326,24 @@
             }
         }
 
+        function sanitizeUrl(url) {             
+            if (!url) return '#';               
+            const trimmed = url.trim();         
+            if (/^https?:\/\//i.test(trimmed)) {
+                return trimmed;                 
+            }                                   
+            return '#';                         
+        }                                       
+
         async function updatequadro(events) {
             const container = document.getElementById('authorsBarContainer');
+            if (!container) return;
             container.innerHTML = '';
 
             const activePubkeys = [...new Set(events.map(ev => ev.pubkey))];
             if (activePubkeys.length === 0) {
-                document.getElementById('authorsBarSection').classList.add('hidden');
+                const barSection = document.getElementById('authorsBarSection');
+                if (barSection) barSection.classList.add('hidden');
                 return;
             }
 
@@ -366,18 +377,21 @@
                 try { npub = nip19.npubEncode(pubkey); } catch(e) {}
                 const profile = authorDataMap.get(pubkey);
                 const name = profile ? (profile.name || profile.display_name || npub.substring(0, 6) + '..') : npub.substring(0, 6) + '..';
-                const picture = profile && profile.picture ? profile.picture : `https://api.dicebear.com/7.x/identicon/svg?seed=${pubkey}`;
+                const picture = profile && profile.picture ? sanitizeUrl(profile.picture) : `https://api.dicebear.com/7.x/identicon/svg?seed=${pubkey}`;
 
                 const itemHtml = `
                     <div class="flex flex-col items-center cursor-pointer shrink-0 group" onclick="scrollToAuthor('${pubkey}')">
-                        <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 transition-transform group-hover:scale-105 shadow-md">
-                            <img src="${picture}" alt="${name}" class="w-full h-full rounded-full object-cover bg-gray-900 border-2 border-gray-950">
+                        <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 transition-transform group-hover:scale-105">
+                            <img src="${picture}" alt="${name}" class="w-full h-full rounded-full object-cover bg-gray-900 border-2 border-gray-950" loading="lazy">
                         </div>
                         <span class="text-[11px] text-gray-300 mt-1 max-w-[70px] truncate">${name}</span>
                     </div>
                 `;
                 container.innerHTML += itemHtml;
             });
+            
+            const barSection = document.getElementById('authorsBarSection');
+            if (barSection) barSection.classList.remove('hidden');
         }
 
         window.scrollToAuthor = function(pubkey) {
@@ -387,12 +401,13 @@
             for (let card of cards) {
                 if (card.getAttribute('data-pubkey') === pubkey) {
                     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    card.classList.add('ring-2', 'ring-pink-500');
-                    setTimeout(() => card.classList.remove('ring-2', 'ring-pink-500'), 2000);
+                    card.classList.add('ring-2', 'ring-pink-500', 'transition-all');
+                    setTimeout(() => card.classList.remove('ring-2', 'ring-pink-500', 'transition-all'), 2000);
                     break;
                 }
             }
         }
+
 
         function hasMediaOrAudioInContent(content) {
             if (!content) return false;
@@ -429,7 +444,6 @@
         return;
     }
     
-    // Usiamo DocumentFragment per evitare reflow multipli del DOM
     const feedFragment = document.createDocumentFragment();
     const galleryFragment = document.createDocumentFragment();
 

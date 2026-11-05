@@ -582,10 +582,11 @@
 
     function openRelayFeed(param1, kind, identifier) {
         if (!kind && !identifier){
-        console.log(param1)    
-         if (param1) {                                                                   
-            window.location.href = `relay-feed.html?relay=${encodeURIComponent(param1)}`;
-        }                                                                                }
+            console.log(param1)    
+            if (param1) {                                                                   
+                window.location.href = `relay-feed.html?relay=${encodeURIComponent(param1)}`;
+            }
+        }
         if (kind === 30002 && identifier) {
             try {
                 let naddr = NostrTools.nip19.naddrEncode({
@@ -603,19 +604,19 @@
     }
 
     
-        function escapeHtml(str) {
+    function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        initProfile();
-        window.switchTab = switchTab;
-        window.handleQuickSearch= handleQuickSearch;
-        window.copyNpub=copyNpub;
-        window.openRelayFeed=openRelayFeed;
-        window.openZapModal = openZapModal;
-        window.sendLike = async (targetId, targetAuthorPubkey) => {
-        await sendLike(defaultRelays, targetId, targetAuthorPubkey);
+    initProfile();
+    window.switchTab = switchTab;
+    window.handleQuickSearch= handleQuickSearch;
+    window.copyNpub=copyNpub;
+    window.openRelayFeed=openRelayFeed;
+    window.openZapModal = openZapModal;
+    window.sendLike = async (targetId, targetAuthorPubkey) => {
+    await sendLike(defaultRelays, targetId, targetAuthorPubkey);
     };
 
     function sanitizeUrl(url) {
