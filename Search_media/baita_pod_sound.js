@@ -177,7 +177,6 @@ function loadIntoIpod(url, type, label = '', artist = '', cover = '', fallbacks 
   renderIpodPlaylist();
 }
 
-
 const originalPreviewMediaItem = window.previewMediaItem;
 window.previewMediaItem = function(url, type) {
   if (typeof originalPreviewMediaItem === 'function') {
@@ -353,25 +352,39 @@ function renderIpodPlaylist(filterType = null) {
   });
 }
 
+
 // ==========================================
-// 3. INTEGRAZIONE NOSTR (KIND 36787)
+// 3. INTEGRAZIONE NOSTR (KIND 36787) - AGGIORNATA
 // ==========================================
 
 async function fetchNostrTracks() {
   const statusEl = document.getElementById('nostrStatus');
   const trackListEl = document.getElementById('nostrTrackList');
+  const authorInput = document.getElementById('nostrSearchAuthor');
+  
   if (statusEl) statusEl.innerText = "Connection to Relays in progress...";
   if (trackListEl) trackListEl.innerHTML = "";
-  nostrTracks = [];
+  //nostrTracks = [];
+  let filter = { kinds: [36787], limit: 20 };
+  if (authorInput && authorInput.value.trim() !== "") {
+    let authorVal = authorInput.value.trim();
+    let pubkeyHex = authorVal.startsWith('npub1') ? npubToHex(authorVal) : authorVal;
+
+    if (/^[0-9a-fA-F]{64}$/.test(pubkeyHex)) {
+      if (statusEl) statusEl.innerText = "Search by author (36787)...";
+      fetchNostrTracksByAuthor(pubkeyHex);
+      return; 
+    }
+  }
 
   const socket = new WebSocket(NOSTR_RELAYS[1]);
 
   socket.onopen = () => {
-    if (statusEl) statusEl.innerText = "Track Search Event 36787...";
+    if (statusEl && !filter.authors) statusEl.innerText = "Track Search Event 36787...";
     const req = JSON.stringify([
       "REQ", 
       "baita_music_sub", 
-      { kinds: [36787], limit: 20 }
+      filter
     ]);
     socket.send(req);
   };
@@ -379,14 +392,16 @@ async function fetchNostrTracks() {
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     if (data[0] === "EVENT" && data[2]) {
-      const nostrEvent = data[2];                                
+      const nostrEvent = data[2];                                   
       const dTagEntry = nostrEvent.tags.find(t => t[0] === 'd');
-      if (!dTagEntry || !dTagEntry[1]) return;                
-      const dTagValue = dTagEntry[1];                         
-      if (!seenTrackIds.has(dTagValue)) {                     
-        seenTrackIds.add(dTagValue);                          
-      parseAndAddNostrTrack(nostrEvent);
-      renderDynamicTagSidebar();}
+      if (!dTagEntry || !dTagEntry[1]) return;               
+      const dTagValue = dTagEntry[1];                        
+      
+      if (!seenTrackIds.has(dTagValue)) {                    
+        seenTrackIds.add(dTagValue);                           
+        parseAndAddNostrTrack(nostrEvent);
+        renderDynamicTagSidebar();
+      }
     } else if (data[0] === "EOSE") {
       if (statusEl) statusEl.innerText = `Found ${nostrTracks.length} tracks...`;
       renderDynamicTagSidebar();
@@ -431,6 +446,7 @@ function parseAndAddNostrTrack(event) {
 
   const track = {
     id: event.id,
+    pubkey: event.pubkey, // Salviamo la pubkey esatta dell'evento
     title: cleanText(titleTag ? titleTag[1] : "", "Track Music"),
     artist: cleanText(artistTag ? artistTag[1] : "", "Anon Artist"),
     cover: imageTag ? imageTag[1] : "",
@@ -450,60 +466,131 @@ function parseAndAddNostrTrack(event) {
       type: 'audio',
       label: track.title,
       artist: track.artist,
+      pubkey: track.pubkey,
       cover: track.cover,
       genres: genreTags
     });
   }
 
-  renderNostrTrackCard(track, nostrTracks.length - 1);
+  renderNostrTracksList(); 
   renderIpodPlaylist();
 }
 
-function renderNostrTrackCard(track, index) {
+function renderNostrTracksList() {
   const trackListEl = document.getElementById('nostrTrackList');
   if (!trackListEl) return;
+  trackListEl.innerHTML = "";
 
-  const card = document.createElement('div');
-  card.className = 'nostr-track-card';
-  card.onclick = () => {
-    let queueIndex = ipodPlaylistQueue.findIndex(item => item.url === track.url);
-    if (queueIndex !== -1) {
-      ipodIndex = queueIndex;
-    }
-    playNostrTrack(track);
-  };
+  const titleQuery = document.getElementById('nostrSearchTitle')?.value.toLowerCase().trim() || "";
+  let authorRaw = document.getElementById('nostrSearchAuthor')?.value.trim() || "";
+  const authorQuery = authorRaw.startsWith('npub1') ? npubToHex(authorRaw).toLowerCase() : authorRaw.toLowerCase();
 
-  const fallbackCover = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="%23a78bfa"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>';
+  nostrTracks.forEach((track) => {
+    const titleMatch = track.title.toLowerCase().includes(titleQuery);
+    const authorMatch = track.artist.toLowerCase().includes(authorQuery) || 
+                        track.pubkey.toLowerCase().includes(authorQuery);
+    
+    if (!titleMatch || !authorMatch) return; 
 
-  const img = document.createElement('img');
-  img.src = track.cover || fallbackCover;
-  img.className = 'nostr-track-cover';
-  img.onerror = function() {
-    this.src = fallbackCover;
-  };
+    const card = document.createElement('div');
+    card.className = 'nostr-track-card';
+    
+    card.onclick = () => {
+      let queueIndex = ipodPlaylistQueue.findIndex(item => item.url === track.url);
+      if (queueIndex !== -1) {
+        ipodIndex = queueIndex;
+      }
+      playNostrTrack(track);
+    };
 
-  const meta = document.createElement('div');
-  meta.className = 'nostr-track-meta';
-  meta.innerHTML = `
-    <div class="nostr-track-title">${escapeHtml(track.title)}</div>
-    <div class="nostr-track-artist">${escapeHtml(track.artist)}</div>
-  `;
+    const fallbackCover = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="%23a78bfa"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>';
 
-  const playIcon = document.createElement('div');
-  playIcon.className = 'nostr-play-icon';
-  playIcon.innerText = '▶';
+    const img = document.createElement('img');
+    img.src = track.cover || fallbackCover;
+    img.className = 'nostr-track-cover';
+    img.onerror = function() {
+      this.src = fallbackCover;
+    };
 
-  card.appendChild(img);
-  card.appendChild(meta);
-  card.appendChild(playIcon);
+    const meta = document.createElement('div');
+    meta.className = 'nostr-track-meta';
+    meta.innerHTML = `
+      <div class="nostr-track-title">${escapeHtml(track.title)}</div>
+      <div class="nostr-track-artist">${escapeHtml(track.artist)}</div>
+    `;
 
-  trackListEl.appendChild(card);
+    const filterBtn = document.createElement('button');
+    filterBtn.className = 'nostr-filter-author-btn';
+    filterBtn.title = "Filtra per questo autore";
+    filterBtn.innerText = "👤";
+    filterBtn.onclick = (e) => {
+      e.stopPropagation();
+      const authorInput = document.getElementById('nostrSearchAuthor');
+      if (authorInput) {
+        authorInput.value = track.pubkey; 
+        filterNostrTracks(); 
+      }
+    };
+
+    const playIcon = document.createElement('div');
+    playIcon.className = 'nostr-play-icon';
+    playIcon.innerText = '▶';
+
+    card.appendChild(img);
+    card.appendChild(meta);
+    card.appendChild(filterBtn);
+    card.appendChild(playIcon);
+
+    trackListEl.appendChild(card);
+  });
+}
+
+function filterNostrTracks() {
+  renderNostrTracksList();
 }
 
 function playNostrTrack(track) {
   loadIntoIpod(track.url, 'audio', track.title, track.artist, track.cover);
 }
 
+async function fetchNostrTracksByAuthor(pubkeyHex) {
+  const statusEl = document.getElementById('nostrStatus');
+  if (statusEl) statusEl.innerText = `Search by author: ${pubkeyHex.slice(0, 8)}...`;
+  const trackListEl = document.getElementById('nostrTrackList');
+  const socket = new WebSocket(NOSTR_RELAYS[2]);
+  socket.onopen = () => {
+    const req = JSON.stringify([
+      "REQ", 
+      "baita_author_sub", 
+      { kinds: [36787], authors: [pubkeyHex], limit: 20 }
+    ]);
+    socket.send(req);
+  };
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data[0] === "EVENT" && data[2]) {
+      const eventObj = data[2];
+      const dTagEntry = eventObj.tags.find(t => t[0] === 'd');
+      if (!dTagEntry || !dTagEntry[1]) return; 
+      const dTagValue = dTagEntry[1];
+      
+      if (!seenTrackIds.has(dTagValue)) {
+        seenTrackIds.add(dTagValue); 
+        parseAndAddNostrTrack(eventObj);
+        renderDynamicTagSidebar();
+      }
+    } else if (data[0] === "EOSE") {
+      if (statusEl) statusEl.innerText = `Found ${nostrTracks.length} tracks...`;
+      renderDynamicTagSidebar();
+      socket.close();
+    }
+  };
+  
+  socket.onerror = () => {
+    if (statusEl) statusEl.innerText = "Connection error";
+  };
+}
 
 // ==========================================
 // 4. EVENT LISTENERS E INIZIALIZZAZIONE
@@ -668,9 +755,9 @@ async function fetchNostrTracksByTag(tags) {
       const dTagValue = dTagEntry[1];
       if (!seenTrackIds.has(dTagValue)) {
         seenTrackIds.add(dTagValue); 
-      parseAndAddNostrTrack(data[2]);
-    renderDynamicTagSidebar();
-    }
+        parseAndAddNostrTrack(data[2]);
+        renderDynamicTagSidebar();
+      }
     } else if (data[0] === "EOSE") {
       if (statusEl) statusEl.innerText = `Found ${nostrTracks.length} tracks...`;
       renderDynamicTagSidebar();
@@ -716,37 +803,37 @@ function renderDynamicTagSidebar() {
   }
 
   const tagIcons = {
-  'music': "🎧",
-  'lofi': '☕',
-  'techno': '⚡',
-  'hip-hop': '🎤',
-  'alternative': '🎸',
-  'rock': '🎸',
-  'podcast': '🎙️',
-  'jazz': '🎷',
-  'ambient': '🌌',
-  'dark ambient': '⛚',
-  'electronic': '💻',
-  'gruuv': '🕺',         
-  'house': '🏠',          
-  'tech-house': '🎛️',
-  'disco': '🪩',
-  'funk': '🤹',           
-  'deep-house': '🌊',
-  'black metal': '🦇',    
-  'metal': '🤘',
-  'death-metal': '💀',
-  'doom-metal': '⚰️',
-  'punk': '🧷',
-  'goth': '🕸️',
-  'synthwave': '🌆',
-  'vaporwave': '🌴',
-  'classical': '🎻',
-  'pop': '✨',
-  'rnb': '💫',
-  'reggae': '🦁',
-  'acoustic': '🪵'
-};
+    'music': "🎧",
+    'lofi': '☕',
+    'techno': '⚡',
+    'hip-hop': '🎤',
+    'alternative': '🎸',
+    'rock': '🎸',
+    'podcast': '🎙️',
+    'jazz': '🎷',
+    'ambient': '🌌',
+    'dark ambient': '⛚',
+    'electronic': '💻',
+    'gruuv': '🕺',         
+    'house': '🏠',          
+    'tech-house': '🎛️',
+    'disco': '🪩',
+    'funk': '🤹',          
+    'deep-house': '🌊',
+    'black metal': '🦇',    
+    'metal': '🤘',
+    'death-metal': '💀',
+    'doom-metal': '⚰️',
+    'punk': '🧷',
+    'goth': '🕸️',
+    'synthwave': '🌆',
+    'vaporwave': '🌴',
+    'classical': '🎻',
+    'pop': '✨',
+    'rnb': '💫',
+    'reggae': '🦁',
+    'acoustic': '🪵'
+  };
 
   sortedTags.forEach(tag => {
     let icon = tagIcons[tag.toLowerCase()] || '🏷️';

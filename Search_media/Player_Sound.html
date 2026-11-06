@@ -53,6 +53,28 @@
     text-decoration: underline;
     color: #fff;
   }
+
+  .nostr-search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+  .nostr-search-input {
+    width: 100%;
+    background: #0d1712;
+    border: 1px solid var(--baita-card-border, #1f3829);
+    color: var(--baita-text, #e2e8f0);
+    padding: 6px 8px;
+    font-size: 11px;
+    font-family: monospace;
+    border-radius: 4px;
+    outline: none;
+  }
+  .nostr-search-input:focus {
+    border-color: var(--baita-accent-green, #10b981);
+  }
 </style>
 </head>
 <body>
@@ -93,8 +115,8 @@
           </div>
         </div>
 
-        <div class="ipod-wheel">         
-          <button onclick="ipodPrevMedia()" class="ipod-btn-prev">⏮</button>                             
+        <div class="ipod-wheel">        
+          <button onclick="ipodPrevMedia()" class="ipod-btn-prev">⏮</button>                            
           <button onclick="ipodToggleShuffle()" class="ipod-btn-shuffle">🔀</button>
           <button onclick="ipodNextMedia()" class="ipod-btn-next">⏭</button>
           <button onclick="ipodMenuAction()" class="ipod-btn-menu">MENU</button>
@@ -132,32 +154,35 @@
       </div>
       
       <div id="nostrStatus" class="nostr-status">Connecting to Relays...</div>
-      
+      <div class="nostr-search-container">
+        <input type="text" id="nostrSearchTitle" class="nostr-search-input" placeholder="🔍 Search by title..." oninput="filterNostrTracks()" />
+        <input type="text" id="nostrSearchAuthor" class="nostr-search-input" placeholder="🔍 Search by npub or pubkey..." oninput="filterNostrTracks()" />
+      </div>
+
       <div id="nostrTrackList" class="nostr-track-list"></div>
     </aside>
 
     <div class="nostr-tag-column">
-  <div class="nostr-header">
-    <span>🏷️ Filter Music</span>
-  </div>
-  <div class="nostr-status" id="nostrTagStatus">From the first tracks</div>
-  
-  <button data-genre="all" class="genre-filter-btn active-genre" onclick="toggleGenreFilter(null)">
-    <span>🌐 All Tags</span>
-    <span id="nostrTotalCount" class="tag-count">(0)</span>
-  </button>
-  
-  <div id="dynamicTagList" class="dynamic-tag-list">
-    <div class="tag-waiting">Waiting for tracks...</div>
-  </div>
-</div>   
-                                           
+      <div class="nostr-header">
+        <span>🏷️ Filter Music</span>
+      </div>
+      <div class="nostr-status" id="nostrTagStatus">From the first tracks</div>
+     
+      <button data-genre="all" class="genre-filter-btn active-genre" onclick="toggleGenreFilter(null)">
+        <span>🌐 Tags</span>
+        <span id="nostrTotalCount" class="tag-count">(0)</span>
+      </button>
+     
+      <div id="dynamicTagList" class="dynamic-tag-list">
+        <div class="tag-waiting">Waiting for tracks...</div>
+      </div>
+    </div>                          
   </div>
 
   <script src="baita_core_media.js"></script>
   <script src="baita_media.js"></script>        
   <script src="baita_pod_menu.js"></script>  
-  <script src="baita_pod_sound.js"></script>   
+  <script src="baita_pod_sound.js"></script> 
 
   <script>
     let isPlaying = false;
