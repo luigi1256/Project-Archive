@@ -473,7 +473,7 @@
             }).join('');
         }
 
-        function renderFeedSection(feedContainerId, galleryContainerId, events, emptyMessage) {
+    function renderFeedSection(feedContainerId, galleryContainerId, events, emptyMessage) {
             const feedGrid = document.getElementById(feedContainerId);
             const galleryGrid = document.getElementById(galleryContainerId);
             
@@ -552,8 +552,10 @@
                         
                         if (isImage) {
                             galleryThumb = `<img src="${safeThumbUrl}" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition duration-200" loading="lazy">`;
-                        } else if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$|youtube\.com|youtu\.be/i)) {
+                        } else if (m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$|youtube\.com|youtu\.be/i) && event.kind !== 54 && event.kind !== 1244) {
                             galleryThumb = `<div class="w-full h-full bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center text-zinc-400"><span class="text-2xl">📹</span><span class="text-[9px] font-mono mt-1 text-zinc-500 uppercase tracking-wider">Video</span></div>`;
+                        } else if (event.kind === 54 || event.kind === 1244 || m.url.match(/\.(mp3|wav|m4a|aac)(\?.*)?$/i)) {
+                            galleryThumb = `<div class="w-full h-full bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center text-zinc-400"><span class="text-2xl">🎵</span><span class="text-[9px] font-mono mt-1 text-zinc-500 uppercase tracking-wider">Audio</span></div>`;
                         } else {
                             galleryThumb = `<div class="w-full h-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-xs p-2 text-center text-zinc-500">${kindBadge}</div>`;
                         }
@@ -576,19 +578,28 @@
             let content = event.content || '';
             let mediaItems = [];
             let cleanContent = content;
+            let audioDuration = ''; // Variabile per la durata estratta
 
             if (event.tags) {
                 event.tags.forEach(t => {
                     if (t[0] === 'imeta') {
                         let url = '';
                         let mime = '';
+                        let duration = '';
                         t.forEach(part => {
                             if (part.startsWith('url ')) url = part.replace('url ', '').trim();
                             if (part.startsWith('m ')) mime = part.replace('m ', '').trim().toLowerCase();
+                            // Estraiamo la durata dal tag imeta (es. "duration 28")
+                            if (part.startsWith('duration ') || part.startsWith('dur ')) {
+                                duration = part.replace(/^(duration|dur)\s+/, '').trim();
+                            }
                         });
-                        if (url) mediaItems.push({ url, mime });
+                        if (url) {
+                            mediaItems.push({ url, mime, duration });
+                            if (duration) audioDuration = duration;
+                        }
                     } else if (['url', 'imurl', 'image', 'video', 'audio'].includes(t[0])) {
-                        if (t[1]) mediaItems.push({ url: t[1], mime: t[0] });
+                        if (t[1]) mediaItems.push({ url: t[1], mime: t[0], duration: '' });
                     }
                 });
             }
@@ -600,7 +611,7 @@
                 let lower = url.toLowerCase();
                 if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg|mp4|webm|mov|ogg|mp3|wav|m4a)(\?.*)?$|imgur|primal\.net\/media|youtube\.com|youtu\.be/i)) {
                     if (!mediaItems.some(m => m.url === url)) {
-                        mediaItems.push({ url, mime: '' });
+                        mediaItems.push({ url, mime: '', duration: '' });
                         cleanContent = cleanContent.replace(url, '');
                     }
                 }
@@ -610,10 +621,49 @@
             if (mediaItems.length === 1) {
                 let m = mediaItems[0];
                 let safeUrl = sanitizeUrl(m.url);
-                if (m.mime.includes('video') || m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
+                
+                // Formattiamo la durata se presente (es. trasforma "28" in "0:28" o mostra "28s")
+                let durationBadge = '';
+                let rawDur = m.duration || audioDuration;
+                if (rawDur) {
+                    let sec = parseInt(rawDur, 10);
+                    if (!isNaN(sec)) {
+                        let mins = Math.floor(sec / 60);
+                        let secs = sec % 60;
+                        durationBadge = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                    } else {
+                        durationBadge = `${rawDur}s`;
+                    }
+                }
+
+                // Gestione Audio (Kind 1244 o file audio riconosciuti)
+                if (event.kind === 1244 || m.mime.includes('audio') || m.url.match(/\.(mp3|wav|ogg|m4a|aac)(\?.*)?$/i)) {
+                    mediaHtml = `
+                        <div class="relative overflow-hidden bg-gradient-to-br from-purple-950/60 via-gray-900 to-indigo-950/40 border-y border-gray-800 p-4 shadow-xl">
+                            <div class="absolute -right-10 -top-10 w-32 h-32 bg-purple-600/10 rounded-full blur-2xl pointer-events-none"></div>
+                            <div class="relative z-10 flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-lg shadow-lg shadow-purple-600/30 shrink-0">
+                                        🎵
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] font-mono tracking-wider text-pink-400 uppercase font-semibold bg-pink-950/60 border border-pink-800/50 px-2 py-0.5 rounded-full">Audio (Kind 1244)</span>
+                                            ${durationBadge ? `<span class="text-[10px] font-mono text-purple-300 bg-purple-900/40 border border-purple-700/50 px-2 py-0.5 rounded-full">⏱️ ${durationBadge}</span>` : ''}
+                                        </div>
+                                        <a href="${safeUrl}" target="_blank" class="text-xs text-gray-200 hover:text-purple-300 truncate block font-medium mt-1 transition-colors">
+                                            ${safeUrl.split('/').pop()} ↗
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="relative z-10 bg-gray-950/70 border border-gray-800/80 rounded-xl p-2.5 backdrop-blur-sm">
+                                <audio src="${safeUrl}" controls class="w-full h-8 accent-purple-500" preload="metadata"></audio>
+                            </div>
+                        </div>
+                    `;
+                } else if (m.mime.includes('video') || m.url.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i)) {
                     mediaHtml = `<div class="w-full bg-black"><video src="${safeUrl}" controls class="w-full max-h-[450px] mx-auto" preload="metadata"></video></div>`;
-                } else if (m.mime.includes('audio') || m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$|m4a/i)) {
-                    mediaHtml = `<div class="p-4 bg-gray-800/80 border-y border-gray-800 flex items-center gap-3"><span class="text-2xl">🎵</span><audio src="${safeUrl}" controls class="w-full h-10"></audio></div>`;
                 } else if (m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
                     let videoId = m.url.includes('youtu.be/') ? m.url.split('youtu.be/')[1]?.split('?')[0] : m.url.split('watch?v=')[1]?.split('&')[0];
                     mediaHtml = `<div class="w-full aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${escapeHtml(videoId)}" frameborder="0" allowfullscreen></iframe></div>`;
@@ -628,11 +678,16 @@
 
             return { mediaItems, mediaHtml, cleanContent: cleanContent.trim() };
         }
-
+   
         window.openZapModal = openZapModal;                                   
         window.sendLike = async (targetId, targetAuthorPubkey) => { 
             await sendLike(globalSelectedRelays, targetId, targetAuthorPubkey);
         };
+
+
+
+
+
     </script>
 </body>
 </html>
