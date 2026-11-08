@@ -375,7 +375,7 @@
                                 <div class="flex items-center gap-3">
                                     <button onclick="openReplyPage('${note.id}', '${rootId}', '${note.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">💬 Rispondi</button>
                                     <button onclick="openZapModal('${note.pubkey}', '${note.id}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">⚡ Pay</button>
-                                    <button onclick="sendLike('${note.id}', '${note.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
+                                    <button onclick="sendLike('${note.id}','${note.kind}', '${note.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
                                 </div>
                                 <div class="flex items-center gap-1">    
                                     <a href="note.html?nevent=${nevent}" class="text-xs font-mono text-purple-400 bg-purple-950/60 border border-purple-800/60 px-3 py-1 hover:underline">Open →</a>
@@ -615,8 +615,8 @@
     window.copyNpub=copyNpub;
     window.openRelayFeed=openRelayFeed;
     window.openZapModal = openZapModal;
-    window.sendLike = async (targetId, targetAuthorPubkey) => {
-    await sendLike(defaultRelays, targetId, targetAuthorPubkey);
+    window.sendLike = async (targetId,targetk, targetAuthorPubkey) => {
+    await sendLike(defaultRelays, targetId,targetk, targetAuthorPubkey);
     };
 
     function sanitizeUrl(url) {

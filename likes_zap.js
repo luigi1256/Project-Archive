@@ -2,7 +2,7 @@ import { SimplePool, generateSecretKey, getPublicKey, finalizeEvent } from 'http
 import "./cache.js"
 import QRCode from 'https://esm.sh/qrcode';
                                             
-export async function sendLike(generalRelays, target, targetAuthorPubkey) {
+export async function sendLike(generalRelays, target,targetk, targetAuthorPubkey) {
     if (!window.nostr) {
         alert("NIP-07 extension not found (install Alby or Nos2x).");
         return;
@@ -20,7 +20,7 @@ export async function sendLike(generalRelays, target, targetAuthorPubkey) {
             tags.push(["k", target.kind.toString()]);
         } else {
             tags.push(["e", target]);
-            tags.push(["k", target.kind.toString()]);
+            tags.push(["k", targetk.toString()]);
         }
 
         const unsignedEvent = {
