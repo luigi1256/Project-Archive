@@ -19,7 +19,7 @@
         </div>
 
         <div class="max-w-md mx-auto flex gap-2">
-            <input type="text" id="npubInput" placeholder="npub1... (enter public key)" class="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-purple-500">
+            <input type="text" id="npubInput" placeholder="npub1... (enter public key)" class="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-purple-500" onkeydown="if(event.key === 'Enter') searchProfile()">
             <button onclick="searchProfile()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg transition cursor-pointer">Search</button>
         </div>
     </header>

@@ -20,7 +20,7 @@ export async function sendLike(generalRelays, target, targetAuthorPubkey) {
             tags.push(["k", target.kind.toString()]);
         } else {
             tags.push(["e", target]);
-            tags.push(["k", "1"]);
+            tags.push(["k", target.kind.toString()]);
         }
 
         const unsignedEvent = {
