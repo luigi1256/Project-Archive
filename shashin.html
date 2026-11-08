@@ -597,7 +597,10 @@
                     let videoId = m.url.includes('youtu.be/') ? m.url.split('youtu.be/')[1]?.split('?')[0] : m.url.split('watch?v=')[1]?.split('&')[0];
                     mediaHtml = `<div class="w-full aspect-video bg-black"><iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe></div>`;
                 } else {
-                    mediaHtml = `<div class="w-full bg-black flex items-center justify-center max-h-[450px] overflow-hidden"><img src="${m.url}" class="w-full object-cover max-h-[450px]" loading="lazy"></div>`;
+                    mediaHtml = `<div class="w-full bg-black flex items-center justify-center max-h-[500px] overflow-hidden relative">
+                            <div class="absolute inset-0 bg-cover bg-center blur-md opacity-30" style="background-image: url('${m.url}')"></div>
+                            <img src="${m.url}" class="w-full h-auto max-h-[500px] object-contain relative z-10" loading="lazy">
+                            </div>`;
                 }
             } else if (mediaItems.length > 1) {
                 let slidesHtml = mediaItems.map((m, index) => {
@@ -606,8 +609,11 @@
                         slideContent = `<video src="${m.url}" controls class="w-full h-full object-contain bg-black" preload="metadata"></video>`;
                     } else if (m.url.match(/\.(mp3|wav|ogg|m4a)(\?.*)?$/i)) {
                         slideContent = `<div class="p-6 bg-gray-900 flex flex-col items-center justify-center w-full h-full gap-4"><span class="text-4xl">🎵</span><audio src="${m.url}" controls class="w-full"></audio></div>`;
-                    } else {
-                        slideContent = `<img src="${m.url}" class="w-full h-full object-cover" loading="lazy">`;
+                    }  else {
+                        slideContent = `
+                            <div class="absolute inset-0 bg-cover bg-center blur-md opacity-30" style="background-image: url('${m.url}')"></div>
+                            <img src="${m.url}" class="w-full h-full object-contain relative z-10" loading="lazy">
+                        `;
                     }
                     return `
                         <div class="w-full h-full shrink-0 relative bg-black flex items-center justify-center">
@@ -616,9 +622,8 @@
                         </div>
                     `;
                 }).join('');
-
                 mediaHtml = `
-                    <div class="relative w-full max-h-[450px] aspect-square overflow-hidden bg-black group">
+                    <div class="relative w-full aspect-square max-h-[500px] bg-black group overflow-hidden">
                         <div class="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none" id="carousel-${event.id}">
                             ${slidesHtml}
                         </div>
