@@ -508,7 +508,7 @@
             <div class="px-4 py-3 flex items-center gap-2 border-t border-gray-800/60">
                 <button onclick="openReplyPage('${event.id}', '${rootId}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">💬 Rispondi</button>
                 <button onclick="openZapModal('${event.pubkey}', '${event.id}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">⚡ Pay</button>
-                <button onclick="sendLike('${event.id}', '${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
+                <button onclick="sendLike('${event.id}','${event.kind}' ,'${event.pubkey}')" class="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1 transition-colors cursor-pointer">❤️ Like</button>
             </div>
 
             ${cleanContent ? `<div class="px-4 pb-4 text-sm text-gray-200 leading-snug whitespace-pre-wrap"><span class="font-semibold mr-1">${nickname}</span>${cleanContent}</div>` : ''}
@@ -630,8 +630,8 @@
         }
 
         window.openZapModal = openZapModal;
-        window.sendLike = async (targetId, targetAuthorPubkey) => { 
-        await sendLike(INITIAL_RELAYS, targetId, targetAuthorPubkey);
+        window.sendLike = async (targetId,targetk, targetAuthorPubkey) => { 
+        await sendLike(INITIAL_RELAYS, targetId,targetk, targetAuthorPubkey);
         }
         initSmartFeed();
     </script>
