@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nostr Explorer - Starter Packs & Custom List</title>
+    <title>Explorer - Starter Packs & Custom List</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
     <header class="max-w-5xl mx-auto pt-10 pb-4 px-4 text-center">
         <h1 class="text-4xl md:text-5xl font-extrabold text-purple-400 mb-3">
-            Esploratore Starter Pack
+            Starter Pack Explorer
         </h1>
         <p class="text-gray-400 text-base max-w-2xl mx-auto">
-            Esplora gli Starter Pack (Kind 39089), seleziona i profili e crea la tua raccolta personalizzata.
+            Explore Starter Packs (Kind 39089), select profiles, and create your own custom collection.
         </p>
     </header>
 
-    <!-- Barra della Raccolta Personalizzata -->
     <section class="max-w-5xl mx-auto px-4 sticky top-4 z-50 mb-6">
         <div class="bg-purple-950/90 backdrop-blur border border-purple-700 p-4 rounded-xl shadow-2xl flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <span class="text-2xl">📋</span>
                 <div>
-                    <h2 class="font-bold text-sm text-purple-200">La tua Raccolta Personalizzata</h2>
-                    <p class="text-xs text-purple-300" id="selectedCount">0 profili selezionati</p>
+                    <h2 class="font-bold text-sm text-purple-200">Your Personalized Collection</h2>
+                    <p class="text-xs text-purple-300" id="selectedCount">0 selected profiles</p>
                     <p class="text-[10px] text-gray-400 mt-0.5" id="forkOriginInfo" style="display:none;">
                         Basato su: <span id="forkOriginalName" class="text-purple-300"></span>
                         <button id="clearForkBtn" class="ml-2 text-gray-400 hover:text-white cursor-pointer">×</button>
@@ -33,22 +32,21 @@
             </div>
             <div class="flex items-center gap-2">
                 <button id="clearSelectionBtn" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold rounded-lg transition border border-gray-600 cursor-pointer">
-                    Svuota
+                    Empty
                 </button>
                 <button id="exportListBtn" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition shadow cursor-pointer">
-                    Esporta Lista ↓
+                    Export List ↓
                 </button>
             </div>
         </div>
     </section>
 
-    <!-- Pannello Filtri -->
     <section class="max-w-5xl mx-auto px-4 mb-8">
         <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg flex flex-col gap-4">
             
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-300 mb-1">Limite Risultati</label>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Results Limit</label>
                     <select id="limitFilter" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-purple-500">
                         <option value="10">10 pack</option>
                         <option value="20" selected>20 pack</option>
@@ -57,120 +55,115 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-300 mb-1">Finestra Temporale</label>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Time Window</label>
                     <select id="timeFilter" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-purple-500">
-                        <option value="all">Tutti i tempi</option>
-                        <option value="7">Ultimi 7 giorni</option>
-                        <option value="30" selected>Ultimi 30 giorni</option>
-                        <option value="90">Ultimi 90 giorni</option>
+                        <option value="all">All times</option>
+                        <option value="7">Last 7 days</option>
+                        <option value="30" selected>Last 30 days</option>
+                        <option value="90">Last 90 days</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-300 mb-1">Filtra Pack (Titolo/Desc)</label>
-                    <input type="text" id="searchFilter" placeholder="Cerca pack..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500">
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Filter Pack (Title/Desc)</label>
+                    <input type="text" id="searchFilter" placeholder="Search for packs..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-purple-300 mb-1">Filtra Persone nei Pack</label>
-                    <input type="text" id="searchPersonFilter" placeholder="Cerca nome utente..." class="w-full bg-gray-900 border border-purple-800 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500">
+                    <input type="text" id="searchPersonFilter" placeholder="Search username..." class="w-full bg-gray-900 border border-purple-800 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500">
                 </div>
             </div>
 
             <div class="flex justify-between items-center pt-2 border-t border-gray-700/60">
-                <span id="statusStats" class="text-xs text-gray-400">Pronto per la ricerca...</span>
+                <span id="statusStats" class="text-xs text-gray-400">Ready for research...</span>
                 <button id="searchBtn" class="px-5 py-2 bg-purple-600 hover:bg-purple-500 font-semibold text-sm rounded-lg transition shadow-md cursor-pointer flex items-center gap-2">
-                    🔍 Cerca Starter Pack
+                    🔍 Search Starter Pack
                 </button>
             </div>
         </div>
     </section>
 
-    <!-- Contenitore Risultati -->
     <main class="max-w-5xl mx-auto px-4 pb-24">
-        <div id="loading" class="text-center text-gray-400 text-lg py-12 hidden">Ricerca Starter Pack sui relay Nostr...</div>
+        <div id="loading" class="text-center text-gray-400 text-lg py-12 hidden">Starter Pack Search on the network...</div>
         <div id="resultsGrid" class="grid grid-cols-1 gap-6"></div>
     </main>
 
-    <!-- Modal Esportazione e Pubblicazione -->
     <div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-2xl w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-gray-700 pb-3">
-                <h3 class="text-lg font-bold text-purple-300">Esporta o Pubblica Starter Pack</h3>
+                <h3 class="text-lg font-bold text-purple-300">Export or Publish Starter Pack</h3>
                 <button id="closeModalBtn" class="text-gray-400 hover:text-white font-bold text-lg cursor-pointer">&times;</button>
             </div>
 
-            <!-- Sezione Pubblica come Kind 39089 -->
+            
             <div class="bg-purple-950/40 border border-purple-800/60 p-4 rounded-xl flex flex-col gap-3">
                 <h4 class="text-sm font-bold text-purple-200 flex items-center gap-2">
-                    <span>🚀</span> Pubblica direttamente su Nostr (Kind 39089)
+                    <span>🚀</span> Publish directly (Kind 39089)
                 </h4>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                     <div class="md:col-span-2">
-                        <label class="block text-gray-400 mb-1">Titolo Pack *</label>
-                        <input type="text" id="packTitle" placeholder="Es. I miei sviluppatori preferiti" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
+                        <label class="block text-gray-400 mb-1">Pack Title *</label>
+                        <input type="text" id="packTitle" placeholder="Ex. My favorite developers" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-gray-400 mb-1">Descrizione</label>
-                        <textarea id="packDesc" rows="2" placeholder="Es. Una selezione di sviluppatori Nostr italiani..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none resize-none"></textarea>
+                        <label class="block text-gray-400 mb-1">Description</label>
+                        <textarea id="packDesc" rows="2" placeholder="Ex. A selection of Italian developers..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none resize-none"></textarea>
                     </div>
                     
-                    
-                    <!-- Modifica questo blocco nella sezione exportModal -->
                     <div id="originalPackRef" class="hidden md:col-span-2 bg-gray-900 border border-gray-700 rounded p-3">
                         <div class="flex items-center gap-2 text-gray-400 mb-2">
                             <span id="operationIcon">🔗</span>
-                            <span class="text-xs" id="operationLabel">Derivato da:</span>
+                            <span class="text-xs" id="operationLabel">Derived from:</span>
                         </div>
                         <div class="text-xs text-gray-300 space-y-1">
-                            <p><strong>Titolo originale:</strong> <span id="originalPackTitle" class="text-purple-300"></span></p>
-                            <p><strong>d-tag originale:</strong> <code id="originalDTag" class="text-gray-500 select-all font-mono text-[10px]"></code></p>
+                            <p><strong>Original title:</strong> <span id="originalPackTitle" class="text-purple-300"></span></p>
+                            <p><strong>original d-tag:</strong> <code id="originalDTag" class="text-gray-500 select-all font-mono text-[10px]"></code></p>
                             <label class="flex items-center gap-2 mt-2">
                                 <input type="checkbox" id="includeOriginalTag" checked class="accent-purple-500">
-                                <span id="includeLabel">Includi a-tag con riferimento originale</span>
+                                <span id="includeLabel">Include a-tags with original reference</span>
                             </label>
-                            <p id="editWarning" class="hidden text-yellow-500 mt-2">⚠️ Mantieni lo stesso d-tag: questo sarà un EDIT del pack esistente</p>
+                            <p id="editWarning" class="hidden text-yellow-500 mt-2">⚠️ Keep the same d-tag: this will be an EDIT of the existing pack</p>
                         </div>
                     </div> 
                     
                     <div class="md:col-span-2">
-                        <label class="block text-gray-400 mb-1">Metodo di Firma</label>
+                        <label class="block text-gray-400 mb-1">Signature Method</label>
                         <select id="signingMethod" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
-                            <option value="nip07">Estensione Browser (NIP-07 - Alby, nos2x, ecc.)</option>
-                            <option value="privkey">Chiave Privata (nsec / Hex)</option>
+                            <option value="nip07">Browser Extension (NIP-07 - Sidecar, nos2x, etc.)</option>
+                            <option value="privkey">Private Key (nsec / Hex)</option>
                         </select>
                     </div>
                     <div id="privkeyContainer" class="hidden md:col-span-2">
-                        <label class="block text-gray-400 mb-1">Chiave Privata (nsec1... o hex)</label>
+                        <label class="block text-gray-400 mb-1">Private Key (nsec / Hex)</label>
                         <input type="password" id="privkeyInput" placeholder="nsec1..." class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-200 focus:border-purple-500 focus:outline-none">
                     </div>
                 </div>
 
                 <button id="publishPackBtn" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-lg transition shadow cursor-pointer">
-                    Pubblica Starter Pack sui Relay
+                    Publish Starter Pack on Relays
                 </button>
                 <span id="publishStatus" class="text-xs text-center hidden"></span>
             </div>
 
             <div class="relative flex py-1 items-center">
                 <div class="flex-grow border-t border-gray-700"></div>
-                <span class="flex-shrink mx-4 text-gray-500 text-xs uppercase font-semibold">oppure esporta in testo</span>
+                <span class="flex-shrink mx-4 text-gray-500 text-xs uppercase font-semibold">or export to text</span>
                 <div class="flex-grow border-t border-gray-700"></div>
             </div>
 
-            <!-- Sezione Formato Testuale -->
             <div class="flex flex-col gap-2">
                 <div class="flex gap-2 border-b border-gray-700 pb-2">
-                    <button id="formatNpubBtn" class="text-xs font-bold px-3 py-1 bg-purple-600 rounded text-white cursor-pointer">Formato npub</button>
-                    <button id="formatHexBtn" class="text-xs font-bold px-3 py-1 bg-gray-700 rounded text-gray-300 cursor-pointer">Formato Hex</button>
+                    <button id="formatNpubBtn" class="text-xs font-bold px-3 py-1 bg-purple-600 rounded text-white cursor-pointer">Npub format</button>
+                    <button id="formatHexBtn" class="text-xs font-bold px-3 py-1 bg-gray-700 rounded text-gray-300 cursor-pointer">Hex format</button>
                     <button id="formatJsonBtn" class="text-xs font-bold px-3 py-1 bg-gray-700 rounded text-gray-300 cursor-pointer">JSON (p-tags)</button>
                 </div>
 
                 <textarea id="exportTextarea" class="w-full h-28 bg-gray-900 border border-gray-700 rounded-lg p-3 text-xs font-mono text-gray-200 focus:outline-none focus:border-purple-500" readonly></textarea>
 
                 <button id="copyExportBtn" class="w-full py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs font-bold rounded-lg transition cursor-pointer">
-                    📋 Copia negli appunti
+                    📋 Copy to clipboard
                 </button>
             </div>
         </div>
@@ -647,18 +640,18 @@ async function publishStarterPack() {
                         <div class="flex justify-between items-start mb-2 gap-2">
                             <h3 class="font-bold text-xl text-purple-200 leading-snug">${title}</h3>
                             <div class="flex items-center gap-1.5 flex-wrap justify-end">
-                                <!-- 🔀 NEW: Bottone Fork/Load -->
-                                <button data-action="load-pack" class="text-xs bg-green-900/50 hover:bg-green-900 text-green-300 border border-green-700 px-2 py-1 rounded transition cursor-pointer" title="Carica profili in selezione">
+
+                                <button data-action="load-pack" class="text-xs bg-green-900/50 hover:bg-green-900 text-green-300 border border-green-700 px-2 py-1 rounded transition cursor-pointer" title="Upload profiles for selection">
                                     🔀 ${alreadySelected > 0 ? 'Aggiungi' : 'Fork'} (${memberPubkeys.length})
                                 </button>
                                 <button data-action="all" class="text-xs bg-purple-900/50 hover:bg-purple-900 text-purple-300 border border-purple-700 px-2 py-1 rounded transition cursor-pointer">
-                                    + Tutti
+                                    + All
                                 </button>
                                 <button data-action="none" class="text-xs bg-gray-900 hover:bg-gray-700 text-gray-400 border border-gray-700 px-2 py-1 rounded transition cursor-pointer">
-                                    - Nessuno
+                                    - Nobody
                                 </button>
                                 <button data-action="invert" class="text-xs bg-gray-900 hover:bg-gray-700 text-purple-300 border border-purple-800 px-2 py-1 rounded transition cursor-pointer">
-                                    ↔ Inverti
+                                    ↔ Reverse
                                 </button>
                                 <span class="bg-purple-950 text-purple-300 border border-purple-800 text-xs px-2.5 py-1 rounded-full font-semibold">
                                     👥 ${memberPubkeys.length}
@@ -679,16 +672,16 @@ async function publishStarterPack() {
     
                     <div class="flex flex-wrap items-center gap-2">
                         <span>📅 ${dateStr}</span>
-                        ${newProfiles > 0 && alreadySelected > 0 ? `<span class="bg-blue-900/50 text-blue-300 border border-blue-700 px-2 py-0.5 rounded">🔄 ${alreadySelected} già selezionati</span>` : ''}
+                        ${newProfiles > 0 && alreadySelected > 0 ? `<span class="bg-blue-900/50 text-blue-300 border border-blue-700 px-2 py-0.5 rounded">🔄 ${alreadySelected} already selected</span>` : ''}
                     </div>
                 
                     
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                         <a href="feed.html?naddr=${naddr}" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-center font-medium rounded-lg transition shadow-md">
-                            Apri Feed Pack →
+                            Open Feed Pack →
                         </a>
                         <a href="shashin.html?naddr=${naddr}" class="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-center font-medium rounded-lg transition border border-zinc-700">
-                            Apri Media Pack →                                                                                                                 
+                            Open Media Pack →                                                                                                                 
                         </a>            
                     </div>
                 </div>
@@ -722,7 +715,7 @@ async function publishStarterPack() {
             container.innerHTML = '';
             
             if (pubkeys.length === 0) {
-                container.innerHTML = `<span class="text-xs text-gray-500">Nessun profilo presente in questo pack.</span>`;
+                container.innerHTML = `<span class="text-xs text-gray-500">No profile present in this pack.</span>`;
                 return;
             }
 
@@ -838,32 +831,27 @@ async function publishStarterPack() {
             document.getElementById('selectedCount').innerText = `${selectedProfiles.size} profili selezionati`;
         }
 
-        // Dopo l'apertura del modal in openExportModal():
+        
 function openExportModal() {
     if (selectedProfiles.size === 0) {
-        alert("Seleziona almeno un profilo dai vari Starter Pack prima di esportare.");
+        alert("Select at least one profile from the various Starter Packs before exporting.");
         return;
     }
     document.getElementById('exportModal').classList.remove('hidden');
     
     if (forkOrigin) {
-        document.getElementById('packTitle').value = `${forkOrigin.title} (modificato)`;
+        document.getElementById('packTitle').value = `${forkOrigin.title} (modified)`;
         document.getElementById('originalPackTitle').textContent = forkOrigin.title;
-        document.getElementById('originalDTag').textContent = forkOrigin.dTag || '(assente)';
+        document.getElementById('originalDTag').textContent = forkOrigin.dTag || '(absent)';
         document.getElementById('originalPackRef').classList.remove('hidden');
-        
-        // Determina se è edit o fork
         const operationIcon = document.getElementById('operationIcon');
         const operationLabel = document.getElementById('operationLabel');
         const includeLabel = document.getElementById('includeLabel');
         const editWarning = document.getElementById('editWarning');
         
-        // Qui dovresti avere la tua chiave pubblica per comparare
-        // Per semplicità, assumiamo che se forkOrigin esiste sia sempre considerato edit possibile
-        
         operationIcon.textContent = forkOrigin ? '🔄' : '🔗';
-        operationLabel.textContent = 'Edits/Fork da:';
-        includeLabel.textContent = 'Mantieni stesso d-tag (EDIT del pack esistente)';
+        operationLabel.textContent = 'Edits/Fork by:';
+        includeLabel.textContent = 'Keep same d-tag (EDIT of existing pack)';
         editWarning.classList.remove('hidden');
     } else {
         document.getElementById('originalPackRef').classList.add('hidden');
@@ -903,10 +891,9 @@ function openExportModal() {
             const textarea = document.getElementById('exportTextarea');
             textarea.select();
             navigator.clipboard.writeText(textarea.value);
-            alert("Lista copiata negli appunti!");
+            alert("List copied to clipboard!");
         }
 
-        // Gestione mostra/nascondi campo chiave privata
         document.getElementById('signingMethod').addEventListener('change', (e) => {
             const privkeyContainer = document.getElementById('privkeyContainer');
             if (e.target.value === 'privkey') {
