@@ -120,6 +120,7 @@ function loadIntoIpod(url, type, label = '', artist = '', cover = '', fallbacks 
 
     audioPlayer.play().then(() => {
       statusEl.innerText = artist ? "PLAYING (NOSTR)" : "PLAYING";
+      updateActiveTrackUI(url);
       if (centerBtn) centerBtn.innerText = "PAUSE";
     }).catch(e => {
       handleMediaError();
@@ -152,7 +153,6 @@ function loadIntoIpod(url, type, label = '', artist = '', cover = '', fallbacks 
 
     videoPlayer.play().then(() => {
       statusEl.innerText = "PLAYING (V)";
-      updateActiveTrackUI(url);
       if (centerBtn) centerBtn.innerText = "PAUSE";
     }).catch(e => {
       handleMediaError();
@@ -446,7 +446,7 @@ function parseAndAddNostrTrack(event) {
 
   const track = {
     id: event.id,
-    pubkey: event.pubkey, // Salviamo la pubkey esatta dell'evento
+    pubkey: event.pubkey, 
     title: cleanText(titleTag ? titleTag[1] : "", "Track Music"),
     artist: cleanText(artistTag ? artistTag[1] : "", "Anon Artist"),
     cover: imageTag ? imageTag[1] : "",
@@ -568,9 +568,9 @@ function playNostrTrack(track) {
   loadIntoIpod(track.url, 'audio', track.title, track.artist, track.cover);
 }
 
-
 function updateActiveTrackUI(playingUrl) {
   window.currentPlayingUrl = playingUrl;
+  
   document.querySelectorAll('.nostr-track-card').forEach(card => {
     if (card.dataset.url === playingUrl) {
       card.classList.add('is-playing');
