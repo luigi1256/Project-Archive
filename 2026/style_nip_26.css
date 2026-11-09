@@ -20,6 +20,14 @@ body {
     box-sizing: border-box;
 }
 
+a.testo {
+    color: #d3cece; 
+}
+
+a.testo:visited {
+    color: #4b3e3e;
+}
+
 header {
     display: flex;
     justify-content: space-between;
