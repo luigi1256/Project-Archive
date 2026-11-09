@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style_26.css">
+    <title>NIP-99 — Clients</title>
+<style>    
+pre {
+    background-color: #1a1a1a; 
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto; 
+    font-family: monospace;
+    font-size: 0.9em;
+    color: #f8f8f2;
+}
+
+code {
+    font-family: inherit; 
+}    
+</style>
+</head>
+<body>
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 30px; border-bottom: 1px solid #333;">
+
+    
+    <a href="../NIP-23/index.html" id="prev-page" class="testo" style="text-decoration: none; padding: 10px;">← NIP-23 </a>
+    <a href="../../Index.html" class="testo" style="text-decoration: none; border: 1px solid white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+        Main Menu
+    </a>
+    <a href="../NIPs/index.html" id="next-page" class="testo" style="text-decoration: none; padding: 10px;">→ NIP-01</a>
+    
+
+</div>
+<div class="container" style="width: 100%; max-width: 900px;">
+
+    <h1>NIP-99 — Protocol description</h1>
+    <p>specifies the kind:30402: an addressable event to describe classified listings that list any arbitrary 
+        product, service, or other thing for sale or offer and includes enough structured metadata to make them useful.</p>
+    <p>Protocol and statics</p>
+    <div class="link-grid">
+        <div class="link-card"><a href="https://openmarkets.pub/"target="_blank">Above Protocol</a> Open Markets</div>
+        <div class="link-card"><a href="https://agorism.space/" target="_blank">Statics Protocol</a> Agorism</div>
+    </div>
+    <p class="testo">Some clients implementing this NIP.</p>
+    <div class="link-grid">
+
+        <div class="link-card">
+            <a href="https://www.traveltelly.com/marketplace" target="_blank">traveltelly</a> /marketplace Website
+        </div>
+
+        <div class="link-card">
+            <a href=".https://oshigood.us/" target="_blank">oshigood</a> /shop Website
+        </div>
+
+
+    </div>
+    <p>Clients of the network</p>
+    <div class="link-grid">
+        <div class="link-card"><a href="https://shopstr.market/" target="_blank"> Shopstr</a></div>
+        <div class="link-card"><a href="https://plebeian.market/" target="_blank">Plebeian</a></div>
+        <div class="link-card"><a href="https://conduit.market/"target="_blank">Conduit</a></div>
+        <div class="link-card"><a href="https://nostr.boutique/" target="_blank">Nostr</a></div>
+        <div class="link-card"><a href="https://bullishmarket.world/"target="_blank">Bullishmarket</a></div>
+    </div>
+
+</div>
+<h2>Event Json</h2>
+<pre><code>{
+  "kind": 30402,
+  "created_at": 1675642635,
+  // Markdown content
+  "content": "Lorem [ipsum]",
+  "tags": [
+    ["d", "lorem-ipsum"],
+    ["title", "Lorem Ipsum"],
+    ["published_at", "1296962229"],
+    ["t", "electronics"],
+    ["image", "https://url.to.img", "256x256"],
+    ["summary", "More lorem ipsum that is a little more than the title"],
+    ["location", "NYC"],
+    ["price", "100", "USD"],
+    [
+      "e",
+      "b3e392b11f5d4f28321cedd09303a748acfd0487aea5a7450b3481c60b6e4f87",
+      "wss://relay.example.com"
+    ],
+    [
+      "a",
+      "30023:a695f6b60119d9521934a691347d9f78e8770b56da16bb255ee286ddf9fda919:ipsum",
+      "wss://relay.example.com"
+    ]
+  ],
+  "pubkey": "...",
+  "id": "..."
+  "sig"; "..."
+}</code></pre>    
+                          
+                           
+<script src="../shift.js"></script>
+</body>
+</html>
