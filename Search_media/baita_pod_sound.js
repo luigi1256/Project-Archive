@@ -152,6 +152,7 @@ function loadIntoIpod(url, type, label = '', artist = '', cover = '', fallbacks 
 
     videoPlayer.play().then(() => {
       statusEl.innerText = "PLAYING (V)";
+      updateActiveTrackUI(url);
       if (centerBtn) centerBtn.innerText = "PAUSE";
     }).catch(e => {
       handleMediaError();
@@ -364,7 +365,6 @@ async function fetchNostrTracks() {
   
   if (statusEl) statusEl.innerText = "Connection to Relays in progress...";
   if (trackListEl) trackListEl.innerHTML = "";
-  //nostrTracks = [];
   let filter = { kinds: [36787], limit: 20 };
   if (authorInput && authorInput.value.trim() !== "") {
     let authorVal = authorInput.value.trim();
@@ -494,6 +494,10 @@ function renderNostrTracksList() {
 
     const card = document.createElement('div');
     card.className = 'nostr-track-card';
+    card.dataset.url = track.url;
+    if (window.currentPlayingUrl === track.url) {
+      card.classList.add('is-playing');
+    }
     
     card.onclick = () => {
       let queueIndex = ipodPlaylistQueue.findIndex(item => item.url === track.url);
@@ -549,9 +553,41 @@ function filterNostrTracks() {
   renderNostrTracksList();
 }
 
+window.currentPlayingUrl = null;
+
 function playNostrTrack(track) {
+  window.currentPlayingUrl = track.url;  
+  document.querySelectorAll('.nostr-track-card').forEach(card => {
+    if (card.dataset.url === track.url) {
+      card.classList.add('is-playing');
+    } else {
+      card.classList.remove('is-playing');
+    }
+  });
+
   loadIntoIpod(track.url, 'audio', track.title, track.artist, track.cover);
 }
+
+
+function updateActiveTrackUI(playingUrl) {
+  window.currentPlayingUrl = playingUrl;
+  document.querySelectorAll('.nostr-track-card').forEach(card => {
+    if (card.dataset.url === playingUrl) {
+      card.classList.add('is-playing');
+    } else {
+      card.classList.remove('is-playing');
+    }
+  });
+
+  document.querySelectorAll('.book').forEach(book => {
+    if (book.dataset.url === playingUrl) {
+      book.classList.add('is-playing');
+    } else {
+      book.classList.remove('is-playing');
+    }
+  });
+}
+
 
 async function fetchNostrTracksByAuthor(pubkeyHex) {
   const statusEl = document.getElementById('nostrStatus');

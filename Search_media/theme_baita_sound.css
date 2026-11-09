@@ -493,13 +493,44 @@ body {
   color: var(--baita-accent-green, #10b981);
 }
 
+/* ==========================================================
+   CORREZIONI: 1. Riduzione verde tag | 2. Selected Track | 3. Menu Fluido
+   ========================================================== */
+
 .genre-filter-btn {
-  width: 100%;
-  text-align: left;
-  font-family: monospace;
-  cursor: pointer;
-  box-sizing: border-box;
-  margin-bottom: 8px;
+  background: rgba(13, 23, 18, 0.7) !important;
+  border: 1px solid var(--baita-card-border, #1f3829) !important;
+  color: var(--baita-text-muted, #94a3b8) !important;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.genre-filter-btn:hover {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: var(--baita-accent-green, #10b981) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+.genre-filter-btn.active-genre {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: var(--baita-accent-green, #10b981) !important;
+  border-color: var(--baita-accent-green, #10b981) !important;
+}
+
+
+/* 2. STATO SELECTED PER LA TRACCIA IN RIPRODUZIONE */
+.nostr-track-card.is-playing, 
+.book.is-playing {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-left: 3px solid var(--baita-accent-green, #10b981) !important;
+  border-color: var(--baita-accent-green, #10b981) !important;
+}
+
+.nostr-track-card.is-playing .nostr-track-title,
+.book.is-playing {
+  color: #ffffff !important;
+  font-weight: bold;
 }
 
 #dynamicTagList::-webkit-scrollbar {
