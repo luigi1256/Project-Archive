@@ -475,27 +475,6 @@ function parseAndAddNostrTrack(event) {
   renderIpodPlaylist();
 }
 
-function parseNostrParam(rawParam) {
-    let targetPubkey = null;
-
-    if (rawParam.startsWith('npub1') || rawParam.startsWith('nprofile1')) {
-        try {
-            const decoded = nip19.decode(rawParam);
-            
-            if (decoded.type === 'npub') {
-                targetPubkey = decoded.data; 
-            } else if (decoded.type === 'nprofile') {
-                targetPubkey = decoded.data.pubkey; 
-            }
-        } catch (error) {
-            console.error("Errore nella decodifica NIP-19:", error);
-        }
-    } else {
-        targetPubkey = rawParam;
-    }
-
-    return targetPubkey;
-}
 
 function renderNostrTracksList() {
   const trackListEl = document.getElementById('nostrTrackList');
@@ -504,7 +483,7 @@ function renderNostrTracksList() {
 
   const titleQuery = document.getElementById('nostrSearchTitle')?.value.toLowerCase().trim() || "";
   let authorRaw = document.getElementById('nostrSearchAuthor')?.value.trim() || "";
-  const authorQuery = authorRaw.startsWith('npub1') ? parseNostrParam(authorRaw).toLowerCase() : authorRaw.toLowerCase();
+  const authorQuery =  authorRaw.toLowerCase();
 
   nostrTracks.forEach((track) => {
     const titleMatch = track.title.toLowerCase().includes(titleQuery);
