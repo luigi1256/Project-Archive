@@ -1,13 +1,11 @@
 // ==========================================
 // BAITA POD (VLC STYLE QUEUE) + NOSTR BRIDGE
 // ==========================================
-
 let ipodPlaylistQueue = []; 
 let ipodIndex = 0;
 let currentMediaType = 'audio'; 
 let nostrTracks = [];
 const seenTrackIds = new Set();
-
 const NOSTR_RELAYS = [
   'wss://offchain.pub',
   'wss://nos.lol',
@@ -368,13 +366,14 @@ async function fetchNostrTracks() {
   let filter = { kinds: [36787], limit: 20 };
   if (authorInput && authorInput.value.trim() !== "") {
     let authorVal = authorInput.value.trim();
-    let pubkeyHex = authorVal.startsWith('npub1') ? npubToHex(authorVal) : authorVal;
+    let pubkeyHex = authorVal;
 
     if (/^[0-9a-fA-F]{64}$/.test(pubkeyHex)) {
       if (statusEl) statusEl.innerText = "Search by author (36787)...";
       fetchNostrTracksByAuthor(pubkeyHex);
       return; 
     }
+    else {authorInput.value=""}
   }
 
   const socket = new WebSocket(NOSTR_RELAYS[1]);
@@ -476,6 +475,28 @@ function parseAndAddNostrTrack(event) {
   renderIpodPlaylist();
 }
 
+function parseNostrParam(rawParam) {
+    let targetPubkey = null;
+
+    if (rawParam.startsWith('npub1') || rawParam.startsWith('nprofile1')) {
+        try {
+            const decoded = nip19.decode(rawParam);
+            
+            if (decoded.type === 'npub') {
+                targetPubkey = decoded.data; 
+            } else if (decoded.type === 'nprofile') {
+                targetPubkey = decoded.data.pubkey; 
+            }
+        } catch (error) {
+            console.error("Errore nella decodifica NIP-19:", error);
+        }
+    } else {
+        targetPubkey = rawParam;
+    }
+
+    return targetPubkey;
+}
+
 function renderNostrTracksList() {
   const trackListEl = document.getElementById('nostrTrackList');
   if (!trackListEl) return;
@@ -483,7 +504,7 @@ function renderNostrTracksList() {
 
   const titleQuery = document.getElementById('nostrSearchTitle')?.value.toLowerCase().trim() || "";
   let authorRaw = document.getElementById('nostrSearchAuthor')?.value.trim() || "";
-  const authorQuery = authorRaw.startsWith('npub1') ? npubToHex(authorRaw).toLowerCase() : authorRaw.toLowerCase();
+  const authorQuery = authorRaw.startsWith('npub1') ? parseNostrParam(authorRaw).toLowerCase() : authorRaw.toLowerCase();
 
   nostrTracks.forEach((track) => {
     const titleMatch = track.title.toLowerCase().includes(titleQuery);

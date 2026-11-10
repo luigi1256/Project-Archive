@@ -269,9 +269,6 @@ async function runSearchByRTag() {
   }).join('');
 }
 
-// ==========================================
-// MEDIA CORE - UNIFIED SEARCH & ROUTING HOOK
-// ==========================================
 
 // ==========================================
 // MEDIA CORE - UNIFIED SEARCH & ROUTING HOOK
