@@ -107,7 +107,7 @@ function previewMediaItem(url, type) {
   wrapper.innerHTML = `
     <div class="flex justify-between items-center font-mono text-xs text-emerald-400 border-b border-emerald-900/40 pb-2">
       <span class="truncate max-w-[80%]">🔗 ${url}</span>
-      <button onclick="document.getElementById('${uniqueId}').remove()" class="text-red-400 hover:text-red-300 cursor-pointer font-bold px-2 py-0.5 bg-red-950/40 rounded border border-red-900/60">✕ Close</button>
+      <button onclick="document.getElementById('${uniqueId}').remove()" class="baita-action-btn">✕ Close</button>
     </div>
     <div class="flex justify-center">${mediaElement}</div>
   `;

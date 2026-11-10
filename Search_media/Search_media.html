@@ -60,7 +60,7 @@
     
       
       <div class="flex justify-end">
-        <button id="toggleShelfBtn" onclick="toggleShelf()" class="text-xs bg-emerald-950 border border-emerald-800 px-3 py-2 rounded font-mono text-emerald-300 hover:text-white cursor-pointer min-h-[36px] transition-colors">📚 Saved Shelf</button>
+        <button id="toggleShelfBtn" onclick="toggleShelf()" class="baita-action-btn">📚 Saved Shelf</button>
       </div>
     </div>
 
@@ -82,7 +82,7 @@
       <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
       Saved Shelf
     </h2>
-    <button onclick="toggleShelf()" class="text-emerald-400/80 hover:text-white font-mono text-xs px-2.5 py-1 bg-emerald-950/80 hover:bg-emerald-900 rounded border border-emerald-800/50 cursor-pointer transition-all">
+    <button onclick="toggleShelf()" class="baita-action-btn">
       ✕ Close
     </button>
   </div>
@@ -114,8 +114,8 @@
     <div id="searchArea" class="bg-[#0f2318] border border-emerald-900/60 p-3 sm:p-5 rounded-lg shadow-md space-y-2 sm:space-y-3">
 
       <div class="filter-row flex flex-col sm:flex-row gap-2 font-mono">  
-        <button id="modeRelayBtn" onclick="setSearchMode('relay')" class="bg-emerald-600 hover:bg-emerald-500 text-emerald-950 font-bold rounded text-xs sm:text-sm cursor-pointer transition-colors py-2.5">🌐 S-Network</button>
-        <button id="modeLocalBtn" onclick="setSearchMode('local')" class="bg-emerald-900/80 text-emerald-300 hover:bg-emerald-900 rounded text-xs sm:text-sm cursor-pointer transition-colors py-2.5">💻 L-Render</button>  
+        <button id="modeRelayBtn" onclick="setSearchMode('relay')" >🌐 S-Network</button>
+        <button id="modeLocalBtn" onclick="setSearchMode('local')" >💻 L-Render</button>  
       </div>
 
       <div id="searchContainer" class="flex gap-2">
@@ -125,7 +125,7 @@
           placeholder="search in the silence… (query, npub...)"
           class="flex-1 bg-[#071810] border border-emerald-900 text-emerald-300 px-3 sm:px-4 py-2.5 rounded font-mono text-xs sm:text-sm focus:outline-none focus:border-emerald-500 min-w-0"
         >
-        <button id="searchButton" class="bg-emerald-600 hover:bg-emerald-500 text-emerald-950 font-bold px-4 sm:px-5 py-2.5 rounded font-mono text-sm transition-colors cursor-pointer shrink-0">🔍</button>
+        <button id="searchButton">🔍</button>
       </div>
     </div>
 
