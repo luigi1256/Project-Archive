@@ -20,11 +20,15 @@
             <div id="profileBanner" class="h-40 bg-gray-700 bg-cover bg-center"></div>
                 <div class="px-6 pb-6 relative">
                 
-                <div class="flex justify-between items-end -mt-16 mb-4">
+                <div class="flex flex-col items-start gap-3 -mt-16 mb-4">
+                    
                     <img id="profilePicture" src="https://via.placeholder.com/150" alt="Avatar" class="w-32 h-32 rounded-full border-4 border-gray-800 bg-gray-900 object-cover shadow-lg">
-                    <a id="externalProfile" href="#" target="_blank" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg transition shadow">Open Profile</a>
+                    <div class="flex items-center gap-2">
+                        <a id="externalProfile" href="#" target="_blank" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition shadow">Open Profile</a>
+                        <a id="suggestProfile" href="#" target="_blank" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition shadow">Follow more users</a>
+                    </div>
                 </div>
-
+                                                                
                 <h2 id="profileName" class="text-3xl font-extrabold text-white">Username</h2>
                 <p id="profileDisplayName" class="text-purple-400 text-sm mb-4">@display_name</p>                                                                               
                 <p id="profileAbout" class="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed break-words min-w-0">Bio user...</p>
@@ -205,6 +209,7 @@
                 }
 
                 document.getElementById('externalProfile').href = `profile-social.html?npub=${npub}`;
+                document.getElementById('suggestProfile').href = `suggest_follow.html?npub=${npub}`;
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('profileContainer').classList.remove('hidden');
 

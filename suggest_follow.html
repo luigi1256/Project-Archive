@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Follow Suggestions (Social Graph)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <header class="max-w-3xl mx-auto pt-12 pb-6 px-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-purple-400">Follow Suggestions (Graph)</h1>
+        <a href="resource_hub.html" class="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium hover:bg-gray-600 transition">← Back to resource</a>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 pb-24">
+        <div id="startContainer" class="bg-gray-800 border border-gray-700 rounded-2xl p-8 text-center shadow-xl space-y-4">
+            <h2 id="welcomeName" class="text-xl font-bold text-white">Ready to analyze network</h2>
+            <p class="text-sm text-gray-400 max-w-md mx-auto">This calculation fetches the target user's, scans up to 256 follow lists, and checks activity for the last 180 days.</p>
+            <div>
+                <button id="startBtn" class="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl transition shadow-lg cursor-pointer">
+                    🚀 Start Social Analysis
+                </button>
+            </div>
+        </div>
+
+        <div id="loading" class="hidden text-center text-gray-400 text-lg py-12 space-y-2">
+            <p id="loadingStatus" class="font-medium text-purple-300">Analyzing social network graph...</p>
+            <p class="text-xs text-gray-500">Please wait while we fetch follow lists and recent activity.</p>
+        </div>
+
+        <div id="socialContainer" class="hidden space-y-6">
+            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+                <div>
+                    <h2 id="targetName" class="text-xl font-bold text-white">Analysing: ...</h2>
+                    <p id="targetStatus" class="text-sm text-purple-400 mt-1">Scan complete</p>
+                </div>
+                <a id="backProfile" href="#" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-sm font-semibold rounded-lg transition">View Profile</a>
+            </div>
+
+            <div class="bg-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-4 border-b border-gray-700 flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                        <span id="resultsCountTitle" class="font-semibold text-gray-300">Suggested Follows</span>
+                        <span class="text-xs text-gray-400 block">Filtered (&le;20% mutuals, active in last 180d)</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="exportJsonBtn" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-xs font-semibold rounded-lg transition text-white cursor-pointer">Export JSON</button>
+                        <button id="exportHexBtn" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-xs font-semibold rounded-lg transition text-gray-200 cursor-pointer">Export Hex List</button>
+                    </div>
+                </div>
+                <div id="suggestionsList" class="divide-y divide-gray-700/50">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="cache.js"></script>
+    <script type="module">
+        import { SimplePool, nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+         
+        const INITIAL_RELAYS = [
+            'wss://offchain.pub/',
+            'wss://nos.lol',
+            'wss://relay.ditto.pub',
+        ];
+
+        const pool = new SimplePool();
+        let currentExportData = []; 
+        let targetPubkey = null;
+        let queryRelays = [...INITIAL_RELAYS];
+
+        function getAvatarUrl(pictureUrl, pubkey) {
+            if (pictureUrl && pictureUrl.startsWith('http')) {
+                return pictureUrl;
+            }
+            return `https://www.gravatar.com/avatar/${pubkey}?s=200&d=identicon`;
+        }
+
+        function initParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const rawParam = urlParams.get('npub') || urlParams.get('nprofile') || urlParams.get('pubkey');
+
+            if (!rawParam) {
+                document.getElementById('welcomeName').innerText = "No valid parameters specified in the URL.";
+                document.getElementById('startBtn').style.display = 'none';
+                return;
+            }
+
+            if (rawParam.startsWith('npub1') || rawParam.startsWith('nprofile1')) {
+                const decoded = nip19.decode(rawParam);
+                if (decoded.type === 'npub') {
+                    targetPubkey = decoded.data;
+                } else if (decoded.type === 'nprofile') {
+                    targetPubkey = decoded.data.pubkey;
+                    if (decoded.data.relays && decoded.data.relays.length > 0) {
+                        queryRelays = [...decoded.data.relays, ...INITIAL_RELAYS];
+                    }
+                }
+            } else {
+                targetPubkey = rawParam;
+            }
+
+            if (!targetPubkey) {
+                document.getElementById('welcomeName').innerText = "Unable to extract a valid public key.";
+                document.getElementById('startBtn').style.display = 'none';
+                return;
+            }
+
+            const npub = nip19.npubEncode(targetPubkey);
+            document.getElementById('backProfile').href = `profile.html?npub=${npub}`;
+            document.getElementById('welcomeName').innerText = `Ready to analyze graph for ${npub.substring(0, 12)}...`;
+        }
+
+        async function runSocialAnalysis() {
+            if (!targetPubkey) return;
+
+            document.getElementById('startContainer').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+
+            const setStatus = (text) => {
+                document.getElementById('loadingStatus').innerText = text;
+            };
+
+            try {
+                setStatus("Fetching target user's custom relays (Kind 10002)...");
+                const relayListEvents = await pool.querySync(queryRelays, {
+                    authors: [targetPubkey],
+                    kinds: [10002],
+                    limit: 1
+                });
+
+                if (relayListEvents.length > 0) {
+                    const userRelays = [];
+                    relayListEvents[0].tags.forEach(tag => {
+                        if (tag[0] === 'r' && tag[1]) {
+                            if (!tag[2] || tag[2] === 'read' || tag[2] === 'write') {
+                                userRelays.push(tag[1]);
+                            }
+                        }
+                    });
+
+                    if (userRelays.length > 0) {
+                        const merged = [...new Set([...userRelays, ...queryRelays])];
+                        queryRelays = merged.slice(0, 10);
+                    }
+                }
+
+                setStatus("Fetching user's follow list (Kind 3)...");
+                const userContactEvents = await pool.querySync(queryRelays, {
+                    authors: [targetPubkey],
+                    kinds: [3],
+                    limit: 1
+                });
+
+                const directFollowing = new Set();
+                if (userContactEvents.length > 0) {
+                    userContactEvents[0].tags.forEach(tag => {
+                        if (tag[0] === 'p' && tag[1]) {
+                            directFollowing.add(tag[1]);
+                        }
+                    });
+                }
+                directFollowing.add(targetPubkey);
+
+                const firstDegreeList = Array.from(directFollowing).filter(pk => pk !== targetPubkey).slice(0, 256);
+
+                if (firstDegreeList.length === 0) {
+                    alert("No follow list found or user follows nobody.");
+                    location.reload();
+                    return;
+                }
+
+                setStatus(`Analyzing follow lists of ${firstDegreeList.length} accounts...`);
+                const secondDegreeEvents = await pool.querySync(queryRelays, {
+                    authors: firstDegreeList,
+                    kinds: [3]
+                });
+
+                const respondingAccounts = new Set();
+                secondDegreeEvents.forEach(ev => respondingAccounts.add(ev.pubkey));
+                const totalListsCount = respondingAccounts.size;
+
+                if (totalListsCount === 0) {
+                    alert("Could not retrieve follow lists from network connections.");
+                    location.reload();
+                    return;
+                }
+
+                setStatus("Building mutual connection hierarchy...");
+                const frequencyMap = new Map();
+
+                secondDegreeEvents.forEach(event => {
+                    const seenInThisList = new Set();
+                    event.tags.forEach(tag => {
+                        if (tag[0] === 'p' && tag[1]) {
+                            seenInThisList.add(tag[1]);
+                        }
+                    });
+
+                    seenInThisList.forEach(pk => {
+                        if (!directFollowing.has(pk)) {
+                            frequencyMap.set(pk, (frequencyMap.get(pk) || 0) + 1);
+                        }
+                    });
+                });
+
+                const thresholdPercentage = 0.20; 
+                const maxAllowedOccurrences = totalListsCount * thresholdPercentage;
+
+                const preFilteredSuggestions = Array.from(frequencyMap.entries())
+                    .filter(([pubkey, score]) => score <= maxAllowedOccurrences)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 150);
+
+                if (preFilteredSuggestions.length === 0) {
+                    alert("No suggestions found matching the criteria.");
+                    location.reload();
+                    return;
+                }
+
+                const candidatePubkeys = preFilteredSuggestions.map(item => item[0]);
+                setStatus("Checking recent activity (last 180 days)...");
+                const cutoffTimestamp = Math.floor(Date.now() / 1000) - (180 * 24 * 60 * 60);
+                
+                const recentPosts = await pool.querySync(queryRelays, {
+                    authors: candidatePubkeys,
+                    kinds: [1],
+                    since: cutoffTimestamp
+                });
+
+                const activePubkeys = new Set();
+                recentPosts.forEach(ev => activePubkeys.add(ev.pubkey));
+
+                const sortedSuggestions = preFilteredSuggestions
+                    .filter(([pubkey, score]) => activePubkeys.has(pubkey))
+                    .slice(0, 100);
+
+                if (sortedSuggestions.length === 0) {
+                    alert("No active suggestions found for the last 180 days.");
+                    location.reload();
+                    return;
+                }
+
+                setStatus("Fetching profiles metadata...");
+                const suggestedPubkeys = sortedSuggestions.map(item => item[0]);
+                
+                const profileEvents = await pool.querySync(queryRelays, {
+                    authors: suggestedPubkeys,
+                    kinds: [0]
+                });
+
+                const profilesMap = new Map();
+                profileEvents.forEach(ev => {
+                    try {
+                        profilesMap.set(ev.pubkey, JSON.parse(ev.content));
+                    } catch (e) {}
+                });
+
+                currentExportData = sortedSuggestions.map(([pubkey, score], index) => {
+                    const profile = profilesMap.get(pubkey) || {};
+                    return {
+                        rank: index + 1,
+                        pubkey: pubkey,
+                        npub: nip19.npubEncode(pubkey),
+                        name: profile.name || profile.display_name || null,
+                        mutual_follows_count: score,
+                        mutual_percentage: Math.round((score / totalListsCount) * 100)
+                    };
+                });
+
+                document.getElementById('resultsCountTitle').innerText = `Suggested Follows (${currentExportData.length} found)`;
+                const listContainer = document.getElementById('suggestionsList');
+                listContainer.innerHTML = '';
+
+                currentExportData.forEach(item => {
+                    const profile = profilesMap.get(item.pubkey) || {};
+                    const name = profile.name || profile.display_name || item.npub.substring(0, 10) + '...';
+                    const picture = getAvatarUrl(profile.picture, item.pubkey);
+                    const about = profile.about ? profile.about.substring(0, 80) + '...' : '';
+
+                    const row = document.createElement('div');
+                    row.className = "p-4 flex items-center justify-between hover:bg-gray-750 transition";
+                    row.innerHTML = `
+                        <div class="flex items-center space-x-4 min-w-0">
+                            <span class="text-sm font-mono text-gray-500 w-6">#${item.rank}</span>
+                            <img src="${picture}" class="w-12 h-12 rounded-full bg-gray-700 object-cover shrink-0" alt="Avatar">
+                            <div class="min-w-0">
+                                <h3 class="font-bold text-white truncate">${escapeHtml(name)}</h3>
+                                <p class="text-xs text-gray-400 truncate">${escapeHtml(about)}</p>
+                                <span class="inline-block mt-1 text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-800">
+                                    ${item.mutual_follows_count} mutual follows (${item.mutual_percentage}% of network) • Active &le; 180d
+                                 </span>
+                            </div>
+                        </div>
+                        <div class="shrink-0 ml-4 flex space-x-2">
+                            <a href="profile.html?npub=${item.npub}" target="_blank" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-xs font-semibold rounded-lg transition">View</a>
+                        </div>
+                    `;
+                    listContainer.appendChild(row);
+                });
+
+                document.getElementById('targetName').innerText = profileEvents.find(e => e.pubkey === targetPubkey)?.name || `User ${nip19.npubEncode(targetPubkey).substring(0, 10)}...`;
+                document.getElementById('targetStatus').innerText = `Scan complete • Found ${currentExportData.length} suggestions`;
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('socialContainer').classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                alert("Error while calculating social graph suggestions.");
+                location.reload();
+            }
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('exportJsonBtn').addEventListener('click', () => {
+            if (currentExportData.length === 0) return;
+            downloadFile(JSON.stringify(currentExportData, null, 2), 'follow_suggestions.json', 'application/json');
+        });
+
+        document.getElementById('exportHexBtn').addEventListener('click', () => {
+            if (currentExportData.length === 0) return;
+            downloadFile(currentExportData.map(item => item.pubkey).join('\n'), 'follow_suggestions_hex.txt', 'text/plain');
+        });
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        initParams();
+        document.getElementById('startBtn').addEventListener('click', runSocialAnalysis);
+    </script>
+</body>
+</html>

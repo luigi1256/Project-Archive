@@ -28,7 +28,6 @@ body {
   }
 }
 
-
 .player-column {
   flex: 1;
   width: 100%;
@@ -188,7 +187,6 @@ body {
   font-weight: bold;
 }
 
-
 .ipod-wheel {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -311,15 +309,71 @@ body {
   border-color: var(--baita-accent-green, #10b981);
 }
 
-#books {
-  display: flex !important;
-  flex-direction: column !important; 
-  gap: 8px !important;
-  max-height: 300px !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding-right: 4px;
+/* Search Container Styles */
+#searchContainer {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
+
+#searchBar {
+  flex: 1;
+  background-color: #050e0a;
+  border: 1px solid var(--baita-card-border, #1f3829);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--baita-text, #e2e8f0);
+  font-family: monospace;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+#searchBar::placeholder {
+  color: var(--baita-text-muted, #94a3b8);
+}
+
+#searchBar:focus {
+  border-color: var(--baita-accent-green, #10b981);
+  background-color: rgba(16, 185, 129, 0.04);
+}
+
+#searchButton {
+  background-color: #0d1712;
+  border: 1px solid var(--baita-card-border, #1f3829);
+  color: var(--baita-text, #e2e8f0);
+  border-radius: 8px;
+  padding: 0 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#searchButton:hover {
+  background-color: #1e3a2b;
+  border-color: var(--baita-accent-green, #10b981);
+  color: #fff;
+}
+
+#searchButton:active {
+  transform: scale(0.96);
+}
+
+#books {                         
+  display: flex !important;          
+  flex-direction: column !important; 
+  gap: 8px !important;               
+  max-height: 360px !important;      
+  overflow-y: auto !important;       
+  overflow-x: hidden !important;     
+  padding-right: 4px;                
+}                                    
 
 #books::-webkit-scrollbar,
 .nostr-track-list::-webkit-scrollbar {
@@ -359,6 +413,60 @@ body {
   transform: translateX(3px);
 }
 
+/* Genere Filter Buttons & Dynamic Tag List Scrollbar */
+.genre-filter-btn {
+  background: rgba(13, 23, 18, 0.7) !important;
+  border: 1px solid var(--baita-card-border, #1f3829) !important;
+  color: var(--baita-text-muted, #94a3b8) !important;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 11px;
+  text-align: left;
+}
+
+.genre-filter-btn:hover {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: var(--baita-accent-green, #10b981) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+.genre-filter-btn.active-genre {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: var(--baita-accent-green, #10b981) !important;
+  border-color: var(--baita-accent-green, #10b981) !important;
+}
+
+.nostr-track-card.is-playing, 
+.book.is-playing {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-left: 3px solid var(--baita-accent-green, #10b981) !important;
+  border-color: var(--baita-accent-green, #10b981) !important;
+}
+
+.nostr-track-card.is-playing .nostr-track-title,
+.book.is-playing {
+  color: #ffffff !important;
+  font-weight: bold;
+}
+
+#dynamicTagList::-webkit-scrollbar {
+  width: 6px;
+}
+#dynamicTagList::-webkit-scrollbar-track {
+  background: #050e0a;
+  border-radius: 3px;
+}
+#dynamicTagList::-webkit-scrollbar-thumb {
+  background: var(--baita-card-border, #1f3829);
+  border-radius: 3px;
+}
+#dynamicTagList::-webkit-scrollbar-thumb:hover {
+  background: var(--baita-accent-green, #10b981);
+}
+
 .ipod-screen-content {
   position: absolute !important;
   inset: 0 !important;
@@ -392,7 +500,6 @@ body {
   pointer-events: none;
 }
 
-
 @media (max-width: 1100px) {
   .nostr-column, .nostr-tag-column {
     width: 100%;
@@ -417,11 +524,11 @@ body {
   background: #0d1712;
   border: 1px solid var(--baita-card-border, #1f3829);
   color: #e2e8f0;
-  border-radius: 8px;       
-  padding: 8px 14px;        
+  border-radius: 8px;        
+  padding: 8px 14px;         
   cursor: pointer;
-  font-size: 12px;          
-  font-weight: bold;        
+  font-size: 12px;           
+  font-weight: bold;         
   transition: all 0.2s ease;
 }
 
@@ -491,59 +598,4 @@ body {
 .nostr-play-icon {
   font-size: 12px;
   color: var(--baita-accent-green, #10b981);
-}
-
-/* ==========================================================
-   CORREZIONI: 1. Riduzione verde tag | 2. Selected Track | 3. Menu Fluido
-   ========================================================== */
-
-.genre-filter-btn {
-  background: rgba(13, 23, 18, 0.7) !important;
-  border: 1px solid var(--baita-card-border, #1f3829) !important;
-  color: var(--baita-text-muted, #94a3b8) !important;
-  padding: 8px 10px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.genre-filter-btn:hover {
-  background: rgba(16, 185, 129, 0.1) !important;
-  color: var(--baita-accent-green, #10b981) !important;
-  border-color: rgba(16, 185, 129, 0.4) !important;
-}
-
-.genre-filter-btn.active-genre {
-  background: rgba(16, 185, 129, 0.15) !important;
-  color: var(--baita-accent-green, #10b981) !important;
-  border-color: var(--baita-accent-green, #10b981) !important;
-}
-
-
-/* 2. STATO SELECTED PER LA TRACCIA IN RIPRODUZIONE */
-.nostr-track-card.is-playing, 
-.book.is-playing {
-  background: rgba(16, 185, 129, 0.12) !important;
-  border-left: 3px solid var(--baita-accent-green, #10b981) !important;
-  border-color: var(--baita-accent-green, #10b981) !important;
-}
-
-.nostr-track-card.is-playing .nostr-track-title,
-.book.is-playing {
-  color: #ffffff !important;
-  font-weight: bold;
-}
-
-#dynamicTagList::-webkit-scrollbar {
-  width: 6px;
-}
-#dynamicTagList::-webkit-scrollbar-track {
-  background: #050e0a;
-  border-radius: 3px;
-}
-#dynamicTagList::-webkit-scrollbar-thumb {
-  background: var(--baita-card-border, #1f3829);
-  border-radius: 3px;
-}
-#dynamicTagList::-webkit-scrollbar-thumb:hover {
-  background: var(--baita-accent-green, #10b981);
 }
