@@ -188,16 +188,9 @@
         let fetchedPacks = [];
         const profilesCache = new Map();
         const selectedProfiles = new Map();
-
-        // Tracciamento stato Shift
         let lastSelected = { packId: null, index: null };
-        
-        // 🔀 Nuovo: tracking fork origin
         let forkOrigin = null;
 
-        // ==========================================
-        // PATCH 1: Chiudi pool quando la pagina viene chiusa
-        // ==========================================
         window.addEventListener('beforeunload', () => {
             try {
                 pool.close(GENERAL_RELAYS);
@@ -208,9 +201,6 @@
             }
         });
 
-        // ==========================================
-        // PATCH 2: Funzione robusta per parsing chiave privata
-        // ==========================================
         function parsePrivateKey(privKeyRaw) {
             try {
                 let hexSecret = privKeyRaw.trim();
@@ -235,9 +225,6 @@
             }
         }
 
-        // ==========================================
-        // PATCH 3: Validazione evento prima di pubblicare
-        // ==========================================
         function validateEvent(ev) {
             const required = ['id', 'pubkey', 'kind', 'created_at', 'tags', 'sig'];
             const missing = required.filter(field => ev[field] === undefined);
@@ -253,11 +240,7 @@
             return true;
         }
 
-        // ==========================================
-        // 🔀 NEW: Funzioni Fork/Load Pack
-        // ==========================================
 
-        // 🔀 NEW: Aggiorna fork origin per track anche author pubkey
 function loadPackToSelection(packEvent, mergeMode = false) {
     if (!mergeMode) {
         if (selectedProfiles.size > 0) {
@@ -276,8 +259,7 @@ function loadPackToSelection(packEvent, mergeMode = false) {
         const meta = profilesCache.get(pk) || {};
         selectedProfiles.set(pk, meta);
     });
-    
-    // Otteniamo il d-tag dal pack originale
+
     const dTag = packEvent.tags.find(t => t[0] === 'd')?.[1] || '';
     const titleTag = packEvent.tags.find(t => t[0] === 'title' || t[0] === 'name');
     
@@ -304,13 +286,6 @@ function loadPackToSelection(packEvent, mergeMode = false) {
     alert(`${mergeMode ? 'Aggiunti' : 'Caricati'} ${memberPubkeys.length} profili dal pack!`);
 }
 
-// =================================================================
-// 🔀 MODIFICATA: publishStarterPack con a-tag corretto
-// ================================================================
-
-// =================================================================
-// 🔀 CORRETTO: Publishing con gestione errori corretta per pool.publish()
-// =================================================================
 async function publishStarterPack() {
     const statusEl = document.getElementById('publishStatus');
     const title = document.getElementById('packTitle').value.trim();
@@ -331,8 +306,6 @@ async function publishStarterPack() {
     statusEl.classList.remove('hidden', 'text-red-400', 'text-green-400');
     statusEl.className = "text-xs text-center text-purple-300";
     statusEl.innerText = "Preparazione evento...";
-
-    // 1. Genera o riutilizza d-tag
     let dIdentifier;
     let isEdit = false;
     
@@ -346,16 +319,14 @@ async function publishStarterPack() {
         console.log("🔀 Nuovo FORK con d-tag:", dIdentifier);
     }
 
-    // 2. Costruzione tags - ORDINE CORRETTO
     const tags = [];
-    
     tags.push(["d", dIdentifier]);
     tags.push(["title", title]);
     
     if (forkOrigin && includeOriginalTag) {
         const aTagValue = `39089:${forkOrigin.authorPubkey}:${forkOrigin.dTag || ''}`;
         tags.push(["a", aTagValue]);
-        console.log("🔗 a-tag aggiunto:", aTagValue);
+        console.log("🔗 a-tag add:", aTagValue);
     }
     
     const pTags = Array.from(selectedProfiles.keys()).map(pk => ["p", pk]);
@@ -377,33 +348,33 @@ async function publishStarterPack() {
     try {
         if (method === 'nip07') {
             if (!window.nostr || typeof window.nostr.signEvent !== 'function') {
-                throw new Error("Nessuna estensione NIP-07 funzionante trovata (Alby, nos2x...). Installane una e riprova.");
+                throw new Error("No working NIP-07 extension found (Alby, nos2x...). Install one and try again.");
             }
             
-            statusEl.innerText = "Verifica autorizzazione estensione...";
+            statusEl.innerText = "Verification of authorization extension...";
             
             try {
                 const pubKey = await window.nostr.getPublicKey();
                 if (!pubKey) {
-                    throw new Error("Nessuna chiave pubblica restituita dall'estensione");
+                    throw new Error("No public key returned by extension");
                 }
             } catch (authErr) {
                 console.error("Auth error:", authErr);
-                throw new Error(`Autorizzazione NIP-07 fallita: ${authErr.message}. Prova ad autorizzare l'estensione manualmente.`);
+                throw new Error(`NIP-07 authorization failed: ${authErr.message}. Try authorizing the extension manually.`);
             }
             
-            statusEl.innerText = "In attesa di firma dall'estensione NIP-07...";
+            statusEl.innerText = "Pending signature from extension NIP-07...";
             
             try {
                 signedEvent = await window.nostr.signEvent(event);
             } catch (signError) {
-                console.error("Errore durante la firma NIP-07:", signError);
-                throw new Error(`Firma fallita: ${signError.message}. Verifica che l'estensione NIP-07 sia autorizzata.`);
+                console.error("Error signing NIP-07:", signError);
+                throw new Error(`Signature failed: ${signError.message}. Verify that the NIP-07 extension is authorized.`);
             }
         } else {
             const privKeyRaw = document.getElementById('privkeyInput').value.trim();
             if (!privKeyRaw) {
-                throw new Error("Inserisci la chiave privata per continuare.");
+                throw new Error("Enter the private key to continue.");
             }
 
             const secretBytes = parsePrivateKey(privKeyRaw);
@@ -412,7 +383,7 @@ async function publishStarterPack() {
 
         validateEvent(signedEvent);
 
-        console.log("✅ Evento firmato pronto:", {
+        console.log("✅ Signed event ready:", {
             id: signedEvent.id,
             kind: signedEvent.kind,
             pubkey: signedEvent.pubkey,
@@ -422,41 +393,24 @@ async function publishStarterPack() {
             a_tag: signedEvent.tags.find(t => t[0] === 'a')?.[1]
         });
 
-        // =================================================================
-        // 🔀 FIX CORRETTO: publish() senza dipendere dalle Promise
-        // =================================================================
-        statusEl.innerText = "Invio in corso sui relay...";
-        
+        statusEl.innerText = "Sending in progress on relays...";
         const relayResults = {};
         
-        // Metodo 1: Usa pool.publish() direttamente (sincrono o fire-and-forget)
+        
         for (const relayUrl of GENERAL_RELAYS) {
             try {
                 const result = pool.publish([relayUrl], signedEvent);
-                
-                // pool.publish() in nostr-tools spesso restituisce void
-                // Impostiamo subito come pending, poi verifichiamo dopo timeout
                 relayResults[relayUrl] = 'pending';
-                console.log(`📤 Pubblicato su ${relayUrl}:`, result ?? 'fire-and-forget (nessun ritorno)');
+                console.log(`📤 Published on ${relayUrl}:`, result ?? 'fire-and-forget (no return)');
                 
             } catch (relayErr) {
                 relayResults[relayUrl] = relayErr.message || 'publish error';
-                console.error(`✗ Errore init su ${relayUrl}:`, relayErr);
+                console.error(`✗ init error on ${relayUrl}:`, relayErr);
             }
         }
         
-        // Metodo 2: Attendi un po' per dare tempo ai relay di accettare/rifiutare
-        statusEl.innerText = "Attendo conferma dai relay...";
+        statusEl.innerText = "Wait for confirmation from relays...";
         await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        // Nota: SimplePool non offre callback di successo/fail per publish()
-        // Quindi assumiamo "success" se nessun exception raised
-        // Per verifiche reali, servirebbe ascoltare gli eventi dei relay
-        
-        // Metodo alternativo con verifiche (opzionale, più avanzato)
-        // Se vuoi verfici reale, potresti subscribere agli ACK dai relay
-        // Ma per semplicità, contiamo solo su assenza di exception
-        
         let successCount = 0;
         let failedRelays = [];
         
@@ -464,34 +418,34 @@ async function publishStarterPack() {
             if (status === 'pending' || status === 'success') {
                 successCount++;
                 relayResults[relayUrl] = 'success';
-                console.log(`✓ Presunto OK su ${relayUrl}`);
+                console.log(`✓ Alleged OK on ${relayUrl}`);
             } else {
                 failedRelays.push(`${relayUrl}:${status}`);
             }
         }
         
-        console.log(`📊 Risultati pubblicazione: ${JSON.stringify(relayResults)}`);
+        console.log(`📊 Publication results: ${JSON.stringify(relayResults)}`);
         
         if (successCount === 0 && failedRelays.length > 0) {
-            throw new Error(`Nessun relay ha accettato l'evento. Falliti: ${failedRelays.join(', ')}`);
+            throw new Error(`'No relays accepted the event. Failed: ${failedRelays.join(', ')}`);
         }
 
         statusEl.className = "text-xs text-center text-green-400 font-bold";
         const operationType = isEdit ? 'EDIT' : 'FORK';
-        statusEl.innerText = `✅ Starter Pack ${operationType} pubblicato! (${successCount}/${GENERAL_RELAYS.length} relay)`;
+        statusEl.innerText = `✅ Starter Pack ${operationType} pubblished! (${successCount}/${GENERAL_RELAYS.length} relays)`;
 
         setTimeout(() => {
             fetchStarterPacks();
         }, 2000);
 
     } catch (err) {
-        console.error("❌ Errore pubblicazione completo:", {
+        console.error("❌ Publication error :", {
             message: err.message,
             stack: err.stack,
             event: signedEvent ? { id: signedEvent.id, kind: signedEvent.kind } : 'no signed event'
         });
         statusEl.className = "text-xs text-center text-red-400 font-bold";
-        statusEl.innerText = `❌ Errore: ${err.message}`;
+        statusEl.innerText = `❌ Error: ${err.message}`;
     }
 }
 
@@ -538,7 +492,7 @@ async function publishStarterPack() {
             
             grid.innerHTML = '';
             loading.classList.remove('hidden');
-            statusStats.innerText = `Interrogazione relay...`;
+            statusStats.innerText = `Relays query...`;
 
             const limitVal = parseInt(document.getElementById('limitFilter').value);
             const timeVal = document.getElementById('timeFilter').value;
@@ -558,7 +512,7 @@ async function publishStarterPack() {
                 fetchedPacks = Array.from(uniqueMap.values()).sort((a, b) => b.created_at - a.created_at);
 
                 loading.classList.add('hidden');
-                statusStats.innerText = `Trovati ${fetchedPacks.length} Starter Pack.`;
+                statusStats.innerText = `Found ${fetchedPacks.length} Starter Pack.`;
 
                 const allPubkeys = new Set();
                 fetchedPacks.forEach(ev => {
@@ -570,7 +524,7 @@ async function publishStarterPack() {
                 renderStarterPacks();
             } catch (err) {
                 console.error(err);
-                loading.innerText = "Errore durante il recupero dei dati dai relay.";
+                loading.innerText = "Error retrieving data from relays.";
             }
         }
 
@@ -590,7 +544,7 @@ async function publishStarterPack() {
                 });
                 updateAllBadges();
             } catch(e) {
-                console.error("Errore preload profili:", e);
+                console.error("Profile preload error:", e);
             }
         }
 
@@ -609,15 +563,15 @@ async function publishStarterPack() {
             });
 
             if (filtered.length === 0) {
-                grid.innerHTML = `<p class="text-gray-400 text-center py-8">Nessun Starter Pack trovato.</p>`;
+                grid.innerHTML = `<p class="text-gray-400 text-center py-8">No Starter Pack found.</p>`;
                 return;
             }
 
             filtered.forEach(ev => {
                 const titleTag = ev.tags.find(t => t[0] === 'title' || t[0] === 'name');
-                const title = titleTag ? titleTag[1] : 'Starter Pack senza titolo';
+                const title = titleTag ? titleTag[1] : 'Untitled Starter Pack';
                 const descriptionTag = ev.tags.find(t => t[0] === 'description');
-                const description = descriptionTag ? descriptionTag[1] : (ev.content || 'Nessuna descrizione');
+                const description = descriptionTag ? descriptionTag[1] : (ev.content || 'No description');
                 
                 const memberPubkeys = ev.tags.filter(t => t[0] === 'p' && t[1]).map(t => t[1]);
                 const dateStr = new Date(ev.created_at * 1000).toLocaleDateString();
@@ -630,8 +584,6 @@ async function publishStarterPack() {
 
                 const card = document.createElement('div');
                 card.className = "bg-gray-800 border border-gray-700 rounded-xl p-6 flex flex-col justify-between hover:border-purple-500/50 transition shadow-md";
-                
-                // 🔀 NEW: Calcola profili già presenti nella selezione
                 const alreadySelected = memberPubkeys.filter(pk => selectedProfiles.has(pk)).length;
                 const newProfiles = memberPubkeys.length - alreadySelected;
 
@@ -642,7 +594,7 @@ async function publishStarterPack() {
                             <div class="flex items-center gap-1.5 flex-wrap justify-end">
 
                                 <button data-action="load-pack" class="text-xs bg-green-900/50 hover:bg-green-900 text-green-300 border border-green-700 px-2 py-1 rounded transition cursor-pointer" title="Upload profiles for selection">
-                                    🔀 ${alreadySelected > 0 ? 'Aggiungi' : 'Fork'} (${memberPubkeys.length})
+                                    🔀 ${alreadySelected > 0 ? 'Add' : 'Fork'} (${memberPubkeys.length})
                                 </button>
                                 <button data-action="all" class="text-xs bg-purple-900/50 hover:bg-purple-900 text-purple-300 border border-purple-700 px-2 py-1 rounded transition cursor-pointer">
                                     + All
@@ -662,8 +614,8 @@ async function publishStarterPack() {
                         
                         <div class="mt-4 pt-4 border-t border-gray-700/60">
                             <div class="flex justify-between items-center mb-3">
-                                <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Profili nel pack:</h4>
-                                <span class="text-[11px] text-gray-500"><kbd class="bg-gray-900 border border-gray-700 px-1 rounded text-gray-400">Shift + Click</kbd> per selezioni multiple</span>
+                                <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Profiles in the pack:</h4>
+                                <span class="text-[11px] text-gray-500"><kbd class="bg-gray-900 border border-gray-700 px-1 rounded text-gray-400">Shift + Click</kbd> for multiple selections</span>
                             </div>
                             <div class="profiles-container flex flex-wrap gap-2"></div>
                         </div>
@@ -828,7 +780,7 @@ async function publishStarterPack() {
         }
 
         function updateSelectedCounter() {
-            document.getElementById('selectedCount').innerText = `${selectedProfiles.size} profili selezionati`;
+            document.getElementById('selectedCount').innerText = `${selectedProfiles.size} selected profiles`;
         }
 
         
@@ -903,9 +855,7 @@ function openExportModal() {
             }
         });
 
-        document.getElementById('publishPackBtn').addEventListener('click', publishStarterPack);
-        
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+        document.getElementById('publishPackBtn').addEventListener('click', publishStarterPack);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
         fetchStarterPacks();
     </script>
 </body>
