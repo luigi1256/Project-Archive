@@ -425,7 +425,7 @@ function parseAndAddNostrTrack(event) {
     });
   });
 
-  const titleTag = tags.find(t => t[0] === 'title' || t[0] === 'name' || t[0] === 'd');
+  const titleTag = tags.find(t => t[0] === 'title');
   const artistTag = tags.find(t => t[0] === 'artist' || t[0] === 'author');
   const imageTag = tags.find(t => t[0] === 'image' || t[0] === 'picture' || t[0] === 'cover'); 
   const genreTags = tags.filter(t => t[0] === 't' || t[0] === 'genre').map(t => t[1].toLowerCase());
