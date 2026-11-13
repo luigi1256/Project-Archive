@@ -109,7 +109,10 @@
 
             const npub = nip19.npubEncode(targetPubkey);
             document.getElementById('backProfile').href = `profile.html?npub=${npub}`;
-            document.getElementById('welcomeName').innerText = `Ready to analyze graph for ${npub.substring(0, 12)}...`;
+            const currentPubkey = nip19.decode(npub).data;
+            const cached = typeof getProfileFromCache === 'function' ? getProfileFromCache(currentPubkey) : null;
+            const displayName = cached?.display_name || cached?.name || `${npub.substring(0, 12)}...`;
+            document.getElementById('welcomeName').innerText = `Ready to analyze graph for ${displayName}`;
         }
 
         async function runSocialAnalysis() {
@@ -299,8 +302,12 @@
                     `;
                     listContainer.appendChild(row);
                 });
-
-                document.getElementById('targetName').innerText = profileEvents.find(e => e.pubkey === targetPubkey)?.name || `User ${nip19.npubEncode(targetPubkey).substring(0, 10)}...`;
+ 
+                const cached = typeof getProfileFromCache === 'function' ? getProfileFromCache(targetPubkey) : null;
+                document.getElementById('targetName').innerText = 
+                    cached?.display_name || 
+                    cached?.name || 
+                    `User ${nip19.npubEncode(targetPubkey).substring(0, 10)}...`;
                 document.getElementById('targetStatus').innerText = `Scan complete • Found ${currentExportData.length} suggestions`;
                 
                 document.getElementById('loading').classList.add('hidden');
