@@ -1,0 +1,34 @@
+.link-carousel-container {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: #444 #222;
+    -webkit-overflow-scrolling: touch;
+}
+
+.link-carousel-item {
+    flex: 0 0 100%;
+    max-width: 100%;
+    text-decoration: none;
+    color: inherit;
+    scroll-snap-align: center;
+    scroll-snap-stop: always; 
+}
+
+.link-carousel-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+    border: 1px solid #444;
+}
+
+.link-carousel-item figcaption {
+    text-align: center;
+    font-size: 0.85em;
+    padding: 8px;
+    color: #a0a0a0;
+}
