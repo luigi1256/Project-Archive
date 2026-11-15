@@ -21,7 +21,7 @@
             <span id="statusText" class="text-gray-300 font-medium">Reading parameters and analyzing the list...</span>
             <span id="relayStats" class="text-gray-400"></span>
         </div>
-        <a href="resource_hub.html" class="px-4 py-2 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition text-sm shrink-0">← Back to resource</a>
+        <a href="resource_hub.html" class="px-4 py-2 border-gray-700 rounded-lg font-medium hover:bg-gray-700 transition text-sm shrink-0">← Back to resource</a>
     </div>
 </div>
     
@@ -424,7 +424,7 @@
                     
                     replyBadgeHtml = `
                         <div class="mb-2.5">
-                            <a href="note.html?nevent=${rootNevent}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-purple-300 bg-purple-950/70 border border-purple-800/50 px-2.5 py-1 rounded-lg hover:bg-purple-900/50 transition-colors font-mono shadow-sm">
+                            <a href="note.html?nevent=${rootNevent}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] border border-purple-800/50 px-2.5 py-1 rounded-lg hover:bg-purple-900/50 transition-colors font-mono shadow-sm">
                                 <span>↩️ Reply (Show Thread)</span>
                             </a>
                         </div>
@@ -442,7 +442,7 @@
                                 </a>
                             </div>
                             <div class="flex items-center gap-2">
-                                <a href="${noteLink}" target="_blank" class="text-xs text-gray-300 hover:text-purple-300 bg-gray-900/80 border border-gray-700 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5">
+                                <a href="${noteLink}" target="_blank" class="text-xs border border-gray-700 hover:bg-gray-700 hover:text-purple-300 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5">
                                     <span>💬 Open</span>
                                 </a>
                                 <span class="text-xs text-gray-500">${dateStr}</span>
@@ -471,7 +471,7 @@
             label = '📚 ' + label;
             url = `modfile.html?naddr=${entity}`;
         }
-        return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline">${label}</a>`;
+        return `<a href="${url}" target="_blank" class="border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline hover:bg-purple-950/60">${label}</a>`;
     });
 
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -483,14 +483,14 @@
         let lower = cleanUrl.toLowerCase();
         
         let typeBadge = "🔗 Link";
-        let badgeClass = "bg-blue-950 text-blue-300 border-blue-800";  
+        let badgeClass = "border-blue-800 hover:bg-blue-950";  
         
         if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
             typeBadge = "🖼️ Photo";
-            badgeClass = "bg-cyan-950 text-cyan-300 border-cyan-800"; 
+            badgeClass = "border-cyan-800 hover:bg-cyan-950"; 
         } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
             typeBadge = "🎬 Video";
-            badgeClass = "bg-purple-950 text-purple-300 border-purple-800"; 
+            badgeClass = "border-teal-800 hover:bg-teal-950"; 
         }
         let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
         if (displayUrl.length > 35) displayUrl = displayUrl.substring(0, 32) + '...';
