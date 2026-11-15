@@ -92,7 +92,7 @@
                 }
                 
                 let safeUrl = sanitizeUrl(url);
-                return `<a href="${safeUrl}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
+                return `<a href="${safeUrl}" target="_blank" class="text-purple-400 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline hover:bg-purple-950/60 max-w-full truncate align-bottom">${label}</a>`;
             });
         
             parsed = parsed.replace(/https?:\/\/[^\s<]+/g, (url) => {

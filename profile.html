@@ -21,11 +21,15 @@
                 <div class="px-6 pb-6 relative">
                 
                 <div class="flex flex-col items-start gap-3 -mt-16 mb-4">
-                    
+    
                     <img id="profilePicture" src="https://via.placeholder.com/150" alt="Avatar" class="w-32 h-32 rounded-full border-4 border-gray-800 bg-gray-900 object-cover shadow-lg">
-                    <div class="flex items-center gap-2">
-                        <a id="externalProfile" href="#" target="_blank" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition shadow">Open Profile</a>
-                        <a id="suggestProfile" href="#" target="_blank" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition shadow">Follow more users</a>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full">
+                        <a id="externalProfile" href="#" target="_blank" class="w-full sm:w-auto text-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition shadow">Open Profile</a>
+
+                        <a id="suggestProfile" href="#" target="_blank" class="w-full sm:w-auto text-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition shadow">Follow more users</a>
+
+                        <a id="mediaProfile" href="#" target="_blank" class="w-full sm:w-auto text-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition shadow">Open Profile Media</a>
                     </div>
                 </div>
                                                                 
@@ -80,9 +84,7 @@
                     try {
                         const decoded = nip19.decode(entity);
                         if (decoded.type === 'npub') {
-                            // Eventuale logica aggiuntiva
                         } else if (decoded.type === 'nprofile') {
-                            // Eventuale logica aggiuntiva
                         }
                     } catch (e) {
                         console.warn("Error in the npub/profile decoder:", e);
@@ -210,6 +212,7 @@
 
                 document.getElementById('externalProfile').href = `profile-social.html?npub=${npub}`;
                 document.getElementById('suggestProfile').href = `suggest_follow.html?npub=${npub}`;
+                document.getElementById('mediaProfile').href = `shashin_profile.html?npub=${npub}`;
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('profileContainer').classList.remove('hidden');
 
