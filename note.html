@@ -10,7 +10,7 @@
 
     <header class="max-w-3xl mx-auto pt-8 pb-4 px-3 sm:px-4 flex justify-between items-center border-b border-gray-800 mb-6">
         <h1 class="text-xl sm:text-2xl font-bold text-purple-400">Thread & Media Note</h1>
-        <a href="resource_hub.html" class="px-3 py-1.5 bg-gray-800 text-gray-300 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-700 transition">← Back to resource</a>
+        <a href="resource_hub.html" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-700 transition">← Back to resource</a>
     </header>
 
     <main class="max-w-3xl mx-auto px-3 sm:px-4 pb-24">
@@ -350,7 +350,7 @@
                         relayStatusText = "(not found relay)";
                     }
                     
-                    replyBadgeHtml = `<a href="note.html?nevent=${parentIdentifier}" class="inline-flex items-center gap-1 bg-purple-950/80 text-purple-300 text-[10px] px-2.5 py-1 rounded-full border border-purple-500/40 hover:bg-purple-900 transition font-mono max-w-full truncate">💬 <span>Risposta a ${parentIdHex.substring(0, 4)}...</span> <span class="text-gray-400 italic truncate">${relayStatusText}</span></a>`;
+                    replyBadgeHtml = `<a href="note.html?nevent=${parentIdentifier}" class="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-purple-500/40 hover:bg-purple-900 transition font-mono max-w-full truncate">💬 <span>Reply to ${parentIdHex.substring(0, 4)}...</span> <span class="text-gray-400 italic truncate">${relayStatusText}</span></a>`;
                 }
             }
 
@@ -431,7 +431,7 @@
             label = '📚 ' + label;                                                                                                                                                                                                                               
             url = `modfile.html?naddr=${entity}`;                                                                                                                                                                                                                               
         }                                                                                                                                                                                                                               
-        return `<a href="${url}" target="_blank" class="text-purple-400 bg-purple-950/60 border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline max-w-full truncate align-bottom">${label}</a>`;
+        return `<a href="${url}" target="_blank" class="border border-purple-800/60 px-1 py-0.5 rounded text-[11px] sm:text-xs inline-block font-mono hover:underline hover:bg-purple-950/60 max-w-full truncate align-bottom">${label}</a>`;
     });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
         
     parsed = parsed.replace(/https?:\/\/[^\s<]+/g, (url) => {                                                                                                                                                                                                                               
