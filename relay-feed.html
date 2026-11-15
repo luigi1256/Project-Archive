@@ -314,7 +314,7 @@
         } catch(e) {}
 
         const formattedContent = parseNostrContent(event.content);
-        const shortPub = npub ? `${npub.substring(0, 10)}...${npub.slice(-6)}` : 'anon';
+        const shortPub = npub ? `${npub.substring(0, 6)}...${npub.slice(-6)}` : 'anon';
         const profile = typeof getProfileFromCache === 'function' ? getProfileFromCache(event.pubkey) : null;
         const nickname = profile ? (profile.name || profile.display_name || shortPub) : shortPub;
         const dateStr = new Date(event.created_at * 1000).toLocaleString();
@@ -343,29 +343,31 @@
             
             replyBadgeHtml = `
                 <div class="mb-2.5">
-                    <a href="note.html?nevent=${rootNevent}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-purple-300 bg-purple-950/70 border border-purple-800/50 px-2.5 py-1 rounded-lg hover:bg-purple-900/50 transition-colors font-mono shadow-sm">
-                        <span>↩️ Reply (Show Thread)</span>
+                    <a href="note.html?nevent=${rootNevent}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-white border border-purple-800/50 px-2.5 py-1 rounded-lg hover:bg-purple-900/50 transition-colors font-mono shadow-sm">
+                        <span>← Reply (Show Thread)</span>
                     </a>
+                    
+                    
                 </div>
             `;
         }
 
         htmlContent += `
             <div data-pubkey="${event.pubkey}" class="card" style="margin-bottom: 12px;">
-                ${replyBadgeHtml}
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.85em;">
+                <div style="margin-bottom: 10px;">${replyBadgeHtml}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1em;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <a href="${profileLink}" target="_blank" onclick="event.stopPropagation()" style="color: #bb86fc; text-decoration: none; font-weight: bold;">
                             👤 ${nickname}
                         </a>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                      <span onclick="window.open('${noteLink}', '_blank')" style="color: #999; font-size: 0.9em; cursor: pointer; text-decoration: underline;" title="Open note">
+                      <span onclick="window.open('${noteLink}', '_blank')" style="color: #999; font-size: 1.1em; cursor: pointer; text-decoration: underline;" title="Open note">
                           ${dateStr}
                       </span>
                     </div>
                 </div>
-                <div style="color: #e0e0e0; white-space: pre-wrap; font-size: 0.9em; line-height: 1.4;">${formattedContent}</div>
+                <div style="color: #e0e0e0; white-space: pre-wrap; font-size: 1.1em; line-height: 1.4;">${formattedContent}</div>
             </div>
         `;
     });
@@ -387,7 +389,7 @@
                     label = '📚 ' + label;
                     url = `modfile.html?naddr=${entity}`;
                 }
-                return `<a href="${url}" target="_blank" style="color: #d8b4fe; background-color: #2e1065; border: 1px solid #581c87; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; display: inline-block; font-family: monospace; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${label}</a>`;
+                return `<a href="${url}" target="_blank" style="color: #d8b4fe; border: 1px solid #581c87; padding: 2px 6px; border-radius: 4px; display: inline-block; font-family: monospace; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${label}</a>`;
             });
     
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -398,14 +400,14 @@
         let lower = cleanUrl.toLowerCase();
         
         let typeBadge = "🔗 Link";
-        let badgeStyle = "background: #27272a; color: #d4d4d8; border-color: #3f3f46;"; 
+        let badgeStyle = "color: #d4d4d8; border-color: #3f3f46;"; 
         
         if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
-            typeBadge = "🖼️ Foto";
-            badgeStyle = "background: #083344; color: #a5f3fc; border-color: #164e63;"; 
+            typeBadge = "🖼️ Photo";
+            badgeStyle = "border-color: #164e63;"; 
         } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
             typeBadge = "🎬 Video";
-            badgeStyle = "background: #2e1065; color: #d8b4fe; border-color: #581c87;"; 
+            badgeStyle = "border-color: #581c87;"; 
         }
         
         let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
@@ -421,7 +423,7 @@
 
     async function fetchNip11(relayUrl) {
         const nip11Box = document.getElementById('nip11Info');
-        nip11Box.innerHTML = '<div style="font-size: 0.8em; color: #888;">Loading info relay...</div>';
+        nip11Box.innerHTML = '<div style="font-size: 1em; color: #888;">Loading info relay...</div>';
         const httpUrl = relayUrl.replace('wss://', 'https://').replace('ws://', 'http://');
 
         try {
@@ -433,10 +435,10 @@
             const data = await response.json();
 
             nip11Box.innerHTML = `
-                <div style="font-size: 0.85em; line-height: 1.4;">
+                <div style="font-size: 1em; line-height: 1.4;">
                     <strong style="color: #4CAF50;">${data.name || relayUrl}</strong><br>
-                    <span style="color: #ccc; font-size: 0.8em;">${data.description || 'No description available.'}</span><br>
-                    <div style="margin-top: 4px; font-size: 0.75em; color: #8ab4f8;">
+                    <span style="color: #ccc; font-size: 1em;">${data.description || 'No description available.'}</span><br>
+                    <div style="margin-top: 4px; font-size: 0.9em; color: #8ab4f8;">
                         ${data.software ? `Software: ${data.software}` : ''} 
                         ${data.version ? `v${data.version}` : ''}
                     </div>
@@ -445,7 +447,7 @@
         } catch (error) {
         
             nip11Box.innerHTML = `
-                <div style="font-size: 0.8em; color: #ff6b6b;">
+                <div style="font-size: 1em; color: #ff6b6b;">
                     <strong>${relayUrl}</strong><br>
                     <span>Info NIP-11 not available (CORS or offline).</span>
                 </div>
@@ -478,7 +480,7 @@ function updateUserInterface() {
     activeUsersList.innerHTML = '';
 
     if (activeUsers.size === 0) {
-        activeUsersList.innerHTML = '<div style="font-size: 0.75em; color: #666; font-style: italic; padding: 4px;">No events...</div>';
+        activeUsersList.innerHTML = '<div style="font-size: 0.9em; color: #666; font-style: italic; padding: 4px;">No events...</div>';
         return;
     }
 
@@ -514,7 +516,7 @@ function updateUserInterface() {
             align-items: center;
             gap: 6px;
             padding: 4px 8px;
-            font-size: 0.75em;
+            font-size: 0.9em;
             background: #222;
             border: 1px solid #333;
             border-radius: 4px;
@@ -554,7 +556,7 @@ function updateUserInterface() {
 
     if (activeUsers.size >= 50) {
         const limitNote = document.createElement('div');
-        limitNote.style.cssText = 'font-size: 0.7em; color: #777; align-self: center; padding: 0 4px; font-style: italic; white-space: nowrap;';
+        limitNote.style.cssText = 'font-size: 0.8em; color: #777; align-self: center; padding: 0 4px; font-style: italic; white-space: nowrap;';
         limitNote.textContent = '(Max 50)';
         activeUsersList.appendChild(limitNote);
     }

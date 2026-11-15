@@ -79,6 +79,10 @@ input, textarea, select, button {
   font-family: monospace;
 }
 
+a {
+  color: #e0e0e0;
+}
+
 button {
   background: #bb86fc;
   color: #000;
