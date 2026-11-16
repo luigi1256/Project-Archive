@@ -328,7 +328,7 @@
             activePubkeys.forEach(pubkey => {
                 let npub = '';
                 try { npub = nip19.npubEncode(pubkey); } catch(e) {}
-                
+                const fallbackUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${pubkey}`;
                 const profile = authorDataMap.get(pubkey);
                 const name = profile ? (profile.name || profile.display_name || (npub ? npub.substring(0, 8) + '...' : 'Anon')) : (npub ? npub.substring(0, 8) + '...' : 'Anon');
                 const picture = profile && profile.picture ? profile.picture : `https://api.dicebear.com/7.x/identicon/svg?seed=${pubkey}`;
@@ -338,7 +338,7 @@
                 const itemHtml = `
                     <div class="flex flex-col items-center cursor-pointer shrink-0 group" onclick="scrollToAuthor('${pubkey}')" title="${name} (${count} note)">
                         <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 transition-transform group-hover:scale-105">
-                            <img src="${picture}" alt="${name}" class="w-full h-full rounded-full object-cover bg-gray-900 border-2 border-gray-900">
+                            <img src="${picture}" alt="${name}" onerror="this.onerror=null; this.src='${fallbackUrl}';"class="w-full h-full rounded-full object-cover bg-gray-900 border-2 border-gray-900">
                         </div>
                         <span class="text-xs text-gray-300 mt-1.5 max-w-[70px] truncate text-center">${name}</span>
                     </div>
