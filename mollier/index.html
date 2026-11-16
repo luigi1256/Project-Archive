@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mollier Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-100 min-h-screen pb-16">
+
+<header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 py-3">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-lg font-bold text-slate-800">🏠 Mollier Manager</h1>
+                <p class="text-xs text-slate-500">Gestione umidità, ventilazione e riscaldamento per stanza</p>
+            </div>
+            <button id="themeToggle" onclick="toggleTheme()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 cursor-pointer">
+                🌙 Dark
+            </button>
+        </div>
+        <nav id="tabNav" class="flex gap-1.5 mt-3 overflow-x-auto text-xs font-semibold">
+            <button data-tab="tab-dimensioni" class="tab-btn active whitespace-nowrap px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600">📏 Dimensioni</button>
+            <button data-tab="tab-impianti" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600">🔥 Impianti</button>
+            <button data-tab="tab-temperature" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600">🌡️ Temperature</button>
+            <button data-tab="tab-calibrazione" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600">📐 Calibrazione</button>
+            <button data-tab="tab-strategia" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600">💡 Strategia</button>
+            <button data-tab="tab-storico" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600">🕒 Storico</button>
+        </nav>
+    </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-4 py-4">
+
+    <!-- ============ TAB 1: DIMENSIONI STANZE ============ -->
+    <section id="tab-dimensioni" class="panel active">
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="font-bold text-slate-800">Dimensioni e infissi delle stanze</h2>
+                <button onclick="addRoom()" id="addRoomBtn" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-violet-600 text-white hover:bg-violet-700">+ Aggiungi stanza</button>
+            </div>
+            <p class="text-[11px] text-slate-500 mb-3">Numero stanze: <strong id="roomCount">0</strong></p>
+            <div id="sizesContainer" class="space-y-3"></div>
+        </div>
+    </section>
+
+    <!-- ============ TAB 2: IMPIANTI ============ -->
+    <section id="tab-impianti" class="panel">
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="font-bold text-slate-800">Impianti per stanza</h2>
+                <button onclick="resetRooms()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-200 text-slate-600 hover:bg-slate-300">↺ Ripristina default</button>
+            </div>
+            <p class="text-[11px] text-slate-500 mb-3">Stato finestre, deumidificatori e tipo di riscaldamento (termosifoni o pompa di calcolo).</p>
+            <div id="systemsContainer" class="space-y-3"></div>
+        </div>
+    </section>
+
+    <!-- ============ TAB 3: TEMPERATURE E METEO ============ -->
+    <section id="tab-temperature" class="panel space-y-4">
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+            <h2 class="font-bold text-slate-800">Condizioni esterne</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Modalità meteo</label>
+                    <select id="weatherMode" onchange="toggleWeatherMode()" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
+                        <option value="manual">✍️ Manuale</option>
+                        <option value="auto">🌐 Automatica (Open-Meteo)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Pressione (hPa)</label>
+                    <input type="number" step="0.1" id="pressInput" value="1013.25" onchange="updateExternal()" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
+                </div>
+            </div>
+
+            <div id="autoWeatherBox" class="hidden flex gap-2 items-end bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <div class="flex-1">
+                    <label class="text-[10px] text-slate-500 block">Città</label>
+                    <input type="text" id="cityInput" placeholder="es. Milano" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
+                </div>
+                <button onclick="fetchWeather()" class="text-xs font-bold px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Cerca meteo</button>
+            </div>
+            <p id="weatherStatus" class="text-[11px] text-slate-400 italic"></p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Temp. esterna (°C)</label>
+                    <input type="number" step="0.1" id="manExtTemp" value="15.0" onchange="updateExternal()" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Umidità est. (%)</label>
+                    <input type="number" step="1" id="manExtHum" value="70" onchange="updateExternal()" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Cielo</label>
+                    <select id="skyCondition" onchange="updateExternal()" class="w-full px-1 py-1.5 border border-slate-300 rounded-lg text-xs bg-white">
+                        <option value="sunny">☀️ Sereno</option>
+                        <option value="cloudy">⛅ Nuvoloso</option>
+                        <option value="rain">🌧️ Pioggia</option>
+                        <option value="storm">⛈️ Temporale</option>
+                        <option value="snow">❄️ Neve</option>
+                        <option value="fog">🌫️ Nebbia</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Vento</label>
+                    <select id="windCondition" onchange="updateExternal()" class="w-full px-1 py-1.5 border border-slate-300 rounded-lg text-xs bg-white">
+                        <option value="calm">🍃 Debole</option>
+                        <option value="moderate">💨 Moderato</option>
+                        <option value="strong">🌬️ Forte</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+            <h2 class="font-bold text-slate-800">Edificio e comfort</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Stato riscaldamento</label>
+                    <select id="heatingStatus" onchange="updateExternal()" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
+                        <option value="off">🔴 Spenti</option>
+                        <option value="auto">🟠 Programmato</option>
+                        <option value="on">🟢 Sempre acceso</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Temp. comfort target (°C)</label>
+                    <input type="number" step="0.1" id="targetComfortTemp" value="20.5" onchange="updateExternal()" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Ora accensione (per program.)</label>
+                    <input type="time" id="heatingTime" value="06:30" onchange="updateExternal()" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+            <h2 class="font-bold text-slate-800 mb-3">Misure interne per stanza</h2>
+            <div id="tempsContainer" class="space-y-3"></div>
+        </div>
+    </section>
+
+    <!-- ============ TAB 4: CALIBRAZIONE COSTANTE k ============ -->
+    <section id="tab-calibrazione" class="panel space-y-4">
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+            <h2 class="font-bold text-slate-800">📐 Misura del coefficiente k di scambio d'aria</h2>
+            <div class="text-[11px] text-slate-600 bg-violet-50 border border-violet-200 rounded-lg p-3 leading-relaxed">
+                <strong>Come funziona:</strong> apri la finestra della stanza scelta, inserisci la temperatura e l'umidità attuali nella scheda
+                <em>Temperature</em>, poi registra la <strong>Rilevazione 1</strong>. Attendi 15–30 minuti (tenendo la finestra aperta e le condizioni
+                esterne stabili), aggiorna le misure nella scheda <em>Temperature</em> e registra la <strong>Rilevazione 2</strong>.
+                L'app calcola il coefficiente <strong>k</strong> dall'andamento esponenziale verso le condizioni esterne:
+                <code class="bg-white px-1 rounded">T(t) = T<sub>est</sub> + (T₀ − T<sub>est</sub>)·e^(−k·t)</code>.
+                Una volta calibrato, il k misurato sostituisce la stima standard nelle previsioni della scheda Strategia.
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                <div>
+                    <label class="text-[10px] text-slate-500 block">Stanza da calibrare</label>
+                    <select id="calibRoomSelect" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"></select>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="startCalibration()" id="calibStartBtn" class="text-xs font-bold px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">▶️ Rilevazione 1</button>
+                    <button onclick="endCalibration()" id="calibEndBtn" disabled class="text-xs font-bold px-3 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed">⏹️ Rilevazione 2</button>
+                    <button onclick="cancelCalibration()" id="calibCancelBtn" class="hidden text-xs font-bold px-3 py-2 rounded-lg bg-slate-200 text-slate-600 hover:bg-slate-300">Annulla</button>
+                </div>
+            </div>
+
+            <div id="calibSessionBox"></div>
+            <div id="calibResultBox"></div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+            <h2 class="font-bold text-slate-800 mb-3">Costanti k calibrate</h2>
+            <div id="calibrationsList" class="space-y-2"></div>
+        </div>
+    </section>
+
+    <!-- ============ TAB 5: STRATEGIA ============ -->
+    <section id="tab-strategia" class="panel">
+        <div id="resultCard" class="hidden space-y-3">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex justify-between items-center">
+                <h2 class="font-bold text-slate-800">Strategia consigliata</h2>
+                <button onclick="calculateStrategy()" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">↻ Ricalcola</button>
+            </div>
+            <div id="roomsContainer" class="space-y-3"></div>
+        </div>
+        <div id="strategyEmpty" class="text-center py-12 text-slate-400 italic text-sm">
+            Inserisci almeno una misura nella scheda "Temperature", poi torna qui e premi "Ricalcola".
+        </div>
+    </section>
+
+    <!-- ============ TAB 6: STORICO ============ -->
+    <section id="tab-storico" class="panel">
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="recordSnapshot()" class="flex-1 text-xs font-bold px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">💾 Salva Snapshot</button>
+                <button onclick="exportJSON()" class="text-xs font-bold px-3 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-700">⬇️ Esporta JSON</button>
+                <button onclick="exportCSV()" class="text-xs font-bold px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">📊 Esporta Excel (CSV)</button>
+                <button onclick="clearHistory()" class="text-xs font-bold px-3 py-2 rounded-lg bg-rose-100 text-rose-600 hover:bg-rose-200">🗑️ Cancella storico</button>
+            </div>
+            <div id="historyContainer" class="space-y-2"></div>
+        </div>
+    </section>
+
+</main>
+
+<script src="dash.js"></script>
+
+<script>
+  function applyTheme(theme) {
+    const btn = document.getElementById('themeToggle');
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      if (btn) btn.textContent = '☀️ Light';
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      if (btn) btn.textContent = '🌙 Dark';
+    }
+  }
+
+  function toggleTheme() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    localStorage.setItem('mollier-theme', next);
+    applyTheme(next);
+  }
+
+  applyTheme(localStorage.getItem('mollier-theme') || 'light');
+</script>
+
+</body>
+</html>
