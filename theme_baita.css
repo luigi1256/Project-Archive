@@ -51,14 +51,15 @@ h1, h2, h3, h4, h5, h6 {
 
 #shelf {
   width: 260px;
-  height: 100vh;
+  height: 100%;
+  height: 100dvh;
   position: fixed;
   left: 0;
   top: 0;
   background: var(--baita-sidebar-bg);
   display: flex;
   flex-direction: column;
-  padding: 70px 15px 20px 15px; 
+  padding: 70px 15px calc(20px + env(safe-area-inset-bottom)) 15px; 
   box-shadow: inset -6px 0 15px rgba(0, 0, 0, 0.5);
   border-right: 2px solid var(--baita-card-border);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
