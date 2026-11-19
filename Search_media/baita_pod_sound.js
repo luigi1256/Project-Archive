@@ -8,7 +8,6 @@ let nostrTracks = [];
 const seenTrackIds = new Set();
 const NOSTR_RELAYS = [
   'wss://offchain.pub',
-  'wss://nos.lol',
   'wss://relay.nostr.net'
 ];
 
