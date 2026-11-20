@@ -8,7 +8,7 @@ let nostrTracks = [];
 const seenTrackIds = new Set();
 const NOSTR_RELAYS = [
   'wss://offchain.pub',
-  'wss://relay.nostr.net'
+  'wss://nostr.mom'
 ];
 
 if (typeof window.ipodCurrentVolume === 'undefined') {
