@@ -178,15 +178,16 @@ function fetchNostrTags(tagsArray) {
   }
   if (resultsDiv) resultsDiv.innerHTML = "";
   
-  const searchRelays = [
-  "wss://search.nos.today",  
-  "wss://nostr.azzamo.net" 
+  const Relays = [
+  "wss://relay.damus.io",  
+  "wss://relay.primal.net",
+  "wss://relay.ditto.pub/"
   ];
 
   let seenEventIds = new Set();
-  let activeConnections = searchRelays.length;
+  let activeConnections = Relays.length;
 
-  searchRelays.forEach(relayUrl => {
+  Relays.forEach(relayUrl => {
     const ws = new WebSocket(relayUrl);
 
     ws.onopen = () => {

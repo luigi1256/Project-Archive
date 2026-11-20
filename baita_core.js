@@ -63,11 +63,12 @@ function openNostrClient(term) {
   } else if (cleanTerm.startsWith("naddr1")) {
     window.location.href = `modfile.html?naddr=${encodeURIComponent(cleanTerm)}`;
   } else if (cleanTerm.startsWith("http://") || cleanTerm.startsWith("https://")) {
-    window.location.href='./Search_media/Search_media.html';
+    window.location.href = `./Search_media/Search_media.html?url=${encodeURIComponent(cleanTerm)}`;
+  } else if (cleanTerm.startsWith("#")) {
+    let tag = cleanTerm.substring(1);
+    window.location.href = `readtag.html?t=${encodeURIComponent(tag)}`;
   } else {
-    
-    if (cleanTerm.startsWith("#")) cleanTerm = cleanTerm.substring(1);
-    window.location.href = `readtag.html?t=${encodeURIComponent(cleanTerm)}`;
+    window.location.href = `baita_text.html?q=${encodeURIComponent(cleanTerm)}`;
   }
 }
 
