@@ -375,7 +375,7 @@ async function fetchNostrTracks() {
     else {authorInput.value=""}
   }
 
-  const socket = new WebSocket(NOSTR_RELAYS[1]);
+  const socket = new WebSocket(NOSTR_RELAYS[0]);
 
   socket.onopen = () => {
     if (statusEl && !filter.authors) statusEl.innerText = "Track Search Event 36787...";
@@ -592,7 +592,7 @@ async function fetchNostrTracksByAuthor(pubkeyHex) {
   const statusEl = document.getElementById('nostrStatus');
   if (statusEl) statusEl.innerText = `Search by author: ${pubkeyHex.slice(0, 8)}...`;
   const trackListEl = document.getElementById('nostrTrackList');
-  const socket = new WebSocket(NOSTR_RELAYS[2]);
+  const socket = new WebSocket(NOSTR_RELAYS[1]);
   socket.onopen = () => {
     const req = JSON.stringify([
       "REQ", 

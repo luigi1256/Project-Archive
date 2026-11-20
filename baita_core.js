@@ -67,7 +67,7 @@ function openNostrClient(term) {
   } else {
     
     if (cleanTerm.startsWith("#")) cleanTerm = cleanTerm.substring(1);
-    window.location.href = `baita_text.html?q=${encodeURIComponent(cleanTerm)}`;
+    window.location.href = `readtag.html?t=${encodeURIComponent(cleanTerm)}`;
   }
 }
 
@@ -162,7 +162,7 @@ function parseContent(text) {
   const hashtagRegex = /(?<![a-zA-Z0-9_?&=/#"'=-])(#[\w-]+)/g;
   parsed = parsed.replace(hashtagRegex, (match, tag) => {
     let cleanTag = tag.substring(1); 
-    let url = `baita_text.html?q=${encodeURIComponent(cleanTag)}`;
+    let url = `readtag.html?t=${encodeURIComponent(cleanTag)}`;
     return `<a href="${url}" class="text-emerald-400 hover:underline font-semibold">${tag}</a>`;
   });
 

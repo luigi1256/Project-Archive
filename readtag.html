@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Baita Reader</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="theme_baita.css">
+</head>
+<body class="bg-[#0b1711] text-emerald-100 min-h-screen">
+
+<button id="toggleShelf" onclick="toggleShelf()" class="fixed top-4 left-4 z-50 bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-1.5 rounded-lg text-sm font-mono hover:bg-emerald-900 transition-colors">📚 Shelf</button>
+
+<aside id="shelf" class="fixed top-0 left-0 h-full w-64 bg-[#0f2318] border-r border-[#064e3b] p-4 transform -translate-x-full transition-transform duration-300 z-40">
+    <h2 class="text-emerald-400 font-mono text-sm tracking-wider uppercase">My saved tags</h2>
+    <div id="books" style="margin-top: 15px;"></div>
+</aside>
+
+<div id="main" class="max-w-3xl mx-auto p-4 sm:p-6 pt-16">
+                                                                                                                                                                                                                                                                                          
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mb-4 tracking-tight">Tag Reader</h1>                                                                                                                                                                                                                                                                                
+    <div class="mb-4 flex items-center gap-2">                                                                                                                                                          
+      <a href="Search.html" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">                                                          
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>                                         
+        </svg>                                                                                                                                                                                                                                                               
+        <span>Search</span>  
+      </a>
+      <a href="index.html" class="inline-flex items-center gap-2 px-4 py-2 bg-[#064e3b] hover:bg-[#053d2e] text-emerald-100 rounded-lg font-medium transition text-sm">
+        <span>🏠 Home</span>
+      </a>
+    </div>                                                                                                                                                                                                                                                                                                                                          
+              
+  <div id="searchArea">
+  <form id="searchForm" onsubmit="event.preventDefault();" style="width: 100%; display: flex; justify-content: center;">
+    <div id="searchContainer">
+      <div style="position: relative; flex: 1; display: flex;">
+        <input
+          id="searchBar"
+          type="text"
+          placeholder="Enter some tag(s), e.g. asknostr, art..."
+          aria-label="Search tags"
+        >
+      </div>
+      
+      <button id="searchButton" type="submit">
+        🏷️ Read
+      </button>
+    </div>
+  </form>
+</div>
+
+<div style="width: 100%; max-width: 550px; margin: 6px auto 0 auto; padding: 0 15px;">
+  <p style="font-size: 11px; color: var(--baita-text-muted); font-family: monospace; margin: 0;">
+    Tip: You can query multiple tags separating them with commas (e.g. <code style="background: rgba(10, 18, 14, 0.8); padding: 2px 4px; border-radius: 3px; border: 1px solid var(--baita-card-border); color: var(--baita-heading);">asknostr, art</code>)
+  </p>
+</div>  
+
+
+  <div id="library" class="hidden">
+    <div class="flex justify-between items-center mb-4 border-b border-[#064e3b] pb-2">
+      <span id="libraryTitle" class="text-xs font-mono text-emerald-400 opacity-80"></span>
+      <button onclick="closeLibrary()" class="text-xs font-mono text-emerald-400 hover:text-emerald-200 px-2 py-1 rounded bg-emerald-950/60 border border-emerald-800/60 transition-colors">
+        ✖ Close folder
+      </button>
+    </div>
+
+    <div id="loading" class="text-xs font-mono text-emerald-500 mb-4 hidden">
+      ⏳ Loading tags...
+    </div>
+
+    <div id="results" class="space-y-4"></div>
+  </div>
+</div>
+
+<script src="baita_core.js"></script>
+<script type="module">
+import { nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'  
+
+const searchBar = document.getElementById("searchBar");
+const searchButton = document.getElementById("searchButton");
+const library = document.getElementById("library");
+const resultsDiv = document.getElementById("results");
+const loadingDiv = document.getElementById("loading");
+const libraryTitle = document.getElementById("libraryTitle");
+
+function executeTagReader(rawInput) {
+  if (!rawInput) return;
+  
+  let tags = rawInput
+    .split(/[\s,]+/)
+    .map(t => t.replace(/^#/, "").trim().toLowerCase())
+    .filter(t => t.length > 0);
+
+  if (tags.length === 0) return;
+
+  const tagQueryString = tags.join(",");
+
+  if (library) library.style.display = "block";
+  if (libraryTitle) libraryTitle.textContent = `🏷️ Tags: #${tags.join(" #")}`;
+
+  let books = JSON.parse(localStorage.getItem("nostr_shelf")) || {};
+  let shelfKey = `#${tagQueryString}`;
+  if (!books[shelfKey]) {
+    books[shelfKey] = { label: `🏷️ #${tags[0]}${tags.length > 1 ? '...' : ''}`, type: 'tags' };
+    localStorage.setItem("nostr_shelf", JSON.stringify(books));
+    if (typeof renderShelf === 'function') renderShelf();
+  }
+
+  const newUrl = `${window.location.pathname}?t=${encodeURIComponent(tagQueryString)}`;
+  window.history.pushState({path: newUrl}, '', newUrl);
+
+  fetchNostrTags(tags);
+  
+  if (searchBar) searchBar.value = "";
+}
+
+window.closeLibrary = function() {
+  if (library) library.style.display = "none";
+  const cleanUrl = window.location.pathname;
+  window.history.pushState({path: cleanUrl}, '', cleanUrl);
+}
+
+const dismissedNotes = getDismissedNotes();
+
+function getDismissedNotes() {
+  return new Set(JSON.parse(localStorage.getItem("baita_dismissed") || "[]"));
+}
+
+window.dismissNote = function(eventId) { 
+  let dismissed = JSON.parse(localStorage.getItem("baita_dismissed") || "[]");
+  
+  if (!dismissed.includes(eventId)) {
+    dismissed.push(eventId);
+    if (dismissed.length > 50) dismissed.shift();
+    localStorage.setItem("baita_dismissed", JSON.stringify(dismissed));
+  }
+
+  const card = document.getElementById(`note-${eventId}`);
+  if (card) card.remove();
+}
+
+function renderNoteCard(ev) {
+  if (loadingDiv) {
+    loadingDiv.classList.add("hidden");
+  }
+  
+  const card = document.createElement("div");
+  card.id = `note-${ev.id}`;
+  card.className = "p-4 mb-3 bg-[#0f2318] border border-[#064e3b] rounded-lg text-emerald-100 text-sm shadow-sm relative group";
+  
+  const formattedContent = typeof parseContent === 'function' ? parseContent(ev.content) : ev.content;
+  let nevent = nip19.neventEncode({ id: ev.id });
+  let noteLink = `note.html?nevent=${nevent}`;      
+
+  card.innerHTML = `
+    <div class="flex justify-between items-center mb-2 text-xs opacity-60 font-mono">
+      <span>Pubkey: ${ev.pubkey.substring(0, 8)}...</span>
+      <div class="flex items-center gap-3">
+        <a href="${noteLink}" class="hover:underline text-emerald-400">Open note ↗</a>
+        <button type="button" onclick="dismissNote('${ev.id}')" title="Nascondi questa nota" class="text-emerald-400/50 hover:text-red-400 bg-transparent border-none p-0 cursor-pointer text-xs transition-colors">
+          ✕
+        </button>
+      </div>
+    </div>
+    <div class="whitespace-pre-wrap leading-relaxed break-words overflow-hidden">${formattedContent}</div>
+  `;
+  
+  if (resultsDiv) {
+    resultsDiv.appendChild(card);
+  }
+}
+
+function fetchNostrTags(tagsArray) {
+  if (loadingDiv) {
+    loadingDiv.textContent = `⏳ Reading notes for #${tagsArray.join(", #")}...`;
+    loadingDiv.classList.remove("hidden");
+  }
+  if (resultsDiv) resultsDiv.innerHTML = "";
+  
+  const searchRelays = [
+  "wss://search.nos.today",  
+  "wss://nostr.azzamo.net" 
+  ];
+
+  let seenEventIds = new Set();
+  let activeConnections = searchRelays.length;
+
+  searchRelays.forEach(relayUrl => {
+    const ws = new WebSocket(relayUrl);
+
+    ws.onopen = () => {
+      let filter = { kinds: [1], "#t": tagsArray, limit: 35 };
+      ws.send(JSON.stringify(["REQ", "baita_tag_reader", filter]));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data[0] === "EVENT") {
+          const ev = data[2];
+          if (!seenEventIds.has(ev.id) && !dismissedNotes.has(ev.id)) {
+            seenEventIds.add(ev.id);
+            renderNoteCard(ev);
+          }
+        } else if (data[0] === "EOSE") {
+          ws.close();
+        }
+      } catch (err) {
+        console.error("Error parsing", relayUrl, err);
+      }
+    };
+
+    ws.onerror = () => checkFinished();
+    ws.onclose = () => checkFinished();
+  });
+
+  function checkFinished() {
+    activeConnections--;
+    if (activeConnections <= 0) {
+      if (loadingDiv) loadingDiv.classList.add("hidden");
+      if (resultsDiv && resultsDiv.children.length === 0) {
+        if (loadingDiv) {
+          loadingDiv.textContent = `No notes found for tags: #${tagsArray.join(", #")}.`;
+          loadingDiv.classList.remove("hidden");
+        }
+      }
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const tagParam = urlParams.get('t'); 
+  
+  if (tagParam) {
+    executeTagReader(tagParam);
+  }
+
+  if (searchButton) {
+    searchButton.onclick = () => {
+      const term = searchBar.value.trim();
+      if (term) executeTagReader(term);
+    };
+  }
+
+  if (searchBar) {
+    searchBar.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const term = searchBar.value.trim();
+        if (term) executeTagReader(term);
+      }
+    });
+  }
+});
+</script>
+
+</body>
+</html>
