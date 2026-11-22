@@ -474,6 +474,11 @@
         return `<a href="${url}" target="_blank" class="border border-purple-800/60 px-1.5 py-0.5 rounded text-xs inline-block font-mono hover:underline hover:bg-purple-950/60">${label}</a>`;
     });
 
+    const hashtagRegex = /(^|\s)#([a-zA-Z0-9_]+)/g;
+    parsed = parsed.replace(hashtagRegex, (match, space, tag) => {
+        return `${space}<a href="readtag.html?t=${tag}" target="_blank" class="text-purple-400 hover:text-purple-300 font-semibold hover:underline">#${tag}</a>`;
+    });
+
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     parsed = parsed.replace(urlRegex, (url) => {
         let cleanUrl = url.replace(/[.,!?)]$/, '');
