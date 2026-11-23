@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Filtered (Hashtag & 10015)</title>
+    
+    <link rel="stylesheet" href="mac.css">
+    <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
+    <style>
+        .profile-wrapper {
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .profile-nav-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .profile-search-box {
+            display: flex;
+            gap: 6px;
+        }
+        .profile-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--nostur-card-border);
+            overflow-x: auto;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-family: monospace;
+            color: var(--nostur-text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .tab-btn:hover {
+            color: var(--nostur-text);
+        }
+        .tab-btn.active {
+            color: var(--nostur-accent-purple);
+            border-bottom-color: var(--nostur-accent-purple);
+        }
+        .profile-header-card {
+            background: var(--nostur-card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--nostur-card-border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        .note-card {
+            background: var(--nostur-card-bg);
+            border: 1px solid var(--nostur-card-border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+            display: flex;
+            gap: 14px;
+            transition: border-color 0.2s;
+        }
+        .note-card:hover {
+            border-color: rgba(192, 132, 252, 0.3);
+        }
+        .note-avatar {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border: 1px solid var(--nostur-card-border);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+        .note-content-box {
+            flex: 1;
+            min-width: 0;
+        }
+        .note-text-area {
+            background: rgba(10, 10, 12, 0.6);
+            border: 1px solid var(--nostur-card-border);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .note-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .badge-kind {
+            font-family: monospace;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(192, 132, 252, 0.1);
+            color: var(--nostur-accent-purple);
+            border: 1px solid rgba(192, 132, 252, 0.3);
+        }
+        .badge-kind-note {
+            font-family: monospace;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--nostur-text-muted);
+            border: 1px solid var(--nostur-card-border);
+        }
+        .user-grid-card {
+            background: var(--nostur-card-bg);
+            border: 1px solid var(--nostur-card-border);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: border-color 0.2s;
+        }
+        .user-grid-card:hover {
+            border-color: rgba(192, 132, 252, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-wrapper">
+        
+        <div class="profile-nav-top">
+            <a href="index.html" style="font-family: monospace; font-size: 12px; padding: 6px 12px; border: 1px solid var(--nostur-card-border); border-radius: 6px; background: rgba(255,255,255,0.03);">
+                ← Home
+            </a>
+            
+            <div class="profile-search-box">
+                <input type="text" id="search-npub-input" placeholder="search by npub or name..." style="font-size: 12px; width: 220px;" onkeydown="if(event.key === 'Enter') handleQuickSearch()">
+                <button onclick="handleQuickSearch()" style="font-size: 12px;">Go!</button>
+            </div>
+        </div>
+
+        <div id="profile-container" class="profile-header-card">
+            <div style="font-family: monospace; font-size: 12px; color: var(--nostur-accent-purple); text-align: center; padding: 20px;">
+                ⏳ Loading profile...
+            </div>
+        </div>
+
+        <div class="profile-tabs">
+            <button onclick="switchTab('filtered')" id="tab-filtered" class="tab-btn active">📌 Hashtag Notes & 10015</button>
+            <button onclick="switchTab('notes')" id="tab-notes" class="tab-btn">💬 All Notes</button>
+            <button onclick="switchTab('likes')" id="tab-likes" class="tab-btn">❤️ Likes</button>
+            <button onclick="switchTab('liked-users')" id="tab-liked-users" class="tab-btn">👥 Liked Users</button>
+        </div>
+
+        <div id="content-container">
+            <div style="color: var(--nostur-text-muted); font-size: 13px; text-align: center; font-family: monospace;">Select a tab...</div>
+        </div>
+    </div>
+    
+   
+    <script type="module">
+        import { openZapModal } from './ZapPrepar.js';
+        import { sendLike } from './likes_zap.js';
+        
+        let currentPubkey = '';
+        let globalPool = null;
+        let cachedNpub = ''; 
+        let profileuserdata = {};
+        
+        const defaultRelays = [
+            'wss://offchain.pub/',
+            'wss://nos.lol',
+            'wss://relay.primal.net',
+            'wss://purplepag.es'
+        ];
+
+        function getQueryParam(param) {
+            return new URLSearchParams(window.location.search).get(param);
+        }
+
+        function parseContent(note) {
+            let text = note.content || '';
+
+            let parsed = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+
+            parsed = parsed.replace(/\bnostr:(npub1[a-z0-9]+|nprofile1[0-9a-z]+|note1[a-z0-9]+|nevent1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+                let url = '#';
+                let label = entity.substring(0, 8) + '...';
+
+                if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+                    label = '👤 ' + label;
+                    url = `TagProfile.html?npub=${entity}`;
+                } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+                    label = '💬 ' + label;
+                    url = `note.html?nevent=${entity}`;    
+                } else if (entity.startsWith('naddr')) {
+                    label = '📚 ' + label;
+                    url = `modfile.html?naddr=${entity}`;
+                }
+                
+                return `<a href="${url}" target="_blank" class="nostur-entity-badge">${label}</a>`;
+            });
+        
+            parsed = parsed.replace(/(^|\s)#([a-zA-Z0-9_]+)/g, (match, space, tag) => {
+                return `${space}<a href="readtag.html?t=${tag}" class="nostur-hashtag">#${tag}</a>`;
+            });
+
+            if (note.kind === 10015 && note.tags) {
+                let tTags = note.tags.filter(t => t[0] === 't').map(t => t[1]);
+                if (tTags.length > 0) {
+                    let tagsHtml = tTags.map(t => `<a href="readtag.html?t=${t}" class="nostur-entity-badge" style="margin-right:4px; margin-bottom:4px;">#${t}</a>`).join(' ');
+                    parsed += `<div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); display:flex; flex-wrap:wrap; gap:4px; align-items:center;"><span style="font-family:monospace; font-size:10px; color:var(--nostur-text-muted);">Tags:</span> ${tagsHtml}</div>`;
+                }
+            }
+
+            parsed = parsed.replace(/https?:\/\/[^\s<]+/g, (url) => {
+                let matchPunct = url.match(/[.,!?)]+$/);
+                let punct = matchPunct ? matchPunct[0] : '';
+                let clean = url.substring(0, url.length - punct.length);
+
+                if (/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(clean)) {
+                    return `<br><img src="${clean}" style="margin-top:8px; max-height:240px; width:100%; object-fit:cover; border-radius:6px; border:1px solid var(--nostur-card-border);" loading="lazy"><br>${punct}`;
+                }
+                if (/\.(mp4|webm|mov)(\?.*)?$/i.test(clean)) {
+                    return `<br><video controls style="margin-top:8px; max-height:240px; width:100%; border-radius:6px;"><source src="${clean}"></video><br>${punct}`;
+                }
+                return `<a href="${clean}" target="_blank" class="nostur-link-badge">${clean}</a>${punct}`;
+            });
+        
+            return parsed;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initProfile();
+        });
+
+        async function initProfile() {
+            const npubParam = getQueryParam('npub');
+            if (!npubParam) {
+                document.getElementById('profile-container').innerHTML = `<p style="color:#f87171; font-family:monospace; font-size:12px;">No npub specified in the URL.</p>`;
+                return;
+            }
+            cachedNpub = npubParam; 
+            try {
+                if (npubParam.startsWith('npub')) {
+                    currentPubkey = NostrTools.nip19.decode(npubParam).data;
+                } else if (npubParam.startsWith('nprofile')) {
+                    currentPubkey = NostrTools.nip19.decode(npubParam).data.pubkey;
+                } else {
+                    currentPubkey = npubParam;
+                }
+            } catch (e) {
+                console.error("Errore decodifica npub:", e);
+                return;
+            }
+
+            globalPool = new NostrTools.SimplePool();
+
+            try {
+                let metaEvent = await globalPool.get(defaultRelays, { kinds: [0], authors: [currentPubkey] });
+                profileuserdata = metaEvent && metaEvent.content ? JSON.parse(metaEvent.content) : {};
+                renderProfileHeader(profileuserdata, npubParam);
+                switchTab('filtered'); 
+            } catch (err) {
+                console.error("Error loading profile:", err);
+            }
+        }
+        
+        function renderProfileHeader(profile, npub) {
+            const name = profile.display_name || profile.name || npub.substring(0, 12) + '...';
+            const about = profile.about ? profile.about : 'No bio available.';
+            const picture = profile.picture || 'https://www.gravatar.com/avatar/?d=mp';
+            const banner = profile.banner ? `style="background-image: url('${profile.banner}'); height: 128px; background-size: cover; background-position: center; border-radius: 8px 8px 0 0; margin: -20px -20px 16px -20px; border-bottom: 1px solid var(--nostur-card-border);"` : '';
+
+            document.getElementById('profile-container').innerHTML = `
+                ${profile.banner ? `<div ${banner}></div>` : ''}
+                <div style="display: flex; align-items: flex-start; gap: 16px;">
+                    <img src="${picture}" alt="Avatar" style="width: 64px; height: 64px; object-fit: cover; border: 1px solid var(--nostur-card-border); border-radius: 8px; background: rgba(255,255,255,0.05); flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <h1 style="font-size: 18px; font-weight: bold; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${name}</h1>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                            <p style="font-size: 11px; font-family: monospace; color: var(--nostur-text-muted); overflow: hidden; text-overflow: ellipsis; margin: 0;">npub: ${npub}</p>
+                            <button onclick="copyNpub()" style="font-size: 10px; padding: 2px 6px;" id="copy-btn">Copy</button>
+                        </div>
+                        <div style="font-size: 13px; color: var(--nostur-text); white-space: pre-wrap; line-height: 1.4; word-break: break-word;">${about}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function copyNpub() {
+            if (!cachedNpub) return;
+            navigator.clipboard.writeText(cachedNpub).then(() => {
+                const btn = document.getElementById('copy-btn');
+                if(btn) {
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => {
+                        btn.innerText = 'Copy';
+                    }, 2000);
+                }
+            });
+        }
+
+        function handleQuickSearch() {
+            const inputVal = document.getElementById('search-npub-input').value.trim();
+            if (!inputVal) return;
+            if (inputVal.startsWith('npub1') || inputVal.startsWith('nprofile1')) {
+                window.location.href = `?npub=${inputVal}`;
+            }
+        }
+
+        async function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            const container = document.getElementById('content-container');
+            container.innerHTML = `<div style="color: var(--nostur-text-muted); font-size: 13px; text-align: center; padding: 30px; font-family: monospace;">Loading ${tabName}...</div>`;
+
+            if (!currentPubkey) return;
+
+            try {
+                if (tabName === 'filtered') {
+                    let events = await globalPool.querySync(defaultRelays, { 
+                        kinds: [1, 10015], 
+                        authors: [currentPubkey], 
+                        limit: 50 
+                    });
+
+                    let filtered = events.filter(ev => {
+                        if (ev.kind === 10015) return true;
+                        if (ev.kind === 1) {
+                            return ev.tags && ev.tags.some(t => t[0] === 't');
+                        }
+                        return false;
+                    });
+
+                    filtered.sort((a, b) => b.created_at - a.created_at);
+                    renderNotesList(filtered, container);
+                } 
+                else if (tabName === 'notes') {
+                    let notes = await globalPool.querySync(defaultRelays, { kinds: [1], authors: [currentPubkey], limit: 20 });
+                    notes.sort((a, b) => b.created_at - a.created_at);
+                    renderNotesList(notes, container);
+                } 
+                else if (tabName === 'likes') {
+                    let likes = await globalPool.querySync(defaultRelays, { kinds: [7], authors: [currentPubkey], limit: 20 });
+                    likes.sort((a, b) => b.created_at - a.created_at);
+                    renderLikesList(likes, container);
+                } 
+                else if (tabName === 'liked-users') {
+                    let likes = await globalPool.querySync(defaultRelays, { kinds: [7], authors: [currentPubkey], limit: 100 });
+                    likes.sort((a, b) => b.created_at - a.created_at);
+                    let authorPubkeysSet = new Set();
+                    likes.forEach(like => {
+                        if (like.tags) {
+                            let pTag = like.tags.find(t => t[0] === 'p');
+                            if (pTag && pTag[1]) {
+                                authorPubkeysSet.add(pTag[1]);
+                            }
+                        }
+                    });
+
+                    let uniquePubkeys = Array.from(authorPubkeysSet).slice(0, 20);
+
+                    if (uniquePubkeys.length === 0) {
+                        container.innerHTML = `<div style="background: var(--nostur-card-bg); border: 1px solid var(--nostur-card-border); border-radius: 8px; padding: 20px; text-align: center; color: var(--nostur-text-muted); font-size: 13px; font-family: monospace;">No liked users found.</div>`;
+                        return;
+                    }
+
+                    let userProfilesEvents = await globalPool.querySync(defaultRelays, { kinds: [0], authors: uniquePubkeys });
+                    let profilesMap = {};
+                    userProfilesEvents.forEach(ev => {
+                        try {
+                            profilesMap[ev.pubkey] = JSON.parse(ev.content);
+                        } catch(e) {}
+                    });
+
+                    renderLikedUsersList(uniquePubkeys, profilesMap, container);
+                }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = `<p style="color:#f87171; font-size:13px; text-align:center; padding:20px; font-family:monospace;">Error loading data.</p>`;
+            }
+        }
+
+        function renderNotesList(notes, container) {
+            if (!notes || notes.length === 0) {
+                container.innerHTML = `<div style="background: var(--nostur-card-bg); border: 1px solid var(--nostur-card-border); border-radius: 8px; padding: 20px; text-align: center; color: var(--nostur-text-muted); font-size: 13px; font-family: monospace;">No matching notes found.</div>`;
+                return;
+            }
+        
+            container.innerHTML = notes.map(note => {
+                const date = new Date(note.created_at * 1000).toLocaleDateString('en-GB', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+            
+                let nevent = note.id;
+                try {
+                    nevent = NostrTools.nip19.neventEncode({
+                        id: note.id,
+                        relays: defaultRelays
+                    });
+                } catch(e) {}
+                
+                const name_user = profileuserdata.display_name || profileuserdata.name || "User";    
+                const authorPic = profileuserdata.picture || 'https://www.gravatar.com/avatar/?d=mp';            
+                
+                let kindBadge = note.kind === 10015 
+                    ? `<span class="badge-kind">Kind 10015</span>` 
+                    : `<span class="badge-kind-note">Note (Kind 1)</span>`;
+
+                return `
+                    <div class="note-card">
+                        <img src="${authorPic}" class="note-avatar" alt="Avatar">
+                        <div class="note-content-box">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 12px; font-weight: bold; font-family: monospace; color: var(--nostur-heading);">${name_user}</span>
+                                    ${kindBadge}
+                                </div>
+                                <span style="font-size: 11px; color: var(--nostur-text-muted); font-family: monospace;">${date}</span>
+                            </div>    
+                            
+                            <div class="note-text-area">
+                                ${parseContent(note)}
+                            </div>
+                       
+                            <div class="note-actions">
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="openZapModal('${note.pubkey}', '${note.id}')" style="font-size: 11px; padding: 4px 10px;">⚡ Pay</button>
+                                    <button onclick="sendLike('${note.id}','${note.kind}', '${note.pubkey}')" style="font-size: 11px; padding: 4px 10px;">❤️ Like</button>
+                                </div>
+                                <div>    
+                                    <a href="note.html?nevent=${nevent}" style="font-size: 11px; font-family: monospace; color: var(--nostur-accent-purple); padding: 4px 10px; border: 1px solid rgba(192,132,252,0.3); border-radius: 6px; display: inline-block; background: rgba(192,132,252,0.05);">Open →</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderLikesList(likes, container) {
+            if (!likes || likes.length === 0) {
+                container.innerHTML = `<div style="background: var(--nostur-card-bg); border: 1px solid var(--nostur-card-border); border-radius: 8px; padding: 20px; text-align: center; color: var(--nostur-text-muted); font-size: 13px; font-family: monospace;">No likes found.</div>`;
+                return;
+            }
+            container.innerHTML = likes.map(like => {
+                const date = new Date(like.created_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                return `
+                    <div style="background: var(--nostur-card-bg); border: 1px solid var(--nostur-card-border); border-radius: 8px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; opacity: 0.85;">
+                        <span style="font-size: 13px; color: var(--nostur-text);">Clicked "Like" (${like.content || '❤️'})</span>
+                        <span style="font-size: 11px; color: var(--nostur-text-muted); font-family: monospace;">${date}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderLikedUsersList(pubkeys, profilesMap, container) {
+            container.innerHTML = pubkeys.map(pubkey => {
+                let profile = profilesMap[pubkey] || {};
+                let name = profile.display_name || profile.name || pubkey.substring(0, 10) + '...';
+                let about = profile.about ? profile.about.substring(0, 25) + '...' : 'No bio available.';
+                let picture = profile.picture || 'https://www.gravatar.com/avatar/?d=mp';
+                
+                let npub = '';
+                try {
+                    npub = NostrTools.nip19.npubEncode(pubkey);
+                } catch(e) {
+                    npub = pubkey;
+                }
+
+                return `
+                    <div class="user-grid-card">
+                        <img src="${picture}" class="note-avatar" alt="Avatar">
+                        <div style="flex: 1; min-w-0;">
+                            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 2px; color: var(--nostur-heading); truncate;">${name}</h3>
+                            <p style="font-size: 11px; color: var(--nostur-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${about}</p>
+                        </div>
+                        <a href="profile.html?npub=${npub}" style="font-size: 11px; font-family: monospace; color: var(--nostur-accent-purple); padding: 6px 12px; border: 1px solid rgba(192,132,252,0.3); border-radius: 6px; background: rgba(192,132,252,0.05); flex-shrink: 0; text-decoration: none;">View →</a>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.switchTab = switchTab;
+        window.copyNpub = copyNpub;
+        window.handleQuickSearch = handleQuickSearch;
+    </script>
+</body>
+</html>

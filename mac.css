@@ -1,0 +1,556 @@
+/* ==========================================================================
+   NOSTUR THEME - Dark macOS & Purple Accents Interface
+   ========================================================================== */
+
+:root {
+  --nostur-bg: #121214;
+  --nostur-card-bg: rgba(24, 24, 27, 0.75);
+  --nostur-card-border: rgba(255, 255, 255, 0.08);
+  --nostur-sidebar-bg: rgba(18, 18, 20, 0.95);
+  
+  --nostur-text: #e1e1e6;
+  --nostur-text-muted: #a1a1aa;
+  --nostur-heading: #f4f4f5;
+
+  --nostur-accent-purple: #c084fc;
+  --nostur-accent-purple-hover: #a855f7;
+  --nostur-accent-blue: #38bdf8;
+  --nostur-accent-green: #34d399;
+
+  --nostur-item-bg: rgba(255, 255, 255, 0.03);
+  --nostur-item-hover: rgba(255, 255, 255, 0.07);
+}
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--nostur-bg);
+  color: var(--nostur-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  display: flex;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--nostur-heading);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin-top: 0;
+}
+
+/* ==========================================================================
+1. SIDEBAR (#shelf) - Stile Pannello Laterale macOS
+   ========================================================================== */
+
+#shelf {
+  width: 260px;
+  height: 100%;
+  height: 100dvh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: var(--nostur-sidebar-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  padding: 70px 15px calc(20px + env(safe-area-inset-bottom)) 15px; 
+  border-right: 1px solid var(--nostur-card-border);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+  overflow: hidden;
+}
+
+#shelf.collapsed {
+  transform: translateX(-100%);
+}
+
+#shelf h2 {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--nostur-text-muted);
+  border-bottom: 1px solid var(--nostur-card-border);
+  padding-bottom: 8px;
+  flex-shrink: 0;
+}
+
+#shelf #books {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 15px;
+  padding-right: 4px; 
+}
+
+.book {
+  background: var(--nostur-item-bg);
+  color: var(--nostur-text);
+  padding: 8px 10px;
+  margin: 6px 0;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.book:hover {
+  background: var(--nostur-item-hover);
+  border-color: rgba(192, 132, 252, 0.2);
+  transform: translateX(2px);
+}
+
+#toggleShelf {
+  position: fixed;
+  left: 18px;
+  top: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--nostur-text);
+  font-weight: 500;
+  font-family: inherit;
+  border: 1px solid var(--nostur-card-border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 60;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+#toggleShelf:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+2. MAIN CONTENT & SEARCH AREA
+   ========================================================================== */
+
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: var(--nostur-bg);
+  margin-left: 260px;
+  min-height: 100vh;
+  width: calc(100% - 260px);
+  padding-top: 20px;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+#shelf.collapsed + #main {
+  margin-left: 0;
+  width: 100%;
+}   
+
+#searchArea {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 0 15px;
+}
+
+#searchContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 550px;
+}
+
+#searchBar {
+  flex: 1;
+  font-size: 14px;
+  font-family: inherit;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--nostur-card-border);
+  outline: none;
+  background: rgba(10, 10, 12, 0.6);
+  color: var(--nostur-text);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#searchBar:focus {
+  border-color: var(--nostur-accent-purple);
+  box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.15), inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+#searchButton {
+  background: var(--nostur-accent-purple);
+  border: none;
+  color: #121214;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+#searchButton:hover {
+  background: var(--nostur-accent-purple-hover);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+3. LIBRARY & CARDS (#library / .card)
+   ========================================================================== */
+
+#library, .card {
+  background: var(--nostur-card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--nostur-text);
+  border-radius: 12px;
+  border: 1px solid var(--nostur-card-border);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+#library {
+  width: 90%;
+  max-width: 850px;
+  flex: 1;
+  max-height: calc(100vh - 120px);
+  margin: 20px auto;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+input, textarea, select {
+  background: rgba(10, 10, 12, 0.6);
+  border: 1px solid var(--nostur-card-border);
+  color: var(--nostur-text);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: inherit;
+}
+
+button {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--nostur-text);
+  border-radius: 6px;
+  border: 1px solid var(--nostur-card-border);
+  padding: 8px 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+button.publish {
+  background: var(--nostur-accent-purple);
+  color: #121214;
+  border: none;
+}
+button.publish:hover {
+  background: var(--nostur-accent-purple-hover);
+  color: #ffffff;
+}
+
+pre {
+  background: rgba(10, 10, 12, 0.7);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--nostur-card-border);
+  color: var(--nostur-accent-purple);
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: monospace;
+  font-size: 0.85em;
+}
+
+a {
+  color: var(--nostur-accent-purple);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+4. CONTENT STYLING (Hashtags, Badges & Media)
+   ========================================================================== */
+
+.nostur-hashtag {
+  color: var(--nostur-accent-purple);
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.nostur-hashtag:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.nostur-entity-badge {
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  background-color: rgba(192, 132, 252, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: monospace;
+  color: var(--nostur-accent-purple);
+  display: inline-block;
+  text-decoration: none;
+}
+
+.nostur-entity-badge:hover {
+  background-color: rgba(192, 132, 252, 0.15);
+  text-decoration: underline;
+}
+
+.nostur-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  margin: 2px 0;
+  border-radius: 6px;
+  font-size: 0.85em;
+  border: 1px solid var(--nostur-card-border);
+  background: rgba(10, 10, 12, 0.5);
+  color: var(--nostur-text);
+  text-decoration: none;
+}
+
+.nostur-link-badge:hover {
+  border-color: rgba(192, 132, 252, 0.4);
+  color: #ffffff;
+}
+
+.search-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 30px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--nostur-accent-purple); 
+  background-color: rgba(192, 132, 252, 0.1); 
+  border: 1px solid rgba(192, 132, 252, 0.3); 
+  border-radius: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-loading.hidden {
+  display: none !important;
+}
+
+#library, .card, #results > div {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.whitespace-pre-wrap, pre, code {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+
+#results img, #results video {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* ==========================================================================
+5. RESPONSIVE DESIGN
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  #main {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  #shelf {
+    transform: translateX(-100%);
+    width: 280px; 
+    max-width: 80vw;
+  }
+
+  #shelf:not(.collapsed) {
+    transform: translateX(0);
+    box-shadow: 5px 0 25px rgba(0, 0, 0, 0.8);
+  }
+  
+  #library {
+    width: 95% !important;
+    padding: 12px;
+  }
+ 
+  #toggleShelf {
+    top: 10px;
+    left: 10px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  #searchArea {
+    margin-top: 48px; 
+    padding: 0 10px;
+  }
+
+  #searchContainer {
+    width: 100%;
+    gap: 6px;
+  }
+
+  #searchBar {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  #searchButton {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+
+.reddit-card {
+  background: var(--nostur-card-bg);
+  border: 1px solid var(--nostur-card-border);
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.reddit-card:hover {
+  border-color: rgba(192, 132, 252, 0.4);
+  background: rgba(24, 24, 27, 0.9);
+}
+
+
+#results.horizontal-view {
+  display: flex !important;
+  flex-direction: row !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  gap: 1rem;
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+}
+
+#results.horizontal-view > div {
+  min-width: 320px;
+  max-width: 360px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+
+#results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+@media (min-width: 1200px) {
+  #results {
+    grid-template-columns: repeat(5, minmax(0, 1fr)); 
+  }
+}
+
+.author-column-card {
+  background: rgba(24, 24, 27, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  max-height: 550px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.author-header {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--nostur-accent-purple, #c084fc);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.author-notes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.author-notes-container.horizontal-scroll {
+  flex-direction: row !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
+}
+
+.author-notes-container.horizontal-scroll > .mini-note-card {
+  min-width: 240px;
+  max-width: 240px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.mini-note-card {
+  background: rgba(10, 10, 12, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 12px;
+  color: #e1e1e6;
+  transition: border-color 0.2s;
+}
+
+.mini-note-card:hover {
+  border-color: rgba(192, 132, 252, 0.3);
+}

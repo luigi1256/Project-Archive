@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tag Note</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="mac.css">
+<style>
+  .reddit-post-card {
+    background: rgba(24, 24, 27, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .comment-card {
+    background: rgba(18, 18, 20, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .nostur-hashtag {
+    color: var(--nostur-accent-purple, #c084fc);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .nostur-hashtag:hover { text-decoration: underline; }
+
+  .nostur-entity-badge {
+    border: 1px solid rgba(192, 132, 252, 0.3);
+    background-color: rgba(192, 132, 252, 0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-family: monospace;
+    color: var(--nostur-accent-purple, #c084fc);
+    display: inline-block;
+  }
+
+  .nostur-link-badge {
+    display: inline-flex;
+    gap: 6px;
+    padding: 4px 8px;
+    margin: 4px 0;
+    border-radius: 6px;
+    font-size: 0.85em;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 10, 12, 0.5);
+    color: #e1e1e6;
+    text-decoration: none;
+  }
+  .nostur-link-badge:hover { border-color: rgba(192, 132, 252, 0.4); }
+</style>
+</head>
+<body class="bg-[#121214] text-[#e1e1e6] min-h-screen">
+
+<header class="w-full border-b border-white/10 bg-[#121214]/80 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
+  <div class="max-w-3xl mx-auto flex justify-between items-center">
+    <a href="readtag.html" class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#e1e1e6] rounded-lg font-medium transition text-xs border border-white/10">
+      ← Back to Tag
+    </a>
+    <span class="font-mono text-xs text-purple-400 font-semibold">Nostr Discussion</span>
+    <a href="index.html" class="inline-flex items-center gap-1 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#e1e1e6] rounded-lg font-medium transition text-xs border border-white/10">
+      🏠 Home
+    </a>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-4 py-8">
+
+  <div id="loading" class="text-center font-mono text-xs text-purple-400 py-12">
+    ⏳ Loading note from relays...
+  </div>
+
+  <div id="errorBox" class="hidden text-center font-mono text-xs text-red-400 py-12">
+    ❌ Note not found or invalid nevent.
+  </div>
+
+  
+  <article id="mainPost" class="reddit-post-card hidden mb-6">
+    <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3 font-mono text-xs">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">👤</span>
+        <div>
+          <div id="authorPubkey" class="text-purple-300 font-bold">u/Loading...</div>
+          <div id="postDate" class="text-white/40 text-[10px]">--</div>
+        </div>
+      </div>
+      <a id="authorProfileLink" href="#" target="_blank" class="text-purple-400 hover:underline">View Profile ↗</a>
+    </div>
+
+    
+    <div id="postContent" class="whitespace-pre-wrap leading-relaxed break-words text-sm mb-6 text-[#f4f4f5]"></div>
+    <div class="flex items-center justify-between border-t border-white/10 pt-4 text-xs font-mono">
+      <div class="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+        <button onclick="handleVote('up')" class="hover:text-purple-400 transition cursor-pointer text-sm font-bold">▲</button>
+        <span id="voteCount" class="text-purple-300 font-semibold">1</span>
+        <button onclick="handleVote('down')" class="hover:text-red-400 transition cursor-pointer text-sm font-bold">▼</button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="copyNoteLink()" class="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition text-white/80">
+          🔗 Share
+        </button>
+        <button onclick="alert('Zap feature ready to connect!')" class="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 rounded-lg border border-purple-500/30 transition">
+          ⚡ Zap
+        </button>
+      </div>
+    </div>
+  </article>
+
+  <section id="commentsSection" class="hidden">
+    <h2 class="text-sm font-mono text-[#a1a1aa] uppercase tracking-wider mb-4 border-b border-white/10 pb-2">
+      Comments / Replies
+    </h2>
+    <div id="commentsList" class="space-y-3">
+    
+    </div>
+  </section>
+
+</main>
+
+<script src="baita_core.js"></script>
+<script type="module">
+import { nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+
+const loadingDiv = document.getElementById("loading");
+const errorBox = document.getElementById("errorBox");
+const mainPost = document.getElementById("mainPost");
+const commentsSection = document.getElementById("commentsSection");
+const commentsList = document.getElementById("commentsList");
+
+const postContent = document.getElementById("postContent");
+const authorPubkey = document.getElementById("authorPubkey");
+const postDate = document.getElementById("postDate");
+const authorProfileLink = document.getElementById("authorProfileLink");
+
+function parseNostrContent(content) {
+    if (!content) return '';
+  
+    let parsed = content.replace(/nostr:(note1[0-9a-z]+|nevent1[0-9a-z]+|npub1[0-9a-z]+|nprofile1[0-9a-z]+|naddr1[0-9a-z]+)/gi, (match, entity) => {
+        let url = '#';
+        let label = entity.substring(0, 10) + '...';
+        if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
+            label = '👤 ' + label;
+            url = `profile.html?npub=${entity}`;
+        } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
+            label = '💬 ' + label;
+            url = `note.html?nevent=${entity}`;                
+        } else if (entity.startsWith('naddr')) {
+            label = '📚 ' + label;
+            url = `modfile.html?naddr=${entity}`;
+        }
+        return `<a href="${url}" target="_blank" class="nostur-entity-badge">${label}</a>`;
+    });
+
+    const hashtagRegex = /(^|\s)#([a-zA-Z0-9_]+)/g;
+    parsed = parsed.replace(hashtagRegex, (match, space, tag) => {
+        return `${space}<a href="readtag.html?t=${tag}" target="_blank" class="nostur-hashtag">#${tag}</a>`;
+    });
+
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    parsed = parsed.replace(urlRegex, (url) => {
+        let cleanUrl = url.replace(/[.,!?)]$/, '');
+        let trailing = url.slice(cleanUrl.length);
+        
+        if (cleanUrl.includes('njump.to') || cleanUrl.includes('njump.me')) return url;
+        let lower = cleanUrl.toLowerCase();
+        
+        let typeBadge = "🔗 Link";
+        if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
+            typeBadge = "🖼️ Photo";
+        } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
+            typeBadge = "🎬 Video";
+        }
+        let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
+        if (displayUrl.length > 35) displayUrl = displayUrl.substring(0, 32) + '...';
+        
+        return `<a href="${cleanUrl}" target="_blank" class="nostur-link-badge"><span style="opacity:0.8">${typeBadge}</span> ${displayUrl}</a>${trailing}`;
+    });
+
+    return parsed;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  let neventParam = urlParams.get('nevent');
+  let idParam = urlParams.get('id');
+
+  let targetEventId = "";
+
+  if (neventParam) {
+    try {
+      let decoded = nip19.decode(neventParam);
+      if (decoded.type === 'nevent') {
+        targetEventId = decoded.data.id;
+      } else if (decoded.type === 'note') {
+        targetEventId = decoded.data;
+      }
+    } catch (err) {
+      console.error("Invalid nevent", err);
+    }
+  } else if (idParam) {
+    targetEventId = idParam;
+  }
+
+  if (!targetEventId) {
+    loadingDiv.classList.add("hidden");
+    errorBox.classList.remove("hidden");
+    return;
+  }
+
+  fetchSingleNote(targetEventId);
+});
+
+function fetchSingleNote(eventId) {
+  const Relays = [
+    "wss://relay.damus.io",  
+    "wss://relay.primal.net",
+    "wss://relay.ditto.pub/"
+  ];
+
+  let found = false;
+  let sub=null;
+
+  Relays.forEach(relayUrl => {
+    const ws = new WebSocket(relayUrl);
+
+    ws.onopen = () => {
+      let filter = { ids: [eventId] };
+      ws.send(JSON.stringify(["REQ", "baita_single_note", filter]));
+      let commentsFilter = { kinds: [1], "#e": [eventId], limit: 25 };
+      ws.send(JSON.stringify(["REQ", "baita_comments", commentsFilter]));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data[0] === "EVENT") {
+          const ev = data[2];
+          if (ev.id === eventId && !found) {
+            found = true;
+            renderMainPost(ev);
+            sub=ev;
+            loadingDiv.classList.add("hidden");
+            mainPost.classList.remove("hidden");
+          } else if (ev.tags.some(t => t[0] === 'e' && t[1] === eventId)) {
+            renderComment(ev,sub);
+            commentsSection.classList.remove("hidden");
+          }
+        }
+      } catch (err) {
+        console.error("Error reading relay", err);
+      }
+    };
+
+    ws.onerror = () => checkComplete();
+    ws.onclose = () => checkComplete();
+  });
+
+  function checkComplete() {
+    setTimeout(() => {
+      if (!found && loadingDiv.classList.contains("hidden") === false) {
+        loadingDiv.classList.add("hidden");
+        errorBox.classList.remove("hidden");
+      }
+    }, 3000);
+  }
+}
+
+function renderMainPost(ev) {
+  try {
+    let npub = nip19.npubEncode(ev.pubkey);
+    authorPubkey.textContent = `u/${ev.pubkey.substring(0, 6)}...`;
+    authorProfileLink.href = `TagProfile.html?npub=${npub}`;
+  } catch (e) {
+    authorPubkey.textContent = `u/${ev.pubkey.substring(0, 6)}...`;
+  }
+
+  postDate.textContent = new Date(ev.created_at * 1000).toLocaleString();
+  postContent.innerHTML = parseNostrContent(ev.content);
+}
+
+function renderComment(ev,sub) {
+  if (!sub){return};
+  const commentDiv = document.createElement("div");
+  commentDiv.className = "comment-card text-xs";
+  
+  let shortPubkey = ev.pubkey.substring(0, 8) + '...';
+  let subPubkey = sub.pubkey.substring(0, 6) + '...';
+  let formattedComment = parseNostrContent(ev.content);
+
+  commentDiv.innerHTML = `
+    <div class="flex justify-between items-center mb-1.5 opacity-60 font-mono text-[10px] border-b border-white/5 pb-1">
+      <span class="text-purple-300 font-semibold">u/${subPubkey}</span>
+      <span class="text-purple-300 font-semibold">respond ${shortPubkey}</span>
+      <span>${new Date(ev.created_at * 1000).toLocaleDateString()}</span>
+    </div>
+    <div class="whitespace-pre-wrap leading-relaxed break-words text-[#e1e1e6]">${formattedComment}</div>
+  `;
+
+  commentsList.appendChild(commentDiv);
+}
+
+window.handleVote = function(type) {
+  const countEl = document.getElementById("voteCount");
+  let current = parseInt(countEl.textContent);
+  if (type === 'up') countEl.textContent = current + 1;
+  else countEl.textContent = Math.max(0, current - 1);
+}
+
+window.copyNoteLink = function() {
+  navigator.clipboard.writeText(window.location.href);
+  alert("Link copied to clipboard!");
+}
+</script>
+
+</body>
+</html>
