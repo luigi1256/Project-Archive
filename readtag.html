@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Tag Reader - Nostur Theme</title>
+<title>Tag Reader</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <link rel="stylesheet" href="mac.css">
@@ -11,6 +11,14 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
+    justify-content: start;
+  }
+
+  #main {
+    width: 100%;
+    max-width: 1700px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   @media (min-width: 1400px) {
@@ -31,11 +39,12 @@
     max-height: 550px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    align-self: start;
   }
 
   .author-header {
     font-family: monospace;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--nostur-accent-purple, #c084fc);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding-bottom: 8px;
@@ -52,6 +61,7 @@
     overflow-y: auto;
     flex: 1;
     padding-right: 2px;
+    justify-content: flex-start;
   }
 
   .author-notes-container.horizontal-scroll {
@@ -77,6 +87,7 @@
     font-size: 12px;
     color: #e1e1e6;
     transition: border-color 0.2s;
+    width: 100%;
   }
 
   .mini-note-card:hover {
@@ -115,6 +126,29 @@
     text-decoration: none;
   }
   .nostur-link-badge:hover { border-color: rgba(192, 132, 252, 0.4); }
+
+  .wordpress-tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .wp-tag-pill {
+    font-family: monospace;
+    font-size: 12px;
+    padding: 3px 8px;
+    background: rgba(192, 132, 252, 0.06);
+    border: 1px solid rgba(192, 132, 252, 0.2);
+    border-radius: 6px;
+    color: var(--nostur-accent-purple, #c084fc);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .wp-tag-pill:hover {
+    background: rgba(192, 132, 252, 0.2);
+    border-color: rgba(192, 132, 252, 0.5);
+    color: #fff;
+  }
 </style>
 </head>
 <body class="bg-[#121214] text-[#e1e1e6] min-h-screen">
@@ -126,7 +160,7 @@
     <div id="books" class="mt-4 overflow-y-auto flex-1"></div>
 </aside>
 
-<div id="main" class="w-full px-4 sm:px-8 pt-16 max-w-[1700px] mx-auto transition-all duration-300">
+<div id="main" class="w-full px-4 sm:px-8 pt-16 max-w-fit mx-auto transition-all duration-300">
                                                                                                                                                                                                                                                                                           
     <div class="text-center mb-6">
         <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-3">Tag Reader</h1>                                                                                                                                                                                                                                                                                
@@ -161,7 +195,7 @@
   </div>
 
 <div class="max-w-xl mx-auto mb-8 px-2 text-center">
-  <p class="text-[11px] text-[#a1a1aa] font-mono m-0">
+  <p class="text-[12px] text-[#a1a1aa] font-mono m-0">
     Tip: Query multiple tags using commas (e.g. <code class="bg-black/40 px-1.5 py-0.5 rounded border border-white/10 text-purple-300">asknostr, art</code>)
   </p>
 </div>  
@@ -177,7 +211,13 @@
     <div id="loading" class="text-xs font-mono text-purple-400 mb-4 hidden text-center py-6">
       ⏳ Loading tags...
     </div>
+       
     <div id="results"></div>
+
+    <div id="tagCloudFooter" class="mt-8 pt-4 border-t border-white/10 hidden">
+      <div class="text-[12px] font-mono text-[#a1a1aa] uppercase tracking-wider mb-2">🏷️ Related Tags & Categories</div>
+      <div id="tagCloudContainer" class="wordpress-tag-cloud"></div>
+    </div>
   </div>
 </div>
 
@@ -191,8 +231,11 @@ const library = document.getElementById("library");
 const resultsDiv = document.getElementById("results");
 const loadingDiv = document.getElementById("loading");
 const libraryTitle = document.getElementById("libraryTitle");
+const tagCloudFooter = document.getElementById("tagCloudFooter");
+const tagCloudContainer = document.getElementById("tagCloudContainer");
 
 let collectedNotesByAuthor = new Map();
+let currentLoadedTagsSet = new Set();
 
 function parseNostrContent(content) {
     if (!content) return '';
@@ -215,7 +258,8 @@ function parseNostrContent(content) {
 
     const hashtagRegex = /(^|\s)#([a-zA-Z0-9_]+)/g;
     parsed = parsed.replace(hashtagRegex, (match, space, tag) => {
-        return `${space}<a href="readtag.html?t=${tag}" target="_blank" class="nostur-hashtag">#${tag}</a>`;
+        currentLoadedTagsSet.add(tag.toLowerCase());
+        return `${space}<a href="readtag.html?t=${tag}" target="_blank" class="nostur-hashtag"> ${tag}</a>`;
     });
 
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -251,6 +295,9 @@ function executeTagReader(rawInput) {
 
   if (tags.length === 0) return;
 
+  // Aggiunge i tag cercati alla collezione del tag cloud
+  tags.forEach(t => currentLoadedTagsSet.add(t));
+
   const tagQueryString = tags.join(",");
 
   if (library) library.style.display = "block";
@@ -267,7 +314,12 @@ function executeTagReader(rawInput) {
   const newUrl = `${window.location.pathname}?t=${encodeURIComponent(tagQueryString)}`;
   window.history.pushState({path: newUrl}, '', newUrl);
   collectedNotesByAuthor.clear();
+  currentLoadedTagsSet.clear();
+  // Pre-popola con i tag cercati inizialmente
+  tags.forEach(t => currentLoadedTagsSet.add(t));
+
   if (resultsDiv) resultsDiv.innerHTML = "";
+  if (tagCloudFooter) tagCloudFooter.classList.add("hidden");
 
   fetchNostrTags(tags);
   if (searchBar) searchBar.value = "";
@@ -303,6 +355,7 @@ function renderNoteCard(ev) {
   collectedNotesByAuthor.set(ev.pubkey, [...collectedNotesByAuthor.get(ev.pubkey), ev]);
 
   updateAuthorColumnsUI();
+  updateTagCloudFooter();
 }
 
 function updateAuthorColumnsUI() {
@@ -321,8 +374,8 @@ function updateAuthorColumnsUI() {
 
       return `
         <div id="note-${ev.id}" class="mini-note-card flex flex-col justify-between">
-          <div class="whitespace-pre-wrap leading-snug break-words overflow-hidden max-h-36 mb-2 text-[11px] opacity-90">${formattedContent}</div>
-          <div class="flex justify-between items-center text-[10px] font-mono opacity-50 border-t border-white/5 pt-1">
+          <div class="whitespace-pre-wrap leading-snug break-words overflow-hidden max-h-36 mb-2 text-[12px] opacity-90">${formattedContent}</div>
+          <div class="flex justify-between items-center text-[12px] font-mono opacity-50 border-t border-white/5 pt-1">
             <span>${new Date(ev.created_at * 1000).toLocaleDateString()}</span>
             <div class="flex items-center gap-2">
               <a href="${noteLink}" target="_blank" class="hover:underline text-purple-400">open ↗</a>
@@ -349,6 +402,21 @@ function updateAuthorColumnsUI() {
 
     resultsDiv.appendChild(authorCard);
   });
+}
+
+function updateTagCloudFooter() {
+  if (!tagCloudContainer || !tagCloudFooter) return;
+  if (currentLoadedTagsSet.size === 0) {
+    tagCloudFooter.classList.add("hidden");
+    return;
+  }
+
+  tagCloudContainer.innerHTML = Array.from(currentLoadedTagsSet)
+    .sort()
+    .map(tag => `<a href="readtag.html?t=${tag}" onclick="event.preventDefault(); executeTagReader('${tag}');" class="wp-tag-pill"> ${tag}</a>`)
+    .join('');
+
+  tagCloudFooter.classList.remove("hidden");
 }
 
 window.toggleAuthorScroll = function(containerId, btn) {
@@ -380,7 +448,14 @@ function fetchNostrTags(tagsArray) {
   let activeConnections = Relays.length;
 
   Relays.forEach(relayUrl => {
-    const ws = new WebSocket(relayUrl);
+    let ws;
+    try {
+      ws = new WebSocket(relayUrl);
+    } catch (e) {
+      console.error("Failed to create WebSocket for", relayUrl, e);
+      checkFinished();
+      return;
+    }
 
     ws.onopen = () => {
       let filter = { kinds: [1], "#t": tagsArray, limit: 40 };
@@ -439,10 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (searchBar) {
     searchBar.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        const term = searchBar.value.trim();
-        if (term) executeTagReader(term);
-      }
+      e.key === "Enter" && (term => term && executeTagReader(term))(searchBar.value.trim());
     });
   }
 });
