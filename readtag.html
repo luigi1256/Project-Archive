@@ -6,217 +6,85 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <link rel="stylesheet" href="mac.css">
+<link rel="stylesheet" href="readtag.css">
 <style>
-  #results {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    justify-content: start;
-  }
-
-  #main {
-    width: 100%;
-    max-width: 1700px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  @media (min-width: 1400px) {
-    #results {
-      grid-template-columns: repeat(5, minmax(0, 1fr)); 
-    }
-  }
-
-  .author-column-card {
-    background: rgba(24, 24, 27, 0.75);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+  .note-card {
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    max-height: 550px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    align-self: start;
-  }
-
-  .author-header {
-    font-family: monospace;
-    font-size: 12px;
-    color: var(--nostur-accent-purple, #c084fc);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 8px;
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .author-notes-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    overflow-y: auto;
-    flex: 1;
-    padding-right: 2px;
-    justify-content: flex-start;
-  }
-
-  .author-notes-container.horizontal-scroll {
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    scroll-snap-type: x mandatory;
-    padding-bottom: 6px;
-  }
-
-  .author-notes-container.horizontal-scroll > .mini-note-card {
-    min-width: 240px;
-    max-width: 240px;
-    flex-shrink: 0;
-    scroll-snap-align: start;
-  }
-
-  .mini-note-card {
-    background: rgba(10, 10, 12, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 12px;
-    color: #e1e1e6;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-
-  .mini-note-card:hover {
-    border-color: rgba(192, 132, 252, 0.3);
-  }
-
-  .nostur-hashtag {
-    color: var(--nostur-accent-purple, #c084fc);
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .nostur-hashtag:hover { text-decoration: underline; }
-
-  .nostur-entity-badge {
-    border: 1px solid rgba(192, 132, 252, 0.3);
-    background-color: rgba(192, 132, 252, 0.06);
-    padding: 1px 4px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    font-family: monospace;
-    color: var(--nostur-accent-purple, #c084fc);
-    display: inline-block;
-  }
-
-  .nostur-link-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 6px;
-    margin: 2px 0;
-    border-radius: 4px;
-    font-size: 0.8em;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(10, 10, 12, 0.5);
-    color: #e1e1e6;
-    text-decoration: none;
-  }
-  .nostur-link-badge:hover { border-color: rgba(192, 132, 252, 0.4); }
-
-  .wordpress-tag-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-  }
-  .wp-tag-pill {
-    font-family: monospace;
-    font-size: 12px;
-    padding: 3px 8px;
-    background: rgba(192, 132, 252, 0.06);
-    border: 1px solid rgba(192, 132, 252, 0.2);
-    border-radius: 6px;
-    color: var(--nostur-accent-purple, #c084fc);
-    text-decoration: none;
     transition: all 0.2s ease;
   }
-  .wp-tag-pill:hover {
-    background: rgba(192, 132, 252, 0.2);
-    border-color: rgba(192, 132, 252, 0.5);
-    color: #fff;
+  .note-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 </style>
 </head>
-<body class="bg-[#121214] text-[#e1e1e6] min-h-screen">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
 
-<button id="toggleShelf" onclick="toggleShelf()" class="fixed top-4 left-4 z-50 bg-[#18181b]/75 text-[#e1e1e6] border border-white/10 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white/15 backdrop-blur-md transition-colors">📚 Shelf</button>
+<button id="toggleShelf" onclick="toggleShelf()" class="fixed top-4 left-4 z-50 bg-slate-900/80 text-slate-200 border border-slate-700/60 px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-slate-800 backdrop-blur-md shadow-lg transition-all">📚 Shelf</button>
 
-<aside id="shelf" class="fixed top-0 left-0 h-full w-64 bg-[#121214]/95 border-r border-white/10 p-4 transform -translate-x-full transition-transform duration-300 z-40 backdrop-blur-xl">
-    <h2 class="text-[#a1a1aa] font-mono text-xs tracking-wider uppercase border-b border-white/10 pb-2">My saved tags</h2>
+<aside id="shelf" class="fixed top-0 left-0 h-full w-72 bg-slate-900/95 border-r border-slate-800 p-5 transform -translate-x-full transition-transform duration-300 z-40 backdrop-blur-xl">
+    <h2 class="text-slate-400 font-semibold text-xs tracking-wider uppercase border-b border-slate-800 pb-3">My saved tags</h2>
     <div id="books" class="mt-4 overflow-y-auto flex-1"></div>
 </aside>
 
-<div id="main" class="w-full px-4 sm:px-8 pt-16 max-w-fit mx-auto transition-all duration-300">
+<div id="main" class="w-full px-4 sm:px-6 pt-16 max-w-3xl mx-auto transition-all duration-300">
                                                                                                                                                                                                                                                                                           
-    <div class="text-center mb-6">
-        <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-3">Tag Reader</h1>                                                                                                                                                                                                                                                                                
-        <div class="flex items-center justify-center gap-2">                                                                                                                                                          
-          <a href="Search.html" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg font-medium transition text-sm border border-white/10">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold text-white tracking-tight mb-3">Tag Reader</h1>                                                                                                                                                                                                                                                                                
+        <div class="flex items-center justify-center gap-2.5">                                                                                                                                                          
+          <a href="Search.html" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl font-medium transition text-sm border border-slate-800 shadow-sm">
             <span>Search</span>  
           </a>
-          <a href="index.html" class="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-[#e1e1e6] rounded-lg font-medium transition text-sm border border-white/10">
+          <a href="index.html" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl font-medium transition text-sm border border-slate-800 shadow-sm">
             <span>🏠 Home</span>
           </a>
         </div>
     </div>                                                                                                                                                                                                                                                                                                                                          
               
-  <div id="searchArea" class="flex justify-center mb-2">
-    <form id="searchForm" onsubmit="event.preventDefault();" class="w-full max-w-xl flex justify-center">
-      <div id="searchContainer" class="flex items-center gap-2 w-full">
+  <div id="searchArea" class="flex justify-center mb-3">
+    <form id="searchForm" onsubmit="event.preventDefault();" class="w-full flex justify-center">
+      <div id="searchContainer" class="flex items-center gap-2.5 w-full">
         <div class="relative flex-1 flex">
           <input
             id="searchBar"
             type="text"
-            placeholder="Enter some tag(s), e.g. asknostr, art..."
+            placeholder="Enter tags, e.g. asknostr, art..."
             aria-label="Search tags"
-            class="w-full text-sm px-4 py-2.5 rounded-lg border border-white/10 outline-none bg-[#0a0a0c]/60 text-white shadow-inner focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all font-mono"
+            class="w-full text-sm px-4 py-3 rounded-xl border border-slate-800 outline-none bg-slate-900/70 text-white shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
           >
         </div>
         
-        <button id="searchButton" type="submit" class="bg-purple-500 hover:bg-purple-600 text-[#121214] font-semibold text-sm px-5 py-2.5 rounded-lg transition shadow">
+        <button id="searchButton" type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition shadow-md cursor-pointer">
           🏷️ Read
         </button>
       </div>
     </form>
   </div>
 
-<div class="max-w-xl mx-auto mb-8 px-2 text-center">
-  <p class="text-[12px] text-[#a1a1aa] font-mono m-0">
-    Tip: Query multiple tags using commas (e.g. <code class="bg-black/40 px-1.5 py-0.5 rounded border border-white/10 text-purple-300">asknostr, art</code>)
+<div class="mb-8 px-1 text-center">
+  <p class="text-xs text-slate-400 m-0">
+    Tip: Query multiple tags using commas (e.g. <code class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-indigo-300">asknostr, art</code>)
   </p>
 </div>  
 
-  <div id="library" class="hidden bg-[#18181b]/75 backdrop-blur-xl border border-white/10 rounded-xl p-4 sm:p-6 shadow-2xl mb-12">
-    <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
-      <span id="libraryTitle" class="text-xs font-mono text-purple-400 font-semibold"></span>
-      <button onclick="closeLibrary()" class="text-xs font-mono text-[#a1a1aa] hover:text-white px-2.5 py-1 rounded-md bg-white/5 border border-white/10 transition-colors">
+  <div id="library" class="hidden bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 sm:p-7 shadow-xl mb-12">
+    <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+      <span id="libraryTitle" class="text-xs font-semibold text-indigo-400 uppercase tracking-wider"></span>
+      <button onclick="closeLibrary()" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/50 transition-colors">
         ✖ Close folder
       </button>
     </div>
 
-    <div id="loading" class="text-xs font-mono text-purple-400 mb-4 hidden text-center py-6">
+    <div id="loading" class="text-xs text-indigo-400 mb-4 hidden text-center py-6">
       ⏳ Loading tags...
     </div>
        
-    <div id="results"></div>
+    <div id="results" class="space-y-8"></div>
 
-    <div id="tagCloudFooter" class="mt-8 pt-4 border-t border-white/10 hidden">
-      <div class="text-[12px] font-mono text-[#a1a1aa] uppercase tracking-wider mb-2">🏷️ Related Tags & Categories</div>
-      <div id="tagCloudContainer" class="wordpress-tag-cloud"></div>
+    <div id="tagCloudFooter" class="mt-8 pt-5 border-t border-slate-800 hidden">
+      <div class="text-xs text-slate-400 uppercase tracking-wider mb-3 font-medium">🏷️ Related Tags & Categories</div>
+      <div id="tagCloudContainer" class="flex flex-wrap gap-2"></div>
     </div>
   </div>
 </div>
@@ -236,6 +104,9 @@ const tagCloudContainer = document.getElementById("tagCloudContainer");
 
 let collectedNotesByAuthor = new Map();
 let currentLoadedTagsSet = new Set();
+let authorMetadataCache = new Map();
+
+const SHOW_PUBKEY = false; 
 
 function parseNostrContent(content) {
     if (!content) return '';
@@ -253,13 +124,13 @@ function parseNostrContent(content) {
             label = '📚 ' + label;
             url = `modfile.html?naddr=${entity}`;
         }
-        return `<a href="${url}" target="_blank" class="nostur-entity-badge">${label}</a>`;
+        return `<a href="${url}" target="_blank" class="text-indigo-400 hover:underline bg-indigo-500/10 px-1 rounded">${label}</a>`;
     });
 
     const hashtagRegex = /(^|\s)#([a-zA-Z0-9_]+)/g;
     parsed = parsed.replace(hashtagRegex, (match, space, tag) => {
         currentLoadedTagsSet.add(tag.toLowerCase());
-        return `${space}<a href="readtag.html?t=${tag}" target="_blank" class="nostur-hashtag"> ${tag}</a>`;
+        return `${space}<a href="readtag.html?t=${tag}" target="_blank" class="text-indigo-300 hover:underline font-medium">#${tag}</a>`;
     });
 
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -270,16 +141,16 @@ function parseNostrContent(content) {
         if (cleanUrl.includes('njump.to') || cleanUrl.includes('njump.me')) return url;
         let lower = cleanUrl.toLowerCase();
         
-        let typeBadge = "🔗 Link";
+        let typeBadge = "🔗";
         if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)(\?.*)?$/i) || lower.includes('image') || lower.includes('imgur') || lower.includes('primal.net/media')) {
-            typeBadge = "🖼️ Photo";
-        } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('rumble.com') || lower.includes('twitch.tv')) {
-            typeBadge = "🎬 Video";
+            typeBadge = "🖼️";
+        } else if (lower.match(/\.(mp4|webm|mov|ogg)(\?.*)?$/i) || lower.includes('youtube.com') || lower.includes('youtu.be')) {
+            typeBadge = "🎬";
         }
         let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
-        if (displayUrl.length > 30) displayUrl = displayUrl.substring(0, 27) + '...';
+        if (displayUrl.length > 25) displayUrl = displayUrl.substring(0, 22) + '...';
         
-        return `<a href="${cleanUrl}" target="_blank" class="nostur-link-badge"><span style="opacity:0.8">${typeBadge}</span> ${displayUrl}</a>${trailing}`;
+        return `<a href="${cleanUrl}" target="_blank" class="text-indigo-400 hover:underline inline-flex items-center gap-1 bg-slate-800/80 px-1.5 py-0.5 rounded text-xs"><span>${typeBadge}</span> ${displayUrl}</a>${trailing}`;
     });
 
     return parsed;
@@ -295,13 +166,11 @@ function executeTagReader(rawInput) {
 
   if (tags.length === 0) return;
 
-  // Aggiunge i tag cercati alla collezione del tag cloud
   tags.forEach(t => currentLoadedTagsSet.add(t));
-
   const tagQueryString = tags.join(",");
 
   if (library) library.style.display = "block";
-  if (libraryTitle) libraryTitle.textContent = `🏷️ Tags: #${tags.join(" #")}`;
+  if (libraryTitle) libraryTitle.textContent = `Tags: #${tags.join(" #")}`;
 
   let books = JSON.parse(localStorage.getItem("nostr_shelf")) || {};
   let shelfKey = `#${tagQueryString}`;
@@ -315,7 +184,6 @@ function executeTagReader(rawInput) {
   window.history.pushState({path: newUrl}, '', newUrl);
   collectedNotesByAuthor.clear();
   currentLoadedTagsSet.clear();
-  // Pre-popola con i tag cercati inizialmente
   tags.forEach(t => currentLoadedTagsSet.add(t));
 
   if (resultsDiv) resultsDiv.innerHTML = "";
@@ -349,54 +217,78 @@ window.dismissNote = function(eventId) {
 
 function renderNoteCard(ev) {
   if (loadingDiv) loadingDiv.classList.add("hidden");
+  
   if (!collectedNotesByAuthor.has(ev.pubkey)) {
     collectedNotesByAuthor.set(ev.pubkey, []);
   }
-  collectedNotesByAuthor.set(ev.pubkey, [...collectedNotesByAuthor.get(ev.pubkey), ev]);
+  let authorNotes = collectedNotesByAuthor.get(ev.pubkey);
+  if (!authorNotes.some(n => n.id === ev.id)) {
+    authorNotes.push(ev);
+    authorNotes.sort((a, b) => b.created_at - a.created_at);
+  }
 
-  updateAuthorColumnsUI();
+  updateAuthorCardsUI();
   updateTagCloudFooter();
 }
 
-function updateAuthorColumnsUI() {
+function updateAuthorCardsUI() {
   if (!resultsDiv) return;
   resultsDiv.innerHTML = "";
 
   collectedNotesByAuthor.forEach((notesArray, pubkey) => {
-    let shortPubkey = pubkey.substring(0, 6) + '...';
-    const authorCard = document.createElement("div");
-    authorCard.className = "author-column-card";
+    let npub = nip19.npubEncode(pubkey);
+    let shortNpub = npub.substring(0, 10) + '...' + npub.substring(npub.length - 4);
+    
+    let meta = authorMetadataCache.get(pubkey) || { name: shortNpub, picture: '' };
+    let displayName = meta.name || shortNpub;
+    let avatarHtml = meta.picture 
+      ? `<img src="${meta.picture}" class="w-10 h-10 rounded-full object-cover border border-slate-700" onerror="this.style.display='none'">`
+      : `<div class="w-10 h-10 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-bold text-sm">${displayName.substring(0,2).toUpperCase()}</div>`;
 
-    let notesHtml = notesArray.map(ev => {
+    const latestNotes = notesArray.slice(0, 3);
+
+    let notesHtml = latestNotes.map(ev => {
       const formattedContent = parseNostrContent(ev.content);
       let nevent = nip19.neventEncode({ id: ev.id });
       let noteLink = `Tagnote.html?nevent=${nevent}`;
 
       return `
-        <div id="note-${ev.id}" class="mini-note-card flex flex-col justify-between">
-          <div class="whitespace-pre-wrap leading-snug break-words overflow-hidden max-h-36 mb-2 text-[12px] opacity-90">${formattedContent}</div>
-          <div class="flex justify-between items-center text-[12px] font-mono opacity-50 border-t border-white/5 pt-1">
+        <div id="note-${ev.id}" class="note-card p-3.5 rounded-xl flex flex-col justify-between">
+          <div class="whitespace-pre-wrap leading-relaxed break-words text-xs text-slate-200 mb-3">${formattedContent}</div>
+          <div class="flex justify-between items-center text-[11px] text-slate-400 border-t border-slate-800/80 pt-2">
             <span>${new Date(ev.created_at * 1000).toLocaleDateString()}</span>
-            <div class="flex items-center gap-2">
-              <a href="${noteLink}" target="_blank" class="hover:underline text-purple-400">open ↗</a>
-              <button type="button" onclick="dismissNote('${ev.id}')" title="Nascondi nota" class="text-white/40 hover:text-red-400 bg-transparent border-none p-0 cursor-pointer">✕</button>
+            <div class="flex items-center gap-3">
+              <a href="${noteLink}" target="_blank" class="hover:text-indigo-400 font-medium text-indigo-300 transition-colors">Open note ↗</a>
+              <button type="button" onclick="dismissNote('${ev.id}')" title="Nascondi nota" class="text-slate-500 hover:text-red-400 bg-transparent border-none cursor-pointer">✕</button>
             </div>
           </div>
         </div>
       `;
     }).join('');
 
-    const containerId = `author-notes-${pubkey.substring(0, 6)}`;
+    const authorCard = document.createElement("div");
+    authorCard.className = "pt-6 first:pt-0 border-t border-slate-800/80 first:border-t-0";
+    let pubkeySection = SHOW_PUBKEY ? `<span class="text-[11px] text-slate-500 font-mono">${shortNpub}</span>` : '';
 
     authorCard.innerHTML = `
-      <div class="author-header">
-        <span class="font-bold text-purple-300">u/${shortPubkey} (${notesArray.length})</span>
-        <button onclick="toggleAuthorScroll('${containerId}', this)" class="text-[10px] bg-white/5 hover:bg-white/10 px-1.5 py-0.5 rounded border border-white/10 text-white/70 transition">
-          ↔️ Scroll
-        </button>
-      </div>
-      <div id="${containerId}" class="author-notes-container">
-        ${notesHtml}
+      <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/60">
+          <div class="flex items-center gap-3">
+            ${avatarHtml}
+            <div>
+              <div class="font-bold text-sm text-white flex items-center gap-2">
+                <a href="profile.html?npub=${npub}" target="_blank" class="hover:text-indigo-400 transition-colors">${displayName}</a>
+              </div>
+              ${pubkeySection}
+            </div>
+          </div>
+          <span class="text-xs font-medium text-slate-400 bg-slate-800/70 px-2.5 py-1 rounded-lg border border-slate-700/40">
+            ${notesArray.length} ${notesArray.length === 1 ? 'nota' : 'note'}
+          </span>
+        </div>
+        <div class="space-y-3">
+          ${notesHtml}
+        </div>
       </div>
     `;
 
@@ -413,24 +305,42 @@ function updateTagCloudFooter() {
 
   tagCloudContainer.innerHTML = Array.from(currentLoadedTagsSet)
     .sort()
-    .map(tag => `<a href="readtag.html?t=${tag}" onclick="event.preventDefault(); executeTagReader('${tag}');" class="wp-tag-pill"> ${tag}</a>`)
+    .map(tag => `<a href="readtag.html?t=${tag}" onclick="event.preventDefault(); executeTagReader('${tag}');" class="text-xs bg-slate-800/80 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700/50 transition-all">#${tag}</a>`)
     .join('');
 
   tagCloudFooter.classList.remove("hidden");
 }
 
-window.toggleAuthorScroll = function(containerId, btn) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+function fetchAuthorMetadata(pubkeysArray, Relays) {
+  Relays.forEach(relayUrl => {
+    let ws;
+    try {
+      ws = new WebSocket(relayUrl);
+    } catch(e) { return; }
 
-  if (container.classList.contains("horizontal-scroll")) {
-    container.classList.remove("horizontal-scroll");
-    btn.textContent = "↔️ Scroll";
-  } else {
-    container.classList.add("horizontal-scroll");
-    btn.textContent = "↕️ Stack";
-  }
-};
+    ws.onopen = () => {
+      ws.send(JSON.stringify(["REQ", "baita_metadata", { kinds: [0], authors: pubkeysArray }]));
+    };
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data[0] === "EVENT") {
+          const ev = data[2];
+          try {
+            const profile = JSON.parse(ev.content);
+            authorMetadataCache.set(ev.pubkey, {
+              name: profile.display_name || profile.name || '',
+              picture: profile.picture || ''
+            });
+            updateAuthorCardsUI();
+          } catch(err) {}
+        } else if (data[0] === "EOSE") {
+          ws.close();
+        }
+      } catch(err) {}
+    };
+  });
+}
 
 function fetchNostrTags(tagsArray) {
   if (loadingDiv) {
@@ -446,19 +356,19 @@ function fetchNostrTags(tagsArray) {
 
   let seenEventIds = new Set();
   let activeConnections = Relays.length;
+  let collectedPubkeys = new Set();
 
   Relays.forEach(relayUrl => {
     let ws;
     try {
       ws = new WebSocket(relayUrl);
     } catch (e) {
-      console.error("Failed to create WebSocket for", relayUrl, e);
       checkFinished();
       return;
     }
 
     ws.onopen = () => {
-      let filter = { kinds: [1], "#t": tagsArray, limit: 40 };
+      let filter = { kinds: [1], "#t": tagsArray, limit: 60 };
       ws.send(JSON.stringify(["REQ", "baita_tag_reader", filter]));
     };
 
@@ -467,20 +377,27 @@ function fetchNostrTags(tagsArray) {
         const data = JSON.parse(event.data);
         if (data[0] === "EVENT") {
           const ev = data[2];
+          
+          if (ev.kind === 1984) return;
+
           if (!seenEventIds.has(ev.id) && !dismissedNotes.has(ev.id)) {
             seenEventIds.add(ev.id);
+            collectedPubkeys.add(ev.pubkey);
             renderNoteCard(ev);
           }
         } else if (data[0] === "EOSE") {
           ws.close();
         }
-      } catch (err) {
-        console.error("Error parsing", relayUrl, err);
-      }
+      } catch (err) {}
     };
 
     ws.onerror = () => checkFinished();
-    ws.onclose = () => checkFinished();
+    ws.onclose = () => {
+      checkFinished();
+      if (collectedPubkeys.size > 0) {
+        fetchAuthorMetadata(Array.from(collectedPubkeys), Relays);
+      }
+    };
   });
 
   function checkFinished() {

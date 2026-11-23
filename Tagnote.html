@@ -80,7 +80,6 @@
   <div id="errorBox" class="hidden text-center font-mono text-xs text-red-400 py-12">
     ❌ Note not found or invalid nevent.
   </div>
-
   
   <article id="mainPost" class="reddit-post-card hidden mb-6">
     <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3 font-mono text-xs">
@@ -93,13 +92,12 @@
       </div>
       <a id="authorProfileLink" href="#" target="_blank" class="text-purple-400 hover:underline">View Profile ↗</a>
     </div>
-
-    
+  
     <div id="postContent" class="whitespace-pre-wrap leading-relaxed break-words text-sm mb-6 text-[#f4f4f5]"></div>
     <div class="flex items-center justify-between border-t border-white/10 pt-4 text-xs font-mono">
       <div class="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
         <button onclick="handleVote('up')" class="hover:text-purple-400 transition cursor-pointer text-sm font-bold">▲</button>
-        <span id="voteCount" class="text-purple-300 font-semibold">1</span>
+        <span id="voteCount" class="text-purple-300 font-semibold">0</span>
         <button onclick="handleVote('down')" class="hover:text-red-400 transition cursor-pointer text-sm font-bold">▼</button>
       </div>
 
@@ -139,6 +137,10 @@ const postContent = document.getElementById("postContent");
 const authorPubkey = document.getElementById("authorPubkey");
 const postDate = document.getElementById("postDate");
 const authorProfileLink = document.getElementById("authorProfileLink");
+const voteCountEl = document.getElementById("voteCount");
+
+let mainNoteLikes = 0;
+let countedReactionIds = new Set();
 
 function parseNostrContent(content) {
     if (!content) return '';
@@ -151,7 +153,7 @@ function parseNostrContent(content) {
             url = `profile.html?npub=${entity}`;
         } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
             label = '💬 ' + label;
-            url = `note.html?nevent=${entity}`;                
+            url = `TagNote.html?nevent=${entity}`;                
         } else if (entity.startsWith('naddr')) {
             label = '📚 ' + label;
             url = `modfile.html?naddr=${entity}`;
@@ -226,7 +228,7 @@ function fetchSingleNote(eventId) {
   ];
 
   let found = false;
-  let sub=null;
+  let sub = null;
 
   Relays.forEach(relayUrl => {
     const ws = new WebSocket(relayUrl);
@@ -234,8 +236,12 @@ function fetchSingleNote(eventId) {
     ws.onopen = () => {
       let filter = { ids: [eventId] };
       ws.send(JSON.stringify(["REQ", "baita_single_note", filter]));
+
       let commentsFilter = { kinds: [1], "#e": [eventId], limit: 25 };
       ws.send(JSON.stringify(["REQ", "baita_comments", commentsFilter]));
+
+      let likesFilter = { kinds: [7], "#e": [eventId] };
+      ws.send(JSON.stringify(["REQ", "baita_likes", likesFilter]));
     };
 
     ws.onmessage = (event) => {
@@ -247,12 +253,20 @@ function fetchSingleNote(eventId) {
           if (ev.id === eventId && !found) {
             found = true;
             renderMainPost(ev);
-            sub=ev;
+            sub = ev;
             loadingDiv.classList.add("hidden");
             mainPost.classList.remove("hidden");
           } else if (ev.tags.some(t => t[0] === 'e' && t[1] === eventId)) {
-            renderComment(ev,sub);
-            commentsSection.classList.remove("hidden");
+            if (ev.kind === 7) {
+              if (!countedReactionIds.has(ev.id)) {
+                countedReactionIds.add(ev.id);
+                mainNoteLikes++;
+                if (voteCountEl) voteCountEl.textContent = mainNoteLikes;
+              }
+            } else if (ev.kind === 1) {
+              renderComment(ev, sub);
+              commentsSection.classList.remove("hidden");
+            }
           }
         }
       } catch (err) {
@@ -287,8 +301,8 @@ function renderMainPost(ev) {
   postContent.innerHTML = parseNostrContent(ev.content);
 }
 
-function renderComment(ev,sub) {
-  if (!sub){return};
+function renderComment(ev, sub) {
+  if (!sub) { return; }
   const commentDiv = document.createElement("div");
   commentDiv.className = "comment-card text-xs";
   
@@ -310,7 +324,7 @@ function renderComment(ev,sub) {
 
 window.handleVote = function(type) {
   const countEl = document.getElementById("voteCount");
-  let current = parseInt(countEl.textContent);
+  let current = parseInt(countEl.textContent) || 0;
   if (type === 'up') countEl.textContent = current + 1;
   else countEl.textContent = Math.max(0, current - 1);
 }

@@ -1,0 +1,155 @@
+                                                         
+  #results {                                                          
+    display: grid;                                                    
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));     
+    gap: 16px;                                                        
+    justify-content: start;                                           
+  }                                                                   
+                                                                      
+                                                                      
+  #main {                                                             
+    width: 100%;                                                      
+    max-width: 1700px;                                                
+    margin-left: auto;                                                
+    margin-right: auto;                                               
+  }                                                                   
+                                                                      
+                                                                      
+  @media (min-width: 1400px) {                                        
+    #results {                                                        
+      grid-template-columns: repeat(5, minmax(0, 1fr));               
+    }                                                                 
+  }                                                                   
+                                                                                                                                           
+  .author-column-card {                                               
+    background: rgba(24, 24, 27, 0.75);                               
+    backdrop-filter: blur(20px);                                      
+    -webkit-backdrop-filter: blur(20px);                              
+    border: 1px solid rgba(255, 255, 255, 0.08);                      
+    border-radius: 12px;                                              
+    padding: 12px;                                                    
+    display: flex;                                                    
+    flex-direction: column;                                           
+    max-height: 550px;                                                
+    overflow: hidden;                                                 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);                        
+    align-self: start;                                                
+  }                                                                   
+                                                                      
+                                                                      
+  .author-header {                                                    
+    font-family: monospace;                                           
+    font-size: 12px;                                                  
+    color: var(--nostur-accent-purple, #c084fc);                      
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);               
+    padding-bottom: 8px;                                              
+    margin-bottom: 8px;                                               
+    display: flex;                                                    
+    justify-content: space-between;                                   
+    align-items: center;                                              
+  }                                                                   
+                                                                      
+                                                                      
+  .author-notes-container {                                           
+    display: flex;                                                    
+    flex-direction: column;                                           
+    gap: 8px;                                                         
+    overflow-y: auto;                                                 
+    flex: 1;                                                          
+    padding-right: 2px;                                               
+    justify-content: flex-start;                                      
+  }                                                                   
+                                                                      
+                                                                      
+  .author-notes-container.horizontal-scroll {                         
+    flex-direction: row !important;                                   
+    overflow-x: auto !important;                                      
+    overflow-y: hidden !important;                                    
+    scroll-snap-type: x mandatory;                                    
+    padding-bottom: 6px;                                              
+  }                                                                   
+                                                                      
+                                                                      
+  .author-notes-container.horizontal-scroll > .mini-note-card {       
+    min-width: 240px;                                                 
+    max-width: 240px;                                                 
+    flex-shrink: 0;                                                   
+    scroll-snap-align: start;                                         
+  }                                                                   
+                                                                      
+                                                                      
+  .mini-note-card {                                                   
+    background: rgba(10, 10, 12, 0.6);                                
+    border: 1px solid rgba(255, 255, 255, 0.05);                      
+    border-radius: 8px;                                               
+    padding: 10px;                                                    
+    font-size: 12px;                                                  
+    color: #e1e1e6;                                                   
+    transition: border-color 0.2s;                                    
+    width: 100%;                                                      
+  }                                                                   
+                                                                      
+                                                                      
+  .mini-note-card:hover {                                             
+    border-color: rgba(192, 132, 252, 0.3);                           
+  }                                                                   
+                                                                      
+                                                                      
+  .nostur-hashtag {                                                   
+    color: var(--nostur-accent-purple, #c084fc);                      
+    font-weight: 600;                                                 
+    text-decoration: none;                                            
+  }                                                                   
+  .nostur-hashtag:hover { text-decoration: underline; }               
+                                                                      
+                                                                      
+  .nostur-entity-badge {                                              
+    border: 1px solid rgba(192, 132, 252, 0.3);                       
+    background-color: rgba(192, 132, 252, 0.06);                      
+    padding: 1px 4px;                                                 
+    border-radius: 4px;                                               
+    font-size: 0.8em;                                                 
+    font-family: monospace;                                           
+    color: var(--nostur-accent-purple, #c084fc);                      
+    display: inline-block;                                            
+  }                                                                   
+                                                                      
+                                                                      
+  .nostur-link-badge {                                                
+    display: inline-flex;                                             
+    align-items: center;                                              
+    gap: 4px;                                                         
+    padding: 2px 6px;                                                 
+    margin: 2px 0;                                                    
+    border-radius: 4px;                                               
+    font-size: 0.8em;                                                 
+    border: 1px solid rgba(255, 255, 255, 0.08);                      
+    background: rgba(10, 10, 12, 0.5);                                
+    color: #e1e1e6;                                                   
+    text-decoration: none;                                            
+  }                                                                   
+  .nostur-link-badge:hover { border-color: rgba(192, 132, 252, 0.4); }
+                                                                      
+                                                                      
+  .wordpress-tag-cloud {                                              
+    display: flex;                                                    
+    flex-wrap: wrap;                                                  
+    gap: 6px;                                                         
+    align-items: center;                                              
+  }                                                                   
+  .wp-tag-pill {                                                      
+    font-family: monospace;                                           
+    font-size: 12px;                                                  
+    padding: 3px 8px;                                                 
+    background: rgba(192, 132, 252, 0.06);                            
+    border: 1px solid rgba(192, 132, 252, 0.2);                       
+    border-radius: 6px;                                               
+    color: var(--nostur-accent-purple, #c084fc);                      
+    text-decoration: none;                                            
+    transition: all 0.2s ease;                                        
+  }                                                                   
+  .wp-tag-pill:hover {                                                
+    background: rgba(192, 132, 252, 0.2);                             
+    border-color: rgba(192, 132, 252, 0.5);                           
+    color: #fff;                                                      
+  }                                                                                                                          
