@@ -7,84 +7,76 @@
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <link rel="stylesheet" href="mac.css">
 <link rel="stylesheet" href="readtag.css">
-<style>
-  .note-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.2s ease;
-  }
-  .note-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-</style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+<body>
 
-<button id="toggleShelf" onclick="toggleShelf()" class="fixed top-4 left-4 z-50 bg-slate-900/80 text-slate-200 border border-slate-700/60 px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-slate-800 backdrop-blur-md shadow-lg transition-all">📚 Shelf</button>
+<button id="toggleShelf" onclick="toggleShelf()">📚 Shelf</button>
 
-<aside id="shelf" class="fixed top-0 left-0 h-full w-72 bg-slate-900/95 border-r border-slate-800 p-5 transform -translate-x-full transition-transform duration-300 z-40 backdrop-blur-xl">
-    <h2 class="text-slate-400 font-semibold text-xs tracking-wider uppercase border-b border-slate-800 pb-3">My saved tags</h2>
-    <div id="books" class="mt-4 overflow-y-auto flex-1"></div>
+<aside id="shelf" class="collapsed">
+    <h2>My saved tags</h2>
+    <div id="books"></div>
 </aside>
 
-<div id="main" class="w-full px-4 sm:px-6 pt-16 max-w-3xl mx-auto transition-all duration-300">
+<div id="main">
                                                                                                                                                                                                                                                                                           
-    <div class="text-center mb-8">
-        <h1 class="text-3xl font-extrabold text-white tracking-tight mb-3">Tag Reader</h1>                                                                                                                                                                                                                                                                                
-        <div class="flex items-center justify-center gap-2.5">                                                                                                                                                          
-          <a href="Search.html" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl font-medium transition text-sm border border-slate-800 shadow-sm">
-            <span>Search</span>  
-          </a>
-          <a href="index.html" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl font-medium transition text-sm border border-slate-800 shadow-sm">
-            <span>🏠 Home</span>
-          </a>
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.75rem;">Tag Reader</h1>                                                                                                                                                                                                                                                                                
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.6rem;">                                                                                                                                                          
+          <a href="Search.html" target="_blank" style="padding: 6px 14px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 13px; border: 1px solid var(--nostur-card-border);">Search</a>  
+          <a href="index.html" style="padding: 6px 14px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 13px; border: 1px solid var(--nostur-card-border);">🏠 Home</a>
         </div>
     </div>                                                                                                                                                                                                                                                                                                                                          
               
-  <div id="searchArea" class="flex justify-center mb-3">
-    <form id="searchForm" onsubmit="event.preventDefault();" class="w-full flex justify-center">
-      <div id="searchContainer" class="flex items-center gap-2.5 w-full">
-        <div class="relative flex-1 flex">
-          <input
-            id="searchBar"
-            type="text"
-            placeholder="Enter tags, e.g. asknostr, art..."
-            aria-label="Search tags"
-            class="w-full text-sm px-4 py-3 rounded-xl border border-slate-800 outline-none bg-slate-900/70 text-white shadow-inner focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-          >
-        </div>
-        
-        <button id="searchButton" type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition shadow-md cursor-pointer">
-          🏷️ Read
-        </button>
+  <div id="searchArea">
+    <form id="searchForm" onsubmit="event.preventDefault();" style="width: 100%; display: flex; justify-content: center;">
+      <div id="searchContainer">
+        <input
+          id="searchBar"
+          type="text"
+          placeholder="Enter tags, e.g. food, art, asknostr..."
+          aria-label="Search tags"
+        >
+        <button id="searchButton" type="submit">🏷️ Read</button>
       </div>
     </form>
   </div>
 
-<div class="mb-8 px-1 text-center">
-  <p class="text-xs text-slate-400 m-0">
-    Tip: Query multiple tags using commas (e.g. <code class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-indigo-300">asknostr, art</code>)
+<div style="margin: 1rem 0 2rem 0; text-align: center;">
+  <p style="font-size: 11px; color: var(--nostur-text-muted); margin: 0;">
+    Tip: Query multiple tags using commas (e.g. <code style="background: rgba(10,10,12,0.8); padding: 2px 6px; border-radius: 4px; color: var(--nostur-accent-purple);">food, recipe</code>)
   </p>
 </div>  
 
-  <div id="library" class="hidden bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 sm:p-7 shadow-xl mb-12">
-    <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
-      <span id="libraryTitle" class="text-xs font-semibold text-indigo-400 uppercase tracking-wider"></span>
-      <button onclick="closeLibrary()" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/50 transition-colors">
-        ✖ Close folder
-      </button>
+  <div id="library" style="display: none;">
+    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--nostur-card-border); padding-bottom: 0.75rem; gap: 1rem;">
+      <div>
+        <span id="libraryTitle" style="font-size: 11px; font-weight: 600; color: var(--nostur-accent-purple); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;"></span>
+        <span id="activeLayoutBadge" style="font-size: 10px; background: rgba(192,132,252,0.1); color: var(--nostur-accent-purple); border: 1px solid rgba(192,132,252,0.2); padding: 1px 6px; border-radius: 4px; font-family: monospace;">Layout: Auto</span>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <!-- Layout Switcher Buttons -->
+        <div style="display: flex; background: rgba(10,10,12,0.6); padding: 3px; border-radius: 8px; border: 1px solid var(--nostur-card-border); font-size: 11px; gap: 3px;">
+          <button onclick="switchLayout('auto')" style="padding: 4px 8px; border: none; background: transparent;">✨ Auto</button>
+          <button onclick="switchLayout('grid')" style="padding: 4px 8px; border: none; background: transparent;">🖼️ Grid</button>
+          <button onclick="switchLayout('links')" style="padding: 4px 8px; border: none; background: transparent;">🔗 Links</button>
+          <button onclick="switchLayout('feed')" style="padding: 4px 8px; border: none; background: transparent;">👤 Feed</button>
+        </div>
+
+        <button onclick="closeLibrary()" style="font-size: 11px; padding: 5px 10px;">✖ Close</button>
+      </div>
     </div>
 
-    <div id="loading" class="text-xs text-indigo-400 mb-4 hidden text-center py-6">
+    <div id="loading" class="search-loading hidden" style="margin: 0 auto 1rem auto; width: auto;">
       ⏳ Loading tags...
     </div>
        
-    <div id="results" class="space-y-8"></div>
+    <!-- Results Container (gestito via JS con le classi del CSS) -->
+    <div id="results"></div>
 
-    <div id="tagCloudFooter" class="mt-8 pt-5 border-t border-slate-800 hidden">
-      <div class="text-xs text-slate-400 uppercase tracking-wider mb-3 font-medium">🏷️ Related Tags & Categories</div>
-      <div id="tagCloudContainer" class="flex flex-wrap gap-2"></div>
+    <div id="tagCloudFooter" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--nostur-card-border); display: none;">
+      <div style="font-size: 11px; color: var(--nostur-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 500;">🏷️ Related Tags & Categories</div>
+      <div id="tagCloudContainer" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
     </div>
   </div>
 </div>
@@ -101,12 +93,21 @@ const loadingDiv = document.getElementById("loading");
 const libraryTitle = document.getElementById("libraryTitle");
 const tagCloudFooter = document.getElementById("tagCloudFooter");
 const tagCloudContainer = document.getElementById("tagCloudContainer");
+const activeLayoutBadge = document.getElementById("activeLayoutBadge");
+const shelf = document.getElementById("shelf");
 
+let allCollectedEvents = [];
 let collectedNotesByAuthor = new Map();
 let currentLoadedTagsSet = new Set();
 let authorMetadataCache = new Map();
+let currentActiveTags = [];
+let forcedLayoutMode = 'auto'; 
 
 const SHOW_PUBKEY = false; 
+
+window.toggleShelf = function() {
+  if (shelf) shelf.classList.toggle("collapsed");
+}
 
 function parseNostrContent(content) {
     if (!content) return '';
@@ -124,13 +125,13 @@ function parseNostrContent(content) {
             label = '📚 ' + label;
             url = `modfile.html?naddr=${entity}`;
         }
-        return `<a href="${url}" target="_blank" class="text-indigo-400 hover:underline bg-indigo-500/10 px-1 rounded">${label}</a>`;
+        return `<a href="${url}" target="_blank" class="nostr-entity-badge">${label}</a>`;
     });
 
     const hashtagRegex = /(^|\s)#([a-zA-Z0-9_]+)/g;
     parsed = parsed.replace(hashtagRegex, (match, space, tag) => {
         currentLoadedTagsSet.add(tag.toLowerCase());
-        return `${space}<a href="readtag.html?t=${tag}" target="_blank" class="text-indigo-300 hover:underline font-medium">#${tag}</a>`;
+        return `${space}<a href="readtag.html?t=${tag}" target="_blank" class="nostr-hashtag">#${tag}</a>`;
     });
 
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -150,10 +151,46 @@ function parseNostrContent(content) {
         let displayUrl = cleanUrl.replace(/^https?:\/\/(www\.)?/, '');
         if (displayUrl.length > 25) displayUrl = displayUrl.substring(0, 22) + '...';
         
-        return `<a href="${cleanUrl}" target="_blank" class="text-indigo-400 hover:underline inline-flex items-center gap-1 bg-slate-800/80 px-1.5 py-0.5 rounded text-xs"><span>${typeBadge}</span> ${displayUrl}</a>${trailing}`;
+        return `<a href="${cleanUrl}" target="_blank" class="nostr-link-badge"><span>${typeBadge}</span> ${displayUrl}</a>${trailing}`;
     });
 
     return parsed;
+}
+
+function determineBestLayout(tags, events) {
+    if (forcedLayoutMode !== 'auto') return forcedLayoutMode;
+
+    const mediaKeywords = ['food', 'art', 'photo', 'photography', 'meme', 'nature', 'travel', 'fashion', 'lunch', 'recipe'];
+    const linkKeywords = ['link', 'news', 'blog', 'article', 'science', 'bitcoin', 'nostr', 'dev', 'code'];
+
+    const hasMediaKeyword = tags.some(t => mediaKeywords.includes(t));
+    const hasLinkKeyword = tags.some(t => linkKeywords.includes(t));
+
+    let imageCount = 0;
+    let linkCount = 0;
+    
+    events.forEach(ev => {
+        if (ev.content.match(/https?:\/\/[^\s]+\.(jpeg|jpg|gif|png|webp)/i) || ev.content.includes('primal.net/media')) {
+            imageCount++;
+        }
+        if (ev.content.match(/https?:\/\/[^\s]+/g) && !ev.content.match(/\.(jpeg|jpg|gif|png|webp)/i)) {
+            linkCount++;
+        }
+    });
+
+    if (hasMediaKeyword || imageCount > events.length * 0.25) {
+        return 'grid'; 
+    } else if (hasLinkKeyword || linkCount > events.length * 0.4) {
+        return 'links'; 
+    }
+
+    return 'feed'; 
+}
+
+window.switchLayout = function(mode) {
+    forcedLayoutMode = mode;
+    activeLayoutBadge.textContent = `Layout: ${mode.toUpperCase()} ${forcedLayoutMode === 'auto' ? '(Auto)' : '(Custom)'}`;
+    renderCurrentLayout();
 }
 
 function executeTagReader(rawInput) {
@@ -166,6 +203,7 @@ function executeTagReader(rawInput) {
 
   if (tags.length === 0) return;
 
+  currentActiveTags = tags;
   tags.forEach(t => currentLoadedTagsSet.add(t));
   const tagQueryString = tags.join(",");
 
@@ -182,12 +220,15 @@ function executeTagReader(rawInput) {
 
   const newUrl = `${window.location.pathname}?t=${encodeURIComponent(tagQueryString)}`;
   window.history.pushState({path: newUrl}, '', newUrl);
+  
+  allCollectedEvents = [];
   collectedNotesByAuthor.clear();
   currentLoadedTagsSet.clear();
   tags.forEach(t => currentLoadedTagsSet.add(t));
+  forcedLayoutMode = 'auto';
 
   if (resultsDiv) resultsDiv.innerHTML = "";
-  if (tagCloudFooter) tagCloudFooter.classList.add("hidden");
+  if (tagCloudFooter) tagCloudFooter.style.display = "none";
 
   fetchNostrTags(tags);
   if (searchBar) searchBar.value = "";
@@ -211,13 +252,21 @@ window.dismissNote = function(eventId) {
     if (dismissed.length > 50) dismissed.shift();
     localStorage.setItem("baita_dismissed", JSON.stringify(dismissed));
   }
-  const card = document.getElementById(`note-${eventId}`);
-  if (card) card.remove();
+  allCollectedEvents = allCollectedEvents.filter(n => n.id !== eventId);
+  collectedNotesByAuthor.forEach((notes, pubkey) => {
+    collectedNotesByAuthor.set(pubkey, notes.filter(n => n.id !== eventId));
+  });
+  renderCurrentLayout();
 }
 
-function renderNoteCard(ev) {
+function handleNewNote(ev) {
   if (loadingDiv) loadingDiv.classList.add("hidden");
   
+  if (!allCollectedEvents.some(n => n.id === ev.id)) {
+    allCollectedEvents.push(ev);
+    allCollectedEvents.sort((a, b) => b.created_at - a.created_at);
+  }
+
   if (!collectedNotesByAuthor.has(ev.pubkey)) {
     collectedNotesByAuthor.set(ev.pubkey, []);
   }
@@ -227,12 +276,89 @@ function renderNoteCard(ev) {
     authorNotes.sort((a, b) => b.created_at - a.created_at);
   }
 
-  updateAuthorCardsUI();
+  renderCurrentLayout();
   updateTagCloudFooter();
 }
 
-function updateAuthorCardsUI() {
+function renderCurrentLayout() {
+    const layout = determineBestLayout(currentActiveTags, allCollectedEvents);
+    activeLayoutBadge.textContent = `Layout: ${layout.toUpperCase()} ${forcedLayoutMode === 'auto' ? '(Auto)' : '(Custom)'}`;
+    resultsDiv.className = "";
+
+    if (layout === 'grid') {
+        renderImageGridLayout();
+    } else if (layout === 'links') {
+        renderLinksCardsLayout();
+    } else {
+        renderAuthorFeedLayout();
+    }
+}
+
+function renderImageGridLayout() {
+    if (!resultsDiv) return;
+    resultsDiv.style.display = "grid";
+    resultsDiv.style.gridTemplateColumns = "repeat(auto-fill, minmax(260px, 1fr))";
+    resultsDiv.style.gap = "1rem";
+    
+    resultsDiv.innerHTML = allCollectedEvents.map(ev => {
+        const formattedContent = parseNostrContent(ev.content);
+        let nevent = nip19.neventEncode({ id: ev.id });
+        let meta = authorMetadataCache.get(ev.pubkey) || { name: 'Anon', picture: '' };
+        
+        let imgMatch = ev.content.match(/(https?:\/\/[^\s]+\.(jpeg|jpg|gif|png|webp)(\?.*)?)/i) || ev.content.match(/(https?:\/\/[^\s]*primal\.net\/media[^\s]*)/i);
+        let imgHtml = imgMatch ? `<div style="margin-bottom: 10px; overflow: hidden; border-radius: 8px; height: 160px; background: #000;"><img src="${imgMatch[0]}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy"></div>` : '';
+
+        return `
+        <div id="note-${ev.id}" class="reddit-card">
+            <div>
+                ${imgHtml}
+                <div style="font-size: 12px; color: var(--nostur-text); line-height: 1.4; margin-bottom: 10px; word-break: break-word;">${formattedContent}</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--nostur-text-muted); border-top: 1px solid var(--nostur-card-border); padding-top: 8px;">
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px;">👤 ${meta.name}</span>
+                <div style="display: flex; gap: 8px;">
+                    <a href="Tagnote.html?nevent=${nevent}" target="_blank" style="color: var(--nostur-accent-purple);">View ↗</a>
+                    <button onclick="dismissNote('${ev.id}')" style="background: transparent; border: none; color: var(--nostur-text-muted); cursor: pointer; padding: 0;">✕</button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderLinksCardsLayout() {
+    if (!resultsDiv) return;
+    resultsDiv.style.display = "flex";
+    resultsDiv.style.flexDirection = "column";
+    resultsDiv.style.gap = "10px";
+
+    resultsDiv.innerHTML = allCollectedEvents.map(ev => {
+        const formattedContent = parseNostrContent(ev.content);
+        let nevent = nip19.neventEncode({ id: ev.id });
+        let meta = authorMetadataCache.get(ev.pubkey) || { name: 'Anon', picture: '' };
+        
+        return `
+        <div id="note-${ev.id}" class="reddit-card" style="flex-direction: row; justify-content: space-between; align-items: center; gap: 15px;">
+            <div style="flex: 1;">
+                <div style="font-size: 12px; color: var(--nostur-text); margin-bottom: 6px;">${formattedContent}</div>
+                <div style="font-size: 11px; color: var(--nostur-text-muted); display: flex; gap: 8px;">
+                    <span>By <strong style="color: var(--nostur-text);">${meta.name}</strong></span>
+                    <span>•</span>
+                    <span>${new Date(ev.created_at * 1000).toLocaleDateString()}</span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <a href="Tagnote.html?nevent=${nevent}" target="_blank" class="publish" style="padding: 6px 12px; font-size: 11px; text-decoration: none;">Open ↗</a>
+                <button onclick="dismissNote('${ev.id}')" style="background: transparent; border: none; color: var(--nostur-text-muted); cursor: pointer;">✕</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderAuthorFeedLayout() {
   if (!resultsDiv) return;
+  resultsDiv.style.display = "grid";
+  resultsDiv.style.gridTemplateColumns = "repeat(auto-fill, minmax(300px, 1fr))";
+  resultsDiv.style.gap = "16px";
   resultsDiv.innerHTML = "";
 
   collectedNotesByAuthor.forEach((notesArray, pubkey) => {
@@ -241,11 +367,8 @@ function updateAuthorCardsUI() {
     
     let meta = authorMetadataCache.get(pubkey) || { name: shortNpub, picture: '' };
     let displayName = meta.name || shortNpub;
-    let avatarHtml = meta.picture 
-      ? `<img src="${meta.picture}" class="w-10 h-10 rounded-full object-cover border border-slate-700" onerror="this.style.display='none'">`
-      : `<div class="w-10 h-10 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-bold text-sm">${displayName.substring(0,2).toUpperCase()}</div>`;
 
-    const latestNotes = notesArray.slice(0, 3);
+    const latestNotes = notesArray.slice(0, 5);
 
     let notesHtml = latestNotes.map(ev => {
       const formattedContent = parseNostrContent(ev.content);
@@ -253,13 +376,13 @@ function updateAuthorCardsUI() {
       let noteLink = `Tagnote.html?nevent=${nevent}`;
 
       return `
-        <div id="note-${ev.id}" class="note-card p-3.5 rounded-xl flex flex-col justify-between">
-          <div class="whitespace-pre-wrap leading-relaxed break-words text-xs text-slate-200 mb-3">${formattedContent}</div>
-          <div class="flex justify-between items-center text-[11px] text-slate-400 border-t border-slate-800/80 pt-2">
+        <div id="note-${ev.id}" class="mini-note-card">
+          <div style="margin-bottom: 8px; line-height: 1.4;">${formattedContent}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--nostur-text-muted); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px;">
             <span>${new Date(ev.created_at * 1000).toLocaleDateString()}</span>
-            <div class="flex items-center gap-3">
-              <a href="${noteLink}" target="_blank" class="hover:text-indigo-400 font-medium text-indigo-300 transition-colors">Open note ↗</a>
-              <button type="button" onclick="dismissNote('${ev.id}')" title="Nascondi nota" class="text-slate-500 hover:text-red-400 bg-transparent border-none cursor-pointer">✕</button>
+            <div style="display: flex; gap: 8px;">
+              <a href="${noteLink}" target="_blank" style="color: var(--nostur-accent-purple);">Open ↗</a>
+              <button type="button" onclick="dismissNote('${ev.id}')" style="background: transparent; border: none; color: var(--nostur-text-muted); cursor: pointer; padding: 0;">✕</button>
             </div>
           </div>
         </div>
@@ -267,28 +390,15 @@ function updateAuthorCardsUI() {
     }).join('');
 
     const authorCard = document.createElement("div");
-    authorCard.className = "pt-6 first:pt-0 border-t border-slate-800/80 first:border-t-0";
-    let pubkeySection = SHOW_PUBKEY ? `<span class="text-[11px] text-slate-500 font-mono">${shortNpub}</span>` : '';
+    authorCard.className = "author-column-card";
 
     authorCard.innerHTML = `
-      <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-sm">
-        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/60">
-          <div class="flex items-center gap-3">
-            ${avatarHtml}
-            <div>
-              <div class="font-bold text-sm text-white flex items-center gap-2">
-                <a href="profile.html?npub=${npub}" target="_blank" class="hover:text-indigo-400 transition-colors">${displayName}</a>
-              </div>
-              ${pubkeySection}
-            </div>
-          </div>
-          <span class="text-xs font-medium text-slate-400 bg-slate-800/70 px-2.5 py-1 rounded-lg border border-slate-700/40">
-            ${notesArray.length} ${notesArray.length === 1 ? 'nota' : 'note'}
-          </span>
-        </div>
-        <div class="space-y-3">
-          ${notesHtml}
-        </div>
+      <div class="author-header">
+        <a href="profile.html?npub=${npub}" target="_blank" style="color: var(--nostur-accent-purple); text-decoration: none; font-weight: bold;">${displayName}</a>
+        <span style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 10px; color: var(--nostur-text-muted);">${notesArray.length}</span>
+      </div>
+      <div class="author-notes-container">
+        ${notesHtml}
       </div>
     `;
 
@@ -299,16 +409,16 @@ function updateAuthorCardsUI() {
 function updateTagCloudFooter() {
   if (!tagCloudContainer || !tagCloudFooter) return;
   if (currentLoadedTagsSet.size === 0) {
-    tagCloudFooter.classList.add("hidden");
+    tagCloudFooter.style.display = "none";
     return;
   }
 
   tagCloudContainer.innerHTML = Array.from(currentLoadedTagsSet)
     .sort()
-    .map(tag => `<a href="readtag.html?t=${tag}" onclick="event.preventDefault(); executeTagReader('${tag}');" class="text-xs bg-slate-800/80 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700/50 transition-all">#${tag}</a>`)
+    .map(tag => `<a href="readtag.html?t=${tag}" onclick="event.preventDefault(); executeTagReader('${tag}');" style="font-size: 11px; background: rgba(255,255,255,0.04); color: var(--nostur-text); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--nostur-card-border); text-decoration: none;">#${tag}</a>`)
     .join('');
 
-  tagCloudFooter.classList.remove("hidden");
+  tagCloudFooter.style.display = "block";
 }
 
 function fetchAuthorMetadata(pubkeysArray, Relays) {
@@ -332,7 +442,7 @@ function fetchAuthorMetadata(pubkeysArray, Relays) {
               name: profile.display_name || profile.name || '',
               picture: profile.picture || ''
             });
-            updateAuthorCardsUI();
+            renderCurrentLayout();
           } catch(err) {}
         } else if (data[0] === "EOSE") {
           ws.close();
@@ -383,7 +493,7 @@ function fetchNostrTags(tagsArray) {
           if (!seenEventIds.has(ev.id) && !dismissedNotes.has(ev.id)) {
             seenEventIds.add(ev.id);
             collectedPubkeys.add(ev.pubkey);
-            renderNoteCard(ev);
+            handleNewNote(ev);
           }
         } else if (data[0] === "EOSE") {
           ws.close();
@@ -404,7 +514,7 @@ function fetchNostrTags(tagsArray) {
     activeConnections--;
     if (activeConnections <= 0) {
       if (loadingDiv) loadingDiv.classList.add("hidden");
-      if (resultsDiv && resultsDiv.children.length === 0) {
+      if (resultsDiv && allCollectedEvents.length === 0) {
         if (loadingDiv) {
           loadingDiv.textContent = `No notes found for tags: #${tagsArray.join(", #")}.`;
           loadingDiv.classList.remove("hidden");

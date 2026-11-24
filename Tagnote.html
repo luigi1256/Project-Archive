@@ -7,21 +7,27 @@
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <link rel="stylesheet" href="mac.css">
 <style>
-  .reddit-post-card {
-    background: rgba(24, 24, 27, 0.85);
+  
+  .main-post-card {
+    background: linear-gradient(145deg, rgba(46, 26, 71, 0.45) 0%, rgba(24, 24, 27, 0.92) 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(192, 132, 252, 0.35);
+    border-left: 4px solid #c084fc;
     border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    padding: 22px;
+    box-shadow: 0 12px 35px rgba(88, 28, 135, 0.2), 0 4px 15px rgba(0, 0, 0, 0.5);
   }
 
   .comment-card {
-    background: rgba(18, 18, 20, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(18, 18, 20, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
     padding: 12px;
+    transition: border-color 0.2s ease;
+  }
+  .comment-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
   }
 
   .nostur-hashtag {
@@ -30,6 +36,25 @@
     text-decoration: none;
   }
   .nostur-hashtag:hover { text-decoration: underline; }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-family: monospace;
+    background: rgba(192, 132, 252, 0.12);
+    color: #e9d5ff;
+    border: 1px solid rgba(192, 132, 252, 0.3);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .tag-pill:hover {
+    background: rgba(192, 132, 252, 0.25);
+    border-color: #c084fc;
+    color: #ffffff;
+  }
 
   .nostur-entity-badge {
     border: 1px solid rgba(192, 132, 252, 0.3);
@@ -57,14 +82,14 @@
   .nostur-link-badge:hover { border-color: rgba(192, 132, 252, 0.4); }
 </style>
 </head>
-<body class="bg-[#121214] text-[#e1e1e6] min-h-screen">
+<body class="bg-[#121214] text-[#e1e1e6] min-h-screen font-sans">
 
 <header class="w-full border-b border-white/10 bg-[#121214]/80 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
   <div class="max-w-3xl mx-auto flex justify-between items-center">
     <a href="readtag.html" class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#e1e1e6] rounded-lg font-medium transition text-xs border border-white/10">
       ← Back to Tag
     </a>
-    <span class="font-mono text-xs text-purple-400 font-semibold">Nostr Discussion</span>
+    <span class="font-mono text-xs text-purple-400 font-semibold">Single Note</span>
     <a href="index.html" class="inline-flex items-center gap-1 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#e1e1e6] rounded-lg font-medium transition text-xs border border-white/10">
       🏠 Home
     </a>
@@ -81,44 +106,69 @@
     ❌ Note not found or invalid nevent.
   </div>
   
-  <article id="mainPost" class="reddit-post-card hidden mb-6">
-    <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-3 font-mono text-xs">
-      <div class="flex items-center gap-2">
+  <article id="mainPost" class="main-post-card hidden mb-8">
+ 
+    <div class="flex justify-between items-center mb-4 border-b border-purple-400/20 pb-3 font-mono text-xs">
+      <div class="flex items-center gap-2.5">
         <span class="text-lg">👤</span>
         <div>
-          <div id="authorPubkey" class="text-purple-300 font-bold">u/Loading...</div>
-          <div id="postDate" class="text-white/40 text-[10px]">--</div>
+          <div class="flex items-center gap-2">
+            <span id="authorPubkey" class="text-purple-200 font-bold">u/Loading...</span>
+            <span class="text-[9px] uppercase tracking-wider bg-purple-500/25 text-purple-200 border border-purple-400/40 px-1.5 py-0.5 rounded font-semibold">Original Note</span>
+          </div>
+          <div id="postDate" class="text-white/50 text-[10px] mt-0.5">--</div>
         </div>
       </div>
-      <a id="authorProfileLink" href="#" target="_blank" class="text-purple-400 hover:underline">View Profile ↗</a>
+      <a id="authorProfileLink" href="#" target="_blank" class="text-purple-300 hover:text-white hover:underline">View Profile ↗</a>
     </div>
   
-    <div id="postContent" class="whitespace-pre-wrap leading-relaxed break-words text-sm mb-6 text-[#f4f4f5]"></div>
-    <div class="flex items-center justify-between border-t border-white/10 pt-4 text-xs font-mono">
-      <div class="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
-        <button onclick="handleVote('up')" class="hover:text-purple-400 transition cursor-pointer text-sm font-bold">▲</button>
-        <span id="voteCount" class="text-purple-300 font-semibold">0</span>
-        <button onclick="handleVote('down')" class="hover:text-red-400 transition cursor-pointer text-sm font-bold">▼</button>
+    <div id="postContent" class="whitespace-pre-wrap leading-relaxed break-words text-sm mb-5 text-[#f4f4f5]"></div>
+
+    <div id="noteTagsRecap" class="hidden mb-5 pt-3 border-t border-purple-400/15">
+      <div class="text-[10px] font-mono uppercase tracking-wider text-purple-300/70 mb-2">🏷️ Tags in this note</div>
+      <div id="noteTagsList" class="flex flex-wrap gap-1.5"></div>
+    </div>
+    
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-b border-purple-400/20 py-3 my-4 font-mono text-xs text-center bg-black/30 rounded-xl">
+      <div class="flex flex-col items-center justify-center border-r border-white/10 last:border-r-0">
+        <span class="text-[10px] text-white/40 uppercase">Reactions</span>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <span class="text-purple-400">❤️</span>
+          <span id="voteCount" class="text-purple-200 font-semibold">0</span>
+        </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <button onclick="copyNoteLink()" class="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition text-white/80">
-          🔗 Share
-        </button>
-        <button onclick="alert('Zap feature ready to connect!')" class="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 rounded-lg border border-purple-500/30 transition">
-          ⚡ Zap
-        </button>
+      <div class="flex flex-col items-center justify-center border-r border-white/10 last:border-r-0">
+        <span class="text-[10px] text-white/40 uppercase">Comments</span>
+        <span id="commentCountBadge" class="text-purple-200 font-semibold mt-0.5">0</span>
       </div>
+
+      <div class="flex flex-col items-center justify-center border-r border-white/10 last:border-r-0">
+        <span class="text-[10px] text-white/40 uppercase">Zaps</span>
+        <span id="zapCountBadge" class="text-amber-300 font-semibold mt-0.5">⚡ 0 sats</span>
+      </div>
+
+      <div class="flex flex-col items-center justify-center">
+        <span class="text-[10px] text-white/40 uppercase">Reposts</span>
+        <span id="repostCountBadge" class="text-sky-300 font-semibold mt-0.5">🔄 0</span>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between pt-2 text-xs font-mono">
+      <button onclick="copyNoteLink()" class="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition text-white/80 cursor-pointer">
+        🔗 Copy Link
+      </button>
+      <button onclick="alert('Zap feature ready to connect!')" class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 rounded-lg border border-purple-400/40 transition cursor-pointer">
+        ⚡ Send Zap
+      </button>
     </div>
   </article>
 
   <section id="commentsSection" class="hidden">
-    <h2 class="text-sm font-mono text-[#a1a1aa] uppercase tracking-wider mb-4 border-b border-white/10 pb-2">
-      Comments / Replies
+    <h2 class="text-xs font-mono text-[#a1a1aa] uppercase tracking-wider mb-3 border-b border-white/10 pb-2">
+      💬 Comments / Replies
     </h2>
-    <div id="commentsList" class="space-y-3">
-    
-    </div>
+    <div id="commentsList" class="space-y-3"></div>
   </section>
 
 </main>
@@ -138,9 +188,21 @@ const authorPubkey = document.getElementById("authorPubkey");
 const postDate = document.getElementById("postDate");
 const authorProfileLink = document.getElementById("authorProfileLink");
 const voteCountEl = document.getElementById("voteCount");
+const commentCountBadge = document.getElementById("commentCountBadge");
+const zapCountBadge = document.getElementById("zapCountBadge");
+const repostCountBadge = document.getElementById("repostCountBadge");
+
+const noteTagsRecap = document.getElementById("noteTagsRecap");
+const noteTagsList = document.getElementById("noteTagsList");
 
 let mainNoteLikes = 0;
+let commentCount = 0;
+let totalZapsSats = 0;
+let repostCount = 0;
+
 let countedReactionIds = new Set();
+let countedCommentIds = new Set();
+let countedZapIds = new Set();
 
 function parseNostrContent(content) {
     if (!content) return '';
@@ -150,7 +212,7 @@ function parseNostrContent(content) {
         let label = entity.substring(0, 10) + '...';
         if (entity.startsWith('npub') || entity.startsWith('nprofile')) {
             label = '👤 ' + label;
-            url = `profile.html?npub=${entity}`;
+            url = `TagProfile.html?npub=${entity}`;
         } else if (entity.startsWith('note') || entity.startsWith('nevent')) {
             label = '💬 ' + label;
             url = `TagNote.html?nevent=${entity}`;                
@@ -187,6 +249,34 @@ function parseNostrContent(content) {
     });
 
     return parsed;
+}
+
+function renderNoteTagsRecap(ev) {
+    const tagsSet = new Set();
+    if (Array.isArray(ev.tags)) {
+        ev.tags.forEach(t => {
+            if (t[0] === 't' && t[1]) {
+                tagsSet.add(t[1].trim().toLowerCase());
+            }
+        });
+    }
+
+    if (ev.content) {
+        const matches = ev.content.matchAll(/(?:^|\s)#([a-zA-Z0-9_]+)/g);
+        for (const m of matches) {
+            tagsSet.add(m[1].toLowerCase());
+        }
+    }
+
+    if (tagsSet.size > 0) {
+        noteTagsList.innerHTML = Array.from(tagsSet)
+            .sort()
+            .map(tag => `<a href="readtag.html?t=${encodeURIComponent(tag)}" class="tag-pill">#${tag}</a>`)
+            .join('');
+        noteTagsRecap.classList.remove("hidden");
+    } else {
+        noteTagsRecap.classList.add("hidden");
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -228,20 +318,15 @@ function fetchSingleNote(eventId) {
   ];
 
   let found = false;
-  let sub = null;
 
   Relays.forEach(relayUrl => {
     const ws = new WebSocket(relayUrl);
 
     ws.onopen = () => {
-      let filter = { ids: [eventId] };
-      ws.send(JSON.stringify(["REQ", "baita_single_note", filter]));
-
-      let commentsFilter = { kinds: [1], "#e": [eventId], limit: 25 };
-      ws.send(JSON.stringify(["REQ", "baita_comments", commentsFilter]));
-
-      let likesFilter = { kinds: [7], "#e": [eventId] };
-      ws.send(JSON.stringify(["REQ", "baita_likes", likesFilter]));
+      ws.send(JSON.stringify(["REQ", "baita_single_note", { ids: [eventId] }]));
+      ws.send(JSON.stringify(["REQ", "baita_comments", { kinds: [1, 6], "#e": [eventId], limit: 40 }]));
+      ws.send(JSON.stringify(["REQ", "baita_likes", { kinds: [7], "#e": [eventId] }]));
+      ws.send(JSON.stringify(["REQ", "baita_zaps", { kinds: [9735], "#e": [eventId] }]));
     };
 
     ws.onmessage = (event) => {
@@ -253,7 +338,6 @@ function fetchSingleNote(eventId) {
           if (ev.id === eventId && !found) {
             found = true;
             renderMainPost(ev);
-            sub = ev;
             loadingDiv.classList.add("hidden");
             mainPost.classList.remove("hidden");
           } else if (ev.tags.some(t => t[0] === 'e' && t[1] === eventId)) {
@@ -263,9 +347,30 @@ function fetchSingleNote(eventId) {
                 mainNoteLikes++;
                 if (voteCountEl) voteCountEl.textContent = mainNoteLikes;
               }
-            } else if (ev.kind === 1) {
-              renderComment(ev, sub);
-              commentsSection.classList.remove("hidden");
+            } 
+            else if (ev.kind === 6) {
+              if (!countedReactionIds.has(ev.id)) {
+                countedReactionIds.add(ev.id);
+                repostCount++;
+                if (repostCountBadge) repostCountBadge.textContent = `🔄 ${repostCount}`;
+              }
+            }
+            else if (ev.kind === 1) {
+              if (!countedCommentIds.has(ev.id)) {
+                countedCommentIds.add(ev.id);
+                commentCount++;
+                if (commentCountBadge) commentCountBadge.textContent = commentCount;
+                renderComment(ev);
+                commentsSection.classList.remove("hidden");
+              }
+            }
+            else if (ev.kind === 9735) {
+              if (!countedZapIds.has(ev.id)) {
+                countedZapIds.add(ev.id);
+                let sats = extractZapAmount(ev);
+                totalZapsSats += sats;
+                if (zapCountBadge) zapCountBadge.textContent = `⚡ ${totalZapsSats.toLocaleString()} sats`;
+              }
             }
           }
         }
@@ -288,6 +393,20 @@ function fetchSingleNote(eventId) {
   }
 }
 
+function extractZapAmount(zapEvent) {
+  try {
+    let descTag = zapEvent.tags.find(t => t[0] === 'description');
+    if (descTag && descTag[1]) {
+      let parsedDesc = JSON.parse(descTag[1]);
+      let amountTag = parsedDesc.tags.find(t => t[0] === 'amount');
+      if (amountTag && amountTag[1]) {
+        return Math.floor(parseInt(amountTag[1]) / 1000);
+      }
+    }
+  } catch(e) {}
+  return 0;
+}
+
 function renderMainPost(ev) {
   try {
     let npub = nip19.npubEncode(ev.pubkey);
@@ -299,34 +418,25 @@ function renderMainPost(ev) {
 
   postDate.textContent = new Date(ev.created_at * 1000).toLocaleString();
   postContent.innerHTML = parseNostrContent(ev.content);
+  renderNoteTagsRecap(ev);
 }
 
-function renderComment(ev, sub) {
-  if (!sub) { return; }
+function renderComment(ev) {
   const commentDiv = document.createElement("div");
   commentDiv.className = "comment-card text-xs";
   
   let shortPubkey = ev.pubkey.substring(0, 8) + '...';
-  let subPubkey = sub.pubkey.substring(0, 6) + '...';
   let formattedComment = parseNostrContent(ev.content);
 
   commentDiv.innerHTML = `
     <div class="flex justify-between items-center mb-1.5 opacity-60 font-mono text-[10px] border-b border-white/5 pb-1">
-      <span class="text-purple-300 font-semibold">u/${subPubkey}</span>
-      <span class="text-purple-300 font-semibold">respond ${shortPubkey}</span>
+      <span class="text-purple-300 font-semibold">u/${shortPubkey}</span>
       <span>${new Date(ev.created_at * 1000).toLocaleDateString()}</span>
     </div>
     <div class="whitespace-pre-wrap leading-relaxed break-words text-[#e1e1e6]">${formattedComment}</div>
   `;
 
   commentsList.appendChild(commentDiv);
-}
-
-window.handleVote = function(type) {
-  const countEl = document.getElementById("voteCount");
-  let current = parseInt(countEl.textContent) || 0;
-  if (type === 'up') countEl.textContent = current + 1;
-  else countEl.textContent = Math.max(0, current - 1);
 }
 
 window.copyNoteLink = function() {
