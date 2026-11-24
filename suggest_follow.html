@@ -42,7 +42,7 @@
                 <div class="p-4 border-b border-gray-700 flex justify-between items-center flex-wrap gap-2">
                     <div>
                         <span id="resultsCountTitle" class="font-semibold text-gray-300">Suggested Follows</span>
-                        <span class="text-xs text-gray-400 block">Filtered (&le;20% mutuals, active in last 180d)</span>
+                        <span class="text-xs text-gray-400 block">Filtered (&le;20% mutuals, active in last 180d, excluding reports)</span>
                     </div>
                     <div class="flex space-x-2">
                         <button id="exportJsonBtn" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-xs font-semibold rounded-lg transition text-white cursor-pointer">Export JSON</button>
@@ -223,6 +223,22 @@
                 }
 
                 const candidatePubkeys = preFilteredSuggestions.map(item => item[0]);
+                setStatus("Checking reports (Kind 1984) for candidates...");
+                const reportedPubkeys = new Set();
+                if (candidatePubkeys.length > 0) {
+                    const reportEvents = await pool.querySync(queryRelays, {
+                        kinds: [1984],
+                        '#p': candidatePubkeys
+                    });
+                    reportEvents.forEach(ev => {
+                        ev.tags.forEach(tag => {
+                            if (tag[0] === 'p' && tag[1]) {
+                                reportedPubkeys.add(tag[1]);
+                            }
+                        });
+                    });
+                }
+
                 setStatus("Checking recent activity (last 180 days)...");
                 const cutoffTimestamp = Math.floor(Date.now() / 1000) - (180 * 24 * 60 * 60);
                 
@@ -236,11 +252,11 @@
                 recentPosts.forEach(ev => activePubkeys.add(ev.pubkey));
 
                 const sortedSuggestions = preFilteredSuggestions
-                    .filter(([pubkey, score]) => activePubkeys.has(pubkey))
+                    .filter(([pubkey, score]) => activePubkeys.has(pubkey) && !reportedPubkeys.has(pubkey))
                     .slice(0, 100);
 
                 if (sortedSuggestions.length === 0) {
-                    alert("No active suggestions found for the last 180 days.");
+                    alert("No active suggestions found for the last 180 days (or all filtered out by reports).");
                     location.reload();
                     return;
                 }
