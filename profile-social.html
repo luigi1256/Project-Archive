@@ -392,7 +392,7 @@
 
         function renderLikesList(likes, container) {
             if (!likes || likes.length === 0) {
-                container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">Nessun like trovato.</div>`;
+                container.innerHTML = `<div class="bg-zinc-900 border border-zinc-800 p-4 text-center text-zinc-500 text-sm font-mono">No likes found</div>`;
                 return;
             }
             container.innerHTML = likes.map(like => {

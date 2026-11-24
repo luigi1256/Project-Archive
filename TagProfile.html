@@ -469,22 +469,67 @@
                 `;
             }).join('');
         }
-
+                                                    
         function renderLikesList(likes, container) {
-            if (!likes || likes.length === 0) {
-                container.innerHTML = `<div style="background: var(--nostur-card-bg); border: 1px solid var(--nostur-card-border); border-radius: 8px; padding: 20px; text-align: center; color: var(--nostur-text-muted); font-size: 13px; font-family: monospace;">No likes found.</div>`;
-                return;
+    if (!likes || likes.length === 0) {
+        container.innerHTML = `<div style="background: var(--nostur-card-bg); border: 1px solid var(--nostur-card-border); padding: 14px; text-align: center; color: var(--nostur-text-muted); font-size: 13px; font-family: monospace;">No likes found</div>`;
+        return;
+    }
+    container.innerHTML = likes.map(like => {
+        const date = new Date(like.created_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        let targetId = null;
+        let relayUrl = null;
+        let targetKind = null;
+
+        if (like.tags) {
+            for (let tag of like.tags) {
+                if (tag[0] === 'e') {
+                    targetId = tag[1];
+                    relayUrl = tag[2] || ''; 
+                }
+                if (tag[0] === 'k') {
+                    targetKind = parseInt(tag[1], 10);
+                }
             }
-            container.innerHTML = likes.map(like => {
-                const date = new Date(like.created_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-                return `
-                    <div style="background: var(--nostur-card-bg); border: 1px solid var(--nostur-card-border); border-radius: 8px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; opacity: 0.85;">
-                        <span style="font-size: 13px; color: var(--nostur-text);">Clicked "Like" (${like.content || '❤️'})</span>
-                        <span style="font-size: 11px; color: var(--nostur-text-muted); font-family: monospace;">${date}</span>
-                    </div>
-                `;
-            }).join('');
         }
+
+        let nevent = '';
+        if (targetId && window.NostrTools && window.NostrTools.nip19) {
+            nevent = window.NostrTools.nip19.neventEncode({
+                id: targetId,
+                relays: relayUrl ? [relayUrl] : []
+            });
+        }
+
+        let linkTarget = '';
+        if (nevent && !isNaN(targetKind)) {
+            if (targetKind > 30000) {
+                linkTarget = `modfile.html?nevent=${nevent}`;
+            } else if (targetKind < 10000) {
+                linkTarget = `note.html?nevent=${nevent}`;
+            }
+        }
+
+        if (linkTarget) {
+            return `
+                <a href="${linkTarget}" style="background: var(--nostur-card-bg); border: 1px solid var(--nostur-card-border); border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--nostur-card-border-hover, #666)'" onmouseout="this.style.borderColor='var(--nostur-card-border)'">
+                    <span style="font-size: 13px; color: var(--nostur-text);">Clicked "Like" (${like.content || '❤️'}) to a post</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 11px; color: var(--nostur-text-muted); font-family: monospace;">${date}</span>
+                        <span style="font-size: 11px; color: var(--nostur-text); text-decoration: underline;">Open</span>
+                    </div>
+                </a>
+            `;
+        } else {
+            return `
+                <div style="background: var(--nostur-card-bg); border: 1px solid var(--nostur-card-border); border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center; opacity: 0.75;">
+                    <span style="font-size: 13px; color: var(--nostur-text);">Clicked "Like" (${like.content || '❤️'})</span>
+                    <span style="font-size: 11px; color: var(--nostur-text-muted); font-family: monospace;">${date}</span>
+                </div>
+            `;
+        }
+    }).join('');
+}
 
         function renderLikedUsersList(pubkeys, profilesMap, container) {
             container.innerHTML = pubkeys.map(pubkey => {
