@@ -71,7 +71,6 @@
       ⏳ Loading tags...
     </div>
        
-    <!-- Results Container (gestito via JS con le classi del CSS) -->
     <div id="results"></div>
 
     <div id="tagCloudFooter" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--nostur-card-border); display: none;">
@@ -467,7 +466,7 @@ function fetchNostrTags(tagsArray) {
   let seenEventIds = new Set();
   let activeConnections = Relays.length;
   let collectedPubkeys = new Set();
-
+  const cutoffTimestamp = Math.floor(Date.now() / 1000) - (1 * 18 * 60 * 60);
   Relays.forEach(relayUrl => {
     let ws;
     try {
@@ -478,7 +477,7 @@ function fetchNostrTags(tagsArray) {
     }
 
     ws.onopen = () => {
-      let filter = { kinds: [1], "#t": tagsArray, limit: 60 };
+      let filter = { kinds: [1], "#t": tagsArray, since:cutoffTimestamp, limit: 60 };
       ws.send(JSON.stringify(["REQ", "baita_tag_reader", filter]));
     };
 
