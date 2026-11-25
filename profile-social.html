@@ -254,7 +254,8 @@
                     renderLikesList(likes, container);
                 } 
                 else if (tabName === 'collections') {
-                    let bookmarks = await globalPool.get(defaultRelays, { kinds: [10003, 30000], authors: [currentPubkey] });
+                    const twentyFourtyDaysAgo = Math.floor(Date.now() / 1000) - (240 * 24 * 60 * 60);
+                    let bookmarks = await globalPool.get(defaultRelays, { kinds: [10003, 30000], authors: [currentPubkey],since: twentyFourtyDaysAgo });
                     renderCollections(bookmarks, container);
                 } 
                 else if (tabName === 'relays') {
