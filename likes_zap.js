@@ -4,7 +4,7 @@ import QRCode from 'https://esm.sh/qrcode';
                                             
 export async function sendLike(generalRelays, target,targetk, targetAuthorPubkey) {
     if (!window.nostr) {
-        alert("NIP-07 extension not found (install Alby or Nos2x).");
+        alert("NIP-07 extension not found (install Sidecar or Nos2x).");
         return;
     }
     
@@ -38,6 +38,63 @@ export async function sendLike(generalRelays, target,targetk, targetAuthorPubkey
 
     } catch (err) {
         console.error("Error while sending the like:", err);
+        alert(err.message || "Operation cancelled or signature error.");
+    }
+}
+
+export async function sendRepost(generalRelays, target, targetk, targetAuthorPubkey) {
+    if (!window.nostr) {
+        alert("NIP-07 extension not found (install Alby or Nos2x).");
+        return;
+    }
+    
+    try {
+        const pubkey = await window.nostr.getPublicKey();
+        const originalKind = (target.kind !== undefined) ? target.kind : targetk;
+        const repostKind = (originalKind === 1) ? 6 : 16;
+        const tags = [["p", targetAuthorPubkey]];
+        
+        if (target.isAddressable && target.coordinate) {
+            tags.push(["a", target.coordinate]);
+            if (repostKind === 16) {
+                tags.push(["k", originalKind.toString()]);
+            }
+        } else if (target.id) {
+            tags.push(["e", target.id, target.relay || ""]);
+            if (repostKind === 16) {
+                tags.push(["k", originalKind.toString()]);
+            }
+        } else {
+            tags.push(["e", target, ""]);
+            if (repostKind === 16 && targetk !== undefined) {
+                tags.push(["k", targetk.toString()]);
+            }
+        }
+
+        let content = "";
+        if (typeof target === "object" && target.id) {
+            content = JSON.stringify(target);
+        }
+
+        const unsignedEvent = {
+            kind: repostKind,
+            pubkey: pubkey,
+            created_at: Math.floor(Date.now() / 1000),
+            tags: tags,
+            content: content 
+        };
+
+        const signedEvent = await window.nostr.signEvent(unsignedEvent);
+        await publishSignedToRelays(generalRelays, signedEvent);
+        
+        const successMessage = (repostKind === 6) 
+            ? "Repost (Kind 6) sent successfully! 🔄" 
+            : "Generic Repost (Kind 16) sent successfully! 🔄";
+            
+        alert(successMessage);
+
+    } catch (err) {
+        console.error("Error while sending the repost:", err);
         alert(err.message || "Operation cancelled or signature error.");
     }
 }

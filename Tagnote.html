@@ -158,7 +158,10 @@
       <button onclick="copyNoteLink()" class="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition text-white/80 cursor-pointer">
         🔗 Copy Link
       </button>
-      <button onclick="alert('Zap feature ready to connect!')" class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 rounded-lg border border-purple-400/40 transition cursor-pointer">
+      <button onclick="triggerRepost()" class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 rounded-lg border border-purple-400/40 transition cursor-pointer">
+        🔄 Repost Note
+      </button>  
+      <button onclick="triggerZap()" class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 rounded-lg border border-purple-400/40 transition cursor-pointer">
         ⚡ Send Zap
       </button>
     </div>
@@ -176,6 +179,8 @@
 <script src="baita_core.js"></script>
 <script type="module">
 import { nip19 } from 'https://cdn.jsdelivr.net/npm/nostr-tools/+esm'
+import { sendRepost } from './likes_zap.js';
+import { openZapModal } from './ZapPrepar.js';
 
 const loadingDiv = document.getElementById("loading");
 const errorBox = document.getElementById("errorBox");
@@ -203,6 +208,8 @@ let repostCount = 0;
 let countedReactionIds = new Set();
 let countedCommentIds = new Set();
 let countedZapIds = new Set();
+
+let currentNoteEvent = null; 
 
 function parseNostrContent(content) {
     if (!content) return '';
@@ -310,13 +317,13 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchSingleNote(targetEventId);
 });
 
-function fetchSingleNote(eventId) {
-  const Relays = [
-    "wss://relay.damus.io",  
-    "wss://relay.primal.net",
-    "wss://relay.ditto.pub/"
-  ];
+const Relays = [           
+  "wss://relay.damus.io",  
+  "wss://relay.primal.net",
+  "wss://relay.ditto.pub/" 
+];                         
 
+function fetchSingleNote(eventId) {
   let found = false;
 
   Relays.forEach(relayUrl => {
@@ -324,7 +331,7 @@ function fetchSingleNote(eventId) {
 
     ws.onopen = () => {
       ws.send(JSON.stringify(["REQ", "baita_single_note", { ids: [eventId] }]));
-      ws.send(JSON.stringify(["REQ", "baita_comments", { kinds: [1, 6], "#e": [eventId], limit: 40 }]));
+      ws.send(JSON.stringify(["REQ", "baita_comments", { kinds: [1, 6, 16], "#e": [eventId], limit: 40 }]));
       ws.send(JSON.stringify(["REQ", "baita_likes", { kinds: [7], "#e": [eventId] }]));
       ws.send(JSON.stringify(["REQ", "baita_zaps", { kinds: [9735], "#e": [eventId] }]));
     };
@@ -348,7 +355,7 @@ function fetchSingleNote(eventId) {
                 if (voteCountEl) voteCountEl.textContent = mainNoteLikes;
               }
             } 
-            else if (ev.kind === 6) {
+            else if (ev.kind === 6 || ev.kind === 16) {
               if (!countedReactionIds.has(ev.id)) {
                 countedReactionIds.add(ev.id);
                 repostCount++;
@@ -408,6 +415,7 @@ function extractZapAmount(zapEvent) {
 }
 
 function renderMainPost(ev) {
+  currentNoteEvent = ev; 
   try {
     let npub = nip19.npubEncode(ev.pubkey);
     authorPubkey.textContent = `u/${ev.pubkey.substring(0, 6)}...`;
@@ -443,6 +451,24 @@ window.copyNoteLink = function() {
   navigator.clipboard.writeText(window.location.href);
   alert("Link copied to clipboard!");
 }
+
+window.triggerRepost = async () => {
+    if (!currentNoteEvent) {
+        alert("Note not loaded yet.");
+        return;
+    }
+    await sendRepost(Relays, currentNoteEvent, currentNoteEvent.kind, currentNoteEvent.pubkey);
+};
+
+window.triggerZap = () => {
+    if (!currentNoteEvent) {
+        alert("Note not loaded yet.");
+        return;
+    }
+    openZapModal(currentNoteEvent.pubkey, currentNoteEvent.id);
+};
+
+
 </script>
 
 </body>
