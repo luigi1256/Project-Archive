@@ -55,7 +55,6 @@ export async function openZapModal(targetAuthorPubkey, targetEventId)  {
     const sendBtn = modal.querySelector('.send-zap-btn');
     const customInput = modal.querySelector('.custom-zap-amount');
     const qrContainer = modal.querySelector('#qr-container');
-    // new
     const mobileSection = modal.querySelector('#mobile-payment-section');
     const walletLink = modal.querySelector('#wallet-link');
     const invoiceText = modal.querySelector('#invoice-text');
